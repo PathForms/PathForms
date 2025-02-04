@@ -10,6 +10,14 @@ pnpm --version
 
 To run in localhost:3000 :
 
+first install the required dependencies
+
+```bash
+pnpm install
+```
+
+run in local browser:
+
 ```bash
 pnpm dev
 ```

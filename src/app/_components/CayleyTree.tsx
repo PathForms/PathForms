@@ -15,7 +15,7 @@ const generateTree = (depth: number, parentId = "root"): TreeNode => {
 
   return {
     id: parentId,
-    children: Array.from({ length: 4 }, (_, i) =>
+    children: Array.from({ length: 3 }, (_, i) =>
       generateTree(depth - 1, `${parentId}-${i}`)
     ),
   };
