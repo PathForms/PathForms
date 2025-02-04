@@ -10,6 +10,7 @@ interface TreeNode {
   children: TreeNode[];
 }
 
+// generate treedata
 const generateTree = (depth: number, parentId = "root"): TreeNode => {
   if (depth === 0) return { id: parentId, children: [] };
 
@@ -43,6 +44,7 @@ const CayleyTree: React.FC = () => {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const gRef = useRef<SVGGElement | null>(null);
 
+  // d3 anime effect
   useEffect(() => {
     if (!svgRef.current || !gRef.current) return;
 
@@ -53,6 +55,7 @@ const CayleyTree: React.FC = () => {
     const linksData = root.links();
     const nodesData = root.descendants();
 
+    //force directed
     const simulation = d3
       .forceSimulation(nodesData)
       .force(
@@ -94,6 +97,7 @@ const CayleyTree: React.FC = () => {
 
     simulation.alpha(1).restart();
 
+    //zoom and panning
     // Fix: Explicitly define D3 selection types
     const svg = d3.select<SVGSVGElement, unknown>(svgRef.current);
     const g = d3.select<SVGGElement, unknown>(gRef.current);
