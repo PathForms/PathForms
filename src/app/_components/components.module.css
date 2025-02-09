@@ -1,0 +1,10 @@
+.cayley {
+  display: block; /* Fix inline display issue */
+  margin: auto; /* Ensure it's centered horizontally */
+}
+
+.cayleyContainer {
+  display: flex;
+  justify-content: center; /* Centers the SVG */
+  margin: auto;
+}
