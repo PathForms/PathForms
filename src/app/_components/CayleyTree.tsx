@@ -1,22 +1,20 @@
 "use client";
 import React, { useEffect, useState, useRef } from "react";
 import * as d3 from "d3";
-import Vertex from "./Vertex"; // Please ensure the file name/path is correct
-import Edge from "./Edge";     // Please ensure the file name/path is correct
+import Vertex from "./Vertex";
+import Edge from "./Edge";
 
-/**
- * NodeSim: Node data structure for D3 forceSimulation
- */
+// -------------------------------------
+// NodeSim & LinkSim definitions
+// -------------------------------------
 interface NodeSim extends d3.SimulationNodeDatum {
   id: string;
   initX: number;
   initY: number;
+  x?: number;
+  y?: number;
 }
 
-/**
- * LinkSim: Link data structure for D3 forceSimulation
- * Adds a "direction" field to store "up" | "down" | "left" | "right"
- */
 interface LinkSim extends d3.SimulationLinkDatum<NodeSim> {
   id: string;
   source: NodeSim;
@@ -24,7 +22,9 @@ interface LinkSim extends d3.SimulationLinkDatum<NodeSim> {
   direction: string;
 }
 
-// Define the four directions and their opposite information
+// -------------------------------------
+// Directions object
+// -------------------------------------
 const directions = {
   up:    { dx: 0,  dy: -1, opposite: "down"  },
   down:  { dx: 0,  dy:  1, opposite: "up"    },
@@ -33,14 +33,9 @@ const directions = {
 };
 type DirKey = keyof typeof directions;
 
-/**
- * Recursively builds a fractal cross tree:
- * - Create a node at (x, y);
- * - If the depth has not reached maxDepth, grow in the directions: up, down, left, and right,
- *   but skip the opposite of the incoming direction (to avoid backtracking);
- * - Use nodeMap and linkMap to deduplicate (ensuring that only one NodeSim is generated for the same coordinate),
- *   and record the link direction (using the variable dirName) when creating a link.
- */
+// -------------------------------------
+// buildCayleyTree (recursive)
+// -------------------------------------
 function buildCayleyTree(
   nodeMap: Map<string, NodeSim>,
   linkMap: Map<string, LinkSim>,
@@ -63,7 +58,7 @@ function buildCayleyTree(
     DirKey,
     { dx: number; dy: number; opposite: string }
   ][]) {
-    // Skip the direction that is opposite to the incoming direction
+    // Skip the opposite direction (avoid backtracking)
     if (fromDir && info.opposite === fromDir) continue;
 
     const nx = x + info.dx * step;
@@ -75,7 +70,6 @@ function buildCayleyTree(
     }
     const childNode = nodeMap.get(childId)!;
 
-    // Record the direction (dirName) when creating the link
     const edgeId = parentNode.id + "->" + childNode.id;
     if (!linkMap.has(edgeId)) {
       linkMap.set(edgeId, {
@@ -86,92 +80,162 @@ function buildCayleyTree(
       });
     }
 
-    // Recursively build the next level; decay the step by 0.5 (adjust as needed)
-    buildCayleyTree(nodeMap, linkMap, nx, ny, depth + 1, maxDepth, dirName, step * 0.5);
+    buildCayleyTree(
+      nodeMap, linkMap,
+      nx, ny,
+      depth + 1,
+      maxDepth,
+      dirName,
+      step * 0.5
+    );
   }
 }
 
+// -------------------------------------
+// Main CayleyTree component
+// -------------------------------------
 const CayleyTree: React.FC = () => {
+  // React states
   const [nodes, setNodes] = useState<NodeSim[]>([]);
   const [links, setLinks] = useState<LinkSim[]>([]);
-  const [highlightedNode, setHighlightedNode] = useState<string | null>(null);
-  const [shinedNode, setShinedNode] = useState<string | null>(null);
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const [shinedId, setShinedId] = useState<string | null>(null);
 
-  // References for SVG and the <g> element
+  // refs for <svg> and <g>
   const svgRef = useRef<SVGSVGElement | null>(null);
   const gRef = useRef<SVGGElement | null>(null);
 
   useEffect(() => {
-    // 1) Build the fractal cross tree data
+    // 1) Build the fractal tree data
     const nodeMap = new Map<string, NodeSim>();
     const linkMap = new Map<string, LinkSim>();
-    // Here, maxDepth is set to 4 (you can adjust the number of layers as needed)
     buildCayleyTree(nodeMap, linkMap, 0, 0, 0, 4, null, 100);
 
     const nodeArray = Array.from(nodeMap.values());
     const linkArray = Array.from(linkMap.values());
 
-    // Translate all nodes' initial layout to (400, 300)
+    // Give nodes some initial positions
     nodeArray.forEach((nd) => {
-      nd.x = nd.initX + 400;
-      nd.y = nd.initY + 300;
+      nd.x = nd.initX + window.innerWidth / 2;
+      nd.y = nd.initY + window.innerHeight / 2;
     });
 
-    // 2) Create the D3 forceSimulation
+    // 2) Create force simulation
     const simulation = d3
       .forceSimulation<NodeSim>(nodeArray)
       .force(
         "link",
         d3
           .forceLink<NodeSim, LinkSim>(linkArray)
-          .id((d) => d.id)
+          .id(d => d.id)
           .distance(15)
           .strength(1.0)
       )
-      // Here we do not use (or comment out) the charge force
-      //.force("charge", d3.forceManyBody<NodeSim>().strength(-5))
-      // Force the nodes to pull back to their initial (x, y)
-      .force("fx", d3.forceX<NodeSim>((d) => d.x!).strength(0.3))
-      .force("fy", d3.forceY<NodeSim>((d) => d.y!).strength(0.3))
-      // Accelerate decay to let the simulation stabilize faster
-      .alphaDecay(0.3)
+      // repel nodes so they don't overlap
+      .force("charge", d3.forceManyBody().strength((node) => -60))
+      // small pulls toward center
+      .force("centerX", d3.forceX(window.innerWidth / 2).strength(0.01))
+      .force("centerY", d3.forceY(window.innerHeight / 2).strength(0.01))
+      // faster decay
+      .alphaDecay(0.07)
+      // update React state on every tick
       .on("tick", () => {
-        // Update the node and link states on each tick
         setNodes([...nodeArray]);
         setLinks([...linkArray]);
+      })
+      // when simulation ends, do the bounding-box + smooth transform
+      .on("end", () => {
+        // Compute bounding box
+        let minX = Infinity, maxX = -Infinity;
+        let minY = Infinity, maxY = -Infinity;
+        nodeArray.forEach(nd => {
+          if (nd.x! < minX) minX = nd.x!;
+          if (nd.x! > maxX) maxX = nd.x!;
+          if (nd.y! < minY) minY = nd.y!;
+          if (nd.y! > maxY) maxY = nd.y!;
+        });
+
+        const finalWidth = Math.max(maxX - minX, 1);
+        const finalHeight = Math.max(maxY - minY, 1);
+
+        const screenW = window.innerWidth;
+        const screenH = window.innerHeight;
+        const marginFactor = 0.9;
+
+        const scale = marginFactor * Math.min(
+          screenW / finalWidth,
+          screenH / finalHeight
+        );
+
+        // Identify the root node (assume it's at "0,0")
+        const rootNode = nodeArray.find(nd => nd.id === "0,0");
+        if (!rootNode) {
+          console.error("Root node (id=0,0) not found.");
+          return;
+        }
+
+        // We'll translate root to the screen center, then scale
+        const rootX = rootNode.x!;
+        const rootY = rootNode.y!;
+        const targetTransform = d3.zoomIdentity
+          .translate(screenW / 2, screenH / 2)
+          .scale(scale)
+          .translate(-rootX, -rootY);
+
+        // Smooth transition over 1 second
+        const svgSelection = d3.select(svgRef.current);
+        svgSelection
+          .transition()
+          .duration(800) // 1s, adjust as needed
+          .call(zoomBehavior.transform, targetTransform);
       });
 
-    // 3) Enable zoom and pan
-    const svgSelection = d3.select(svgRef.current);
-    const gSelection = d3.select(gRef.current);
+    // 3) Setup D3 zoom/pan
     const zoomBehavior = d3
       .zoom<SVGSVGElement, unknown>()
-      .scaleExtent([0.3, 5])
+      .scaleExtent([0.1, 10])
       .on("zoom", (event) => {
-        gSelection.attr("transform", event.transform.toString());
+        d3.select(gRef.current).attr("transform", event.transform.toString());
       });
+
+    const svgSelection = d3.select(svgRef.current);
     svgSelection.call(zoomBehavior as any);
 
-    // Stop the simulation when the component is unmounted
+    // Save arrays in state
+    setNodes(nodeArray);
+    setLinks(linkArray);
+
+    // Cleanup: stop the simulation on unmount
     return () => {
       simulation.stop();
     };
   }, []);
 
-  // Hover event: highlight effect
-  const handleHover = (id: string, hovered: boolean) => {
-    setHighlightedNode(hovered ? id : null);
+  // Mouse events
+  const handleHover = (id: string, hover: boolean) => {
+    setHighlightedId(hover ? id : null);
   };
-  // Click event: shine effect
   const handleClick = (id: string) => {
-    setShinedNode((prev) => (prev === id ? null : id));
+    setShinedId((prev) => (prev === id ? null : id));
   };
 
   return (
-    <div style={{ width: "800px", height: "600px", margin: "0 auto" }}>
-      <svg ref={svgRef} width={800} height={600} style={{ border: "1px solid #ccc" }}>
+    <div
+      style={{
+        width: "100vw",
+        height: "100vh",
+        margin: 0,
+        padding: 0,
+        overflow: "hidden",
+      }}
+    >
+      <svg
+        ref={svgRef}
+        width="100%"
+        height="100%"
+        style={{ border: "none", display: "block" }}
+      >
         <g ref={gRef}>
-          {/* Render links: pass in the direction field */}
           {links.map((lk) => (
             <Edge
               key={lk.id}
@@ -180,11 +244,10 @@ const CayleyTree: React.FC = () => {
               targetX={lk.target.x ?? 0}
               targetY={lk.target.y ?? 0}
               onHover={(hover) => handleHover(lk.id, hover)}
-              isHighlighted={highlightedNode === lk.id}
+              isHighlighted={highlightedId === lk.id}
               direction={lk.direction}
             />
           ))}
-          {/* Render nodes */}
           {nodes.map((nd) => (
             <Vertex
               key={nd.id}
@@ -193,8 +256,8 @@ const CayleyTree: React.FC = () => {
               y={nd.y ?? 0}
               onClick={handleClick}
               onHover={handleHover}
-              isHighlighted={highlightedNode === nd.id}
-              isShined={shinedNode === nd.id}
+              isHighlighted={highlightedId === nd.id}
+              isShined={shinedId === nd.id}
             />
           ))}
         </g>
