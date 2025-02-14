@@ -1,4 +1,3 @@
-// Edge.tsx
 import React from "react";
 
 interface EdgeProps {
@@ -6,38 +5,27 @@ interface EdgeProps {
   sourceY: number;
   targetX: number;
   targetY: number;
-  isHighlighted: boolean;
-  direction?: string;
+  isHighlighted?: boolean;
   onHover?: (hovered: boolean) => void;
 }
 
+/**
+ * Edge:
+ * A basic line connecting source and target coordinates.
+ * It can highlight on hover if needed.
+ */
 const Edge: React.FC<EdgeProps> = ({
   sourceX,
   sourceY,
   targetX,
   targetY,
-  isHighlighted,
-  direction,
+  isHighlighted = false,
   onHover,
 }) => {
+  const strokeColor = isHighlighted ? "orange" : "#999";
 
-  let strokeColor = "#999";
-  if (direction === "up" || direction === "down") {
-    strokeColor = "pink";
-  } else if (direction === "left" || direction === "right") {
-    strokeColor = "yellow";
-  }
-  
-  if (isHighlighted) {
-    strokeColor = "orange";
-  }
-
-  const handleMouseEnter = () => {
-    if (onHover) onHover(true);
-  };
-  const handleMouseLeave = () => {
-    if (onHover) onHover(false);
-  };
+  const handleMouseEnter = () => onHover?.(true);
+  const handleMouseLeave = () => onHover?.(false);
 
   return (
     <line
@@ -46,7 +34,7 @@ const Edge: React.FC<EdgeProps> = ({
       x2={targetX}
       y2={targetY}
       stroke={strokeColor}
-      strokeWidth={2}
+      strokeWidth={1}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     />

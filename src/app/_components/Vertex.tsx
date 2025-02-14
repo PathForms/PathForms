@@ -1,56 +1,59 @@
 import React, { useState } from "react";
 
 interface VertexProps {
+  id: string;
   x: number;
   y: number;
-  id: string;
-  onClick: (id: string) => void;
-  onHover: (id: string, isHovered: boolean) => void;
-  isHighlighted: boolean;
-  isShined: boolean;
+  isHighlighted?: boolean;
+  isShined?: boolean;
+  onHover?: (id: string, hovered: boolean) => void;
+  onClick?: (id: string) => void;
 }
 
+/**
+ * Vertex:
+ * A circle at (x, y). Different fill colors indicate hover,
+ * highlight, or shine states.
+ */
 const Vertex: React.FC<VertexProps> = ({
+  id,
   x,
   y,
-  id,
-  onClick,
+  isHighlighted = false,
+  isShined = false,
   onHover,
-  isHighlighted,
-  isShined,
+  onClick,
 }) => {
-  // Use useState to manage the hover state
-  const [isHovered, setIsHovered] = useState(false);
+  const [hovered, setHovered] = useState(false);
+
+  let fillColor = "steelblue";
+  if (hovered) {
+    fillColor = "orange";
+  } else if (isShined) {
+    fillColor = "gold";
+  } else if (isHighlighted) {
+    fillColor = "#007acc";
+  }
 
   const handleMouseEnter = () => {
-    setIsHovered(true);
-    onHover(id, true);
+    setHovered(true);
+    onHover?.(id, true);
   };
-
   const handleMouseLeave = () => {
-    setIsHovered(false);
-    onHover(id, false);
+    setHovered(false);
+    onHover?.(id, false);
   };
-
-  // Set the fill color based on the current state
-  const fillColor = isHovered
-    ? "orange"       // When hovered, the color becomes orange
-    : isShined
-    ? "gold"         // When isShined is true, the color becomes gold
-    : isHighlighted
-    ? "#007acc"      // When isHighlighted is true, the color becomes blue
-    : "lightblue";   // Default color is light blue
 
   return (
     <circle
       cx={x}
       cy={y}
-      r={3}
+      r={2}
       fill={fillColor}
+      style={{ cursor: "pointer", transition: "fill 0.3s" }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      onClick={() => onClick(id)}
-      style={{ cursor: "pointer", transition: "fill 0.3s" }}
+      onClick={() => onClick?.(id)}
     />
   );
 };
