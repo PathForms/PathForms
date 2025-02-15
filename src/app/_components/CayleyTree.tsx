@@ -1,156 +1,241 @@
 "use client";
 import React, { useEffect, useState, useRef } from "react";
 import * as d3 from "d3";
-import Vertex from "./Vertex";
 import Edge from "./Edge";
-import styles from "./components.module.css";
+import Vertex from "./Vertex";
 
+/**
+ * Directions for the 4-way expansion in a Cayley tree.
+ * We skip the opposite direction to avoid immediate backtracking.
+ */
+const directions = {
+  up: { dx: 0, dy: -1, opposite: "down" },
+  down: { dx: 0, dy: 1, opposite: "up" },
+  left: { dx: -1, dy: 0, opposite: "right" },
+  right: { dx: 1, dy: 0, opposite: "left" },
+};
+type DirKey = keyof typeof directions;
+
+/**
+ * TreeNode interface for hierarchical data used by d3.hierarchy.
+ */
 interface TreeNode {
-  id: string;
-  children: TreeNode[];
+  name: string;
+  children?: TreeNode[];
 }
 
-// generate treedata
-const generateTree = (depth: number, parentId = "root"): TreeNode => {
-  if (depth === 0) return { id: parentId, children: [] };
-
-  return {
-    id: parentId,
-    children: Array.from({ length: 3 }, (_, i) =>
-      generateTree(depth - 1, `${parentId}-${i}`)
-    ),
+/**
+ * Recursively builds a nested data structure for a Cayley tree:
+ * - Each node is { name: "x,y", children: [...] }.
+ * - Skips the opposite direction to prevent backtracking.
+ */
+function buildCayleyTreeData(
+  x: number,
+  y: number,
+  depth: number,
+  maxDepth: number,
+  fromDir: DirKey | null,
+  step: number
+): TreeNode {
+  const node: TreeNode = {
+    name: `${x},${y}`,
+    children: [],
   };
-};
 
-const treeData: TreeNode = generateTree(3);
+  if (depth >= maxDepth) return node;
 
-interface NodePosition {
+  for (const [dirName, info] of Object.entries(directions) as [
+    DirKey,
+    { dx: number; dy: number; opposite: string }
+  ][]) {
+    if (fromDir && info.opposite === fromDir) continue;
+
+    const nx = x + info.dx * step;
+    const ny = y + info.dy * step;
+
+    node.children!.push(
+      buildCayleyTreeData(nx, ny, depth + 1, maxDepth, dirName, step * 0.5)
+    );
+  }
+
+  return node;
+}
+
+/**
+ * LayoutNode holds the final Cartesian position (x, y) after
+ * converting from polar coordinates (angle, radius).
+ */
+interface LayoutNode {
   id: string;
   x: number;
   y: number;
 }
-
-interface LinkPosition {
+/**
+ * LayoutLink holds the Cartesian coordinates for an edge
+ * from (sourceX, sourceY) to (targetX, targetY).
+ */
+interface LayoutLink {
   id: string;
-  source: NodePosition;
-  target: NodePosition;
+  sourceX: number;
+  sourceY: number;
+  targetX: number;
+  targetY: number;
 }
 
+/**
+ * CayleyTree component:
+ * - Builds a hierarchical Cayley tree
+ * - Uses d3.cluster for a radial layout
+ * - Renders the result as edges and vertices
+ * - Supports basic zoom/pan and hover/click events
+ */
 const CayleyTree: React.FC = () => {
-  const [nodes, setNodes] = useState<NodePosition[]>([]);
-  const [links, setLinks] = useState<LinkPosition[]>([]);
-  const [highlightedNode, setHighlightedNode] = useState<string | null>(null);
-  const [shinedNode, setShinedNode] = useState<string | null>(null);
+  // States for highlighting (hover) and shining (click).
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const [shinedId, setShinedId] = useState<string | null>(null);
+
+  // Arrays of nodes and links after layout is computed.
+  const [nodes, setNodes] = useState<LayoutNode[]>([]);
+  const [links, setLinks] = useState<LayoutLink[]>([]);
+
+  // Refs for the <svg> and <g> elements, used by D3 zoom.
   const svgRef = useRef<SVGSVGElement | null>(null);
   const gRef = useRef<SVGGElement | null>(null);
 
-  // d3 anime effect
   useEffect(() => {
-    if (!svgRef.current || !gRef.current) return;
+    // 1) Build hierarchical Cayley tree data up to depth=4.
+    const rootData = buildCayleyTreeData(0, 0, 0, 4, null, 100);
 
-    const width = 800;
-    const height = 600;
+    // 2) Create a d3 hierarchy from the nested data.
+    const root = d3.hierarchy<TreeNode>(rootData);
 
-    const root = d3.hierarchy<TreeNode>(treeData);
-    const linksData = root.links();
-    const nodesData = root.descendants();
+    // 3) Determine the screen dimensions and a suitable radius.
+    const screenW = window.innerWidth;
+    const screenH = window.innerHeight;
+    const outerRadius = Math.min(screenW, screenH) / 2;
 
-    //force directed
-    const simulation = d3
-      .forceSimulation(nodesData)
-      .force(
-        "link",
-        d3
-          .forceLink(linksData)
-          .id((d: any) => d.data.id)
-          .distance(100)
-      )
-      .force("charge", d3.forceManyBody().strength(-200))
-      .force("center", d3.forceCenter(width / 2, height / 2))
-      .on("tick", ticked);
+    // 4) Create a radial cluster layout:
+    //    - x in [0..2π] for the angle
+    //    - y in [0..outerRadius] for the radius
+    const clusterLayout = d3
+      .cluster<TreeNode>()
+      .size([2 * Math.PI, outerRadius - 50]);
 
-    function ticked() {
-      setNodes(
-        nodesData.map((d) => ({
-          id: d.data.id,
-          x: d.x!,
-          y: d.y!,
-        }))
-      );
+    // 5) Apply the cluster layout to compute polar coordinates (d.x, d.y).
+    clusterLayout(root);
 
-      setLinks(
-        linksData.map((link) => ({
-          id: `${link.source.data.id}->${link.target.data.id}`,
-          source: {
-            id: link.source.data.id,
-            x: link.source.x!,
-            y: link.source.y!,
-          },
-          target: {
-            id: link.target.data.id,
-            x: link.target.x!,
-            y: link.target.y!,
-          },
-        }))
-      );
-    }
+    // 6) Convert each node from polar to Cartesian.
+    const allNodes: LayoutNode[] = root.descendants().map((d) => {
+      const angle = d.x - Math.PI / 2; // shift so 0 angle is "up"
+      const r = d.y;
+      const xPos = r * Math.cos(angle);
+      const yPos = r * Math.sin(angle);
 
-    simulation.alpha(1).restart();
+      return {
+        id: d.data.name,
+        x: xPos,
+        y: yPos,
+      };
+    });
 
-    //zoom and panning
-    // Fix: Explicitly define D3 selection types
-    const svg = d3.select<SVGSVGElement, unknown>(svgRef.current);
-    const g = d3.select<SVGGElement, unknown>(gRef.current);
+    // 7) Build edges from parent to child in Cartesian coordinates.
+    const allLinks: LayoutLink[] = [];
+    root.descendants().forEach((d) => {
+      if (d.parent) {
+        const pAngle = d.parent.x - Math.PI / 2;
+        const pR = d.parent.y;
+        const px = pR * Math.cos(pAngle);
+        const py = pR * Math.sin(pAngle);
 
-    // Fix: Correctly define zoom behavior
-    const zoom = d3
+        const cAngle = d.x - Math.PI / 2;
+        const cR = d.y;
+        const cx = cR * Math.cos(cAngle);
+        const cy = cR * Math.sin(cAngle);
+
+        allLinks.push({
+          id: `${d.parent.data.name}->${d.data.name}`,
+          sourceX: px,
+          sourceY: py,
+          targetX: cx,
+          targetY: cy,
+        });
+      }
+    });
+
+    setNodes(allNodes);
+    setLinks(allLinks);
+
+    // 8) Set up D3 zoom behavior.
+    const zoomBehavior = d3
       .zoom<SVGSVGElement, unknown>()
-      .scaleExtent([0.5, 3]) // Zoom between 50% and 300%
+      .scaleExtent([0.1, 10])
       .on("zoom", (event) => {
-        g.attr("transform", event.transform.toString()); // Apply zoom & pan
+        d3.select(gRef.current).attr("transform", event.transform.toString());
       });
 
-    // Fix: Ensure zoom is applied safely
-    svg.call(
-      zoom as unknown as (
-        selection: d3.Selection<SVGSVGElement, unknown, null, undefined>
-      ) => void
+    // 9) Attach zoom to the SVG.
+    const svgSelection = d3.select(svgRef.current);
+    svgSelection.call(zoomBehavior as any);
+
+    // 10) Translate the <g> so that (0,0) is centered on the screen.
+    d3.select(gRef.current).attr(
+      "transform",
+      `translate(${screenW / 2}, ${screenH / 2})`
     );
   }, []);
 
-  const handleHover = (id: string, isHovered: boolean) => {
-    setHighlightedNode(isHovered ? id : null);
+  // Hover handler (triggered by Edge/Vertex on mouse enter/leave).
+  const handleHover = (id: string, hovered: boolean) => {
+    setHighlightedId(hovered ? id : null);
   };
 
+  // Click handler (triggered by Vertex on click).
   const handleClick = (id: string) => {
-    setShinedNode(id === shinedNode ? null : id);
+    setShinedId((prev) => (prev === id ? null : id));
   };
 
   return (
-    <div className={styles.cayleyContainer}>
-      <svg ref={svgRef} width="100vw" height="100vh" className={styles.cayley}>
+    <div
+      style={{
+        width: "100vw",
+        height: "100vh",
+        margin: 0,
+        padding: 0,
+        overflow: "hidden",
+      }}
+    >
+      <svg
+        ref={svgRef}
+        width="100%"
+        height="100%"
+        style={{ border: "none", display: "block" }}
+      >
+        {/* A <g> that is manipulated by zoom/pan and holds all edges/nodes */}
         <g ref={gRef}>
-          {links.map((link) => (
+          {/* Render edges */}
+          {links.map((lk) => (
             <Edge
-              key={link.id}
-              sourceX={link.source.x}
-              sourceY={link.source.y}
-              targetX={link.target.x}
-              targetY={link.target.y}
-              onHover={(hovered) => handleHover(link.id, hovered)}
-              isHighlighted={highlightedNode === link.id}
+              key={lk.id}
+              sourceX={lk.sourceX}
+              sourceY={lk.sourceY}
+              targetX={lk.targetX}
+              targetY={lk.targetY}
+              isHighlighted={highlightedId === lk.id}
+              onHover={(hover) => handleHover(lk.id, hover)}
             />
           ))}
-          {nodes.map((node) => (
+
+          {/* Render nodes */}
+          {nodes.map((nd) => (
             <Vertex
-              key={node.id}
-              id={node.id}
-              x={node.x}
-              y={node.y}
-              onClick={handleClick}
+              key={nd.id}
+              id={nd.id}
+              x={nd.x}
+              y={nd.y}
+              isHighlighted={highlightedId === nd.id}
+              isShined={shinedId === nd.id}
               onHover={handleHover}
-              isHighlighted={highlightedNode === node.id}
-              isShined={shinedNode === node.id}
+              onClick={handleClick}
             />
           ))}
         </g>
