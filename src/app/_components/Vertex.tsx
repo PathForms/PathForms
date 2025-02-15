@@ -6,6 +6,7 @@ interface VertexProps {
   y: number;
   isHighlighted?: boolean;
   isShined?: boolean;
+  isActive?: boolean;
   onHover?: (id: string, hovered: boolean) => void;
   onClick?: (id: string) => void;
 }
@@ -21,11 +22,13 @@ const Vertex: React.FC<VertexProps> = ({
   y,
   isHighlighted = false,
   isShined = false,
+  isActive,
   onHover,
   onClick,
 }) => {
   const [hovered, setHovered] = useState(false);
 
+  //color logic
   let fillColor = "steelblue";
   if (hovered) {
     fillColor = "orange";
@@ -33,6 +36,8 @@ const Vertex: React.FC<VertexProps> = ({
     fillColor = "gold";
   } else if (isHighlighted) {
     fillColor = "#007acc";
+  } else if (isActive) {
+    fillColor = "red";
   }
 
   const handleMouseEnter = () => {
