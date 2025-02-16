@@ -109,7 +109,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
   const gRef = useRef<SVGGElement | null>(null);
 
   useEffect(() => {
-    const rootData = buildCayleyTreeData(0, 0, 0, 4, null, 100);
+    const rootData = buildCayleyTreeData(0, 0, 0, 6, null, 100);
     const root = d3.hierarchy<TreeNode>(rootData);
 
     const screenW = 1024;
