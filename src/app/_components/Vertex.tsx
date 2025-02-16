@@ -1,59 +1,55 @@
 import React, { useState } from "react";
 
 interface VertexProps {
-  id: string;
   x: number;
   y: number;
-  isHighlighted?: boolean;
-  isShined?: boolean;
-  onHover?: (id: string, hovered: boolean) => void;
-  onClick?: (id: string) => void;
+  id: string;
+  onClick: (id: string) => void;
+  onHover: (id: string, isHovered: boolean) => void;
+  isHighlighted: boolean; // 用于改变颜色
+  isShined: boolean;      // 用于改变颜色
 }
 
-/**
- * Vertex:
- * A circle at (x, y). Different fill colors indicate hover,
- * highlight, or shine states.
- */
 const Vertex: React.FC<VertexProps> = ({
-  id,
   x,
   y,
-  isHighlighted = false,
-  isShined = false,
-  onHover,
+  id,
   onClick,
+  onHover,
+  isHighlighted,
+  isShined,
 }) => {
-  const [hovered, setHovered] = useState(false);
-
-  let fillColor = "steelblue";
-  if (hovered) {
-    fillColor = "orange";
-  } else if (isShined) {
-    fillColor = "gold";
-  } else if (isHighlighted) {
-    fillColor = "#007acc";
-  }
+  const [isHovered, setIsHovered] = useState(false);
 
   const handleMouseEnter = () => {
-    setHovered(true);
-    onHover?.(id, true);
+    setIsHovered(true);
+    onHover(id, true);    // 通知父组件
   };
+
   const handleMouseLeave = () => {
-    setHovered(false);
-    onHover?.(id, false);
+    setIsHovered(false);
+    onHover(id, false);   // 通知父组件
   };
+
+  // 根据不同状态决定颜色
+  const fillColor = isHovered
+    ? "orange"
+    : isShined
+    ? "gold"
+    : isHighlighted
+    ? "#007acc"
+    : "lightblue";
 
   return (
     <circle
       cx={x}
       cy={y}
-      r={2}
+      r={1.5}  // 可根据需要调整节点半径
       fill={fillColor}
-      style={{ cursor: "pointer", transition: "fill 0.3s" }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      onClick={() => onClick?.(id)}
+      onClick={() => onClick(id)}
+      style={{ cursor: "pointer", transition: "fill 0.3s" }}
     />
   );
 };
