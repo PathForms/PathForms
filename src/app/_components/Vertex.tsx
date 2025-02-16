@@ -6,8 +6,8 @@ interface VertexProps {
   id: string;
   onClick: (id: string) => void;
   onHover: (id: string, isHovered: boolean) => void;
-  isHighlighted: boolean;
-  isShined: boolean;
+  isHighlighted: boolean; // 用于改变颜色
+  isShined: boolean;      // 用于改变颜色
 }
 
 const Vertex: React.FC<VertexProps> = ({
@@ -19,33 +19,32 @@ const Vertex: React.FC<VertexProps> = ({
   isHighlighted,
   isShined,
 }) => {
-  // Use useState to manage the hover state
   const [isHovered, setIsHovered] = useState(false);
 
   const handleMouseEnter = () => {
     setIsHovered(true);
-    onHover(id, true);
+    onHover(id, true);    // 通知父组件
   };
 
   const handleMouseLeave = () => {
     setIsHovered(false);
-    onHover(id, false);
+    onHover(id, false);   // 通知父组件
   };
 
-  // Set the fill color based on the current state
+  // 根据不同状态决定颜色
   const fillColor = isHovered
-    ? "orange"       // When hovered, the color becomes orange
+    ? "orange"
     : isShined
-    ? "gold"         // When isShined is true, the color becomes gold
+    ? "gold"
     : isHighlighted
-    ? "#007acc"      // When isHighlighted is true, the color becomes blue
-    : "lightblue";   // Default color is light blue
+    ? "#007acc"
+    : "lightblue";
 
   return (
     <circle
       cx={x}
       cy={y}
-      r={3}
+      r={1.5}  // 可根据需要调整节点半径
       fill={fillColor}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}

@@ -46,7 +46,7 @@ const Edge: React.FC<EdgeProps> = ({
       x2={targetX}
       y2={targetY}
       stroke={strokeColor}
-      strokeWidth={2}
+      strokeWidth={0.7}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     />
