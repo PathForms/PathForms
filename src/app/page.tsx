@@ -1,10 +1,11 @@
 import React from "react";
-import CayleyTree from "./_components/CayleyTree";
+
+import Interface from "./_components/Interface";
 
 const Home = () => {
   return (
     <div className="cayley">
-      <CayleyTree />
+      <Interface />
     </div>
   );
 };

@@ -3,16 +3,17 @@ import React, { useEffect, useState, useRef } from "react";
 import * as d3 from "d3";
 import Edge from "./Edge";
 import Vertex from "./Vertex";
+import ButtonBar from "./ButtonBar";
 
 /**
  * Directions for the 4-way expansion in a Cayley tree.
  * We skip the opposite direction to avoid immediate backtracking.
  */
 const directions = {
-  up:    { dx: 0,  dy: -1, opposite: "down"  },
-  down:  { dx: 0,  dy:  1, opposite: "up"    },
-  left:  { dx: -1, dy:  0, opposite: "right" },
-  right: { dx:  1, dy:  0, opposite: "left"  },
+  up: { dx: 0, dy: 1, opposite: "down" },
+  down: { dx: 0, dy: -1, opposite: "up" },
+  left: { dx: -1, dy: 0, opposite: "right" },
+  right: { dx: 1, dy: 0, opposite: "left" },
 };
 type DirKey = keyof typeof directions;
 
@@ -70,7 +71,6 @@ interface LayoutNode {
   x: number;
   y: number;
 }
-
 /**
  * LayoutLink holds the Cartesian coordinates for an edge
  * from (sourceX, sourceY) to (targetX, targetY).
@@ -90,44 +90,40 @@ interface LayoutLink {
  * - Renders the result as edges and vertices
  * - Supports basic zoom/pan and hover/click events
  */
-const CayleyTree: React.FC = () => {
-  // States for highlighting (hover) and shining (click).
-  const [highlightedId, setHighlightedId] = useState<string | null>(null);
-  const [shinedId, setShinedId] = useState<string | null>(null);
 
-  // Arrays of nodes and links after layout is computed.
+interface CayleyTreeProps {
+  path: string[]; // Array of coordinate objects
+}
+
+const CayleyTree: React.FC<CayleyTreeProps> = ({
+  path, // Array of node IDs to highlight
+}: {
+  path: string[];
+}) => {
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+
   const [nodes, setNodes] = useState<LayoutNode[]>([]);
   const [links, setLinks] = useState<LayoutLink[]>([]);
 
-  // Refs for the <svg> and <g> elements, used by D3 zoom.
   const svgRef = useRef<SVGSVGElement | null>(null);
   const gRef = useRef<SVGGElement | null>(null);
 
   useEffect(() => {
-    // 1) Build hierarchical Cayley tree data up to depth=4.
-    const rootData = buildCayleyTreeData(0, 0, 0, 4, null, 100);
-
-    // 2) Create a d3 hierarchy from the nested data.
+    const rootData = buildCayleyTreeData(0, 0, 0, 6, null, 100);
     const root = d3.hierarchy<TreeNode>(rootData);
 
-    // 3) Determine the screen dimensions and a suitable radius.
-    const screenW = window.innerWidth;
-    const screenH = window.innerHeight;
+    const screenW = 1024;
+    const screenH = 768;
     const outerRadius = Math.min(screenW, screenH) / 2;
 
-    // 4) Create a radial cluster layout:
-    //    - x in [0..2π] for the angle
-    //    - y in [0..outerRadius] for the radius
     const clusterLayout = d3
       .cluster<TreeNode>()
       .size([2 * Math.PI, outerRadius - 50]);
 
-    // 5) Apply the cluster layout to compute polar coordinates (d.x, d.y).
     clusterLayout(root);
 
-    // 6) Convert each node from polar to Cartesian.
     const allNodes: LayoutNode[] = root.descendants().map((d) => {
-      const angle = d.x - Math.PI / 2; // shift so 0 angle is "up"
+      const angle = d.x - Math.PI / 2;
       const r = d.y;
       const xPos = r * Math.cos(angle);
       const yPos = r * Math.sin(angle);
@@ -139,7 +135,6 @@ const CayleyTree: React.FC = () => {
       };
     });
 
-    // 7) Build edges from parent to child in Cartesian coordinates.
     const allLinks: LayoutLink[] = [];
     root.descendants().forEach((d) => {
       if (d.parent) {
@@ -166,7 +161,6 @@ const CayleyTree: React.FC = () => {
     setNodes(allNodes);
     setLinks(allLinks);
 
-    // 8) Set up D3 zoom behavior.
     const zoomBehavior = d3
       .zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.1, 10])
@@ -174,25 +168,14 @@ const CayleyTree: React.FC = () => {
         d3.select(gRef.current).attr("transform", event.transform.toString());
       });
 
-    // 9) Attach zoom to the SVG.
     const svgSelection = d3.select(svgRef.current);
     svgSelection.call(zoomBehavior as any);
 
-    // 10) Translate the <g> so that (0,0) is centered on the screen.
-    d3.select(gRef.current)
-      .attr("transform", `translate(${screenW / 2}, ${screenH / 2})`);
-
+    d3.select(gRef.current).attr(
+      "transform",
+      `translate(${screenW / 2}, ${screenH / 2})`
+    );
   }, []);
-
-  // Hover handler (triggered by Edge/Vertex on mouse enter/leave).
-  const handleHover = (id: string, hovered: boolean) => {
-    setHighlightedId(hovered ? id : null);
-  };
-
-  // Click handler (triggered by Vertex on click).
-  const handleClick = (id: string) => {
-    setShinedId((prev) => (prev === id ? null : id));
-  };
 
   return (
     <div
@@ -210,7 +193,6 @@ const CayleyTree: React.FC = () => {
         height="100%"
         style={{ border: "none", display: "block" }}
       >
-        {/* A <g> that is manipulated by zoom/pan and holds all edges/nodes */}
         <g ref={gRef}>
           {/* Render edges */}
           {links.map((lk) => (
@@ -221,7 +203,7 @@ const CayleyTree: React.FC = () => {
               targetX={lk.targetX}
               targetY={lk.targetY}
               isHighlighted={highlightedId === lk.id}
-              onHover={(hover) => handleHover(lk.id, hover)}
+              onHover={(hover) => setHighlightedId(hover ? lk.id : null)}
             />
           ))}
 
@@ -232,10 +214,9 @@ const CayleyTree: React.FC = () => {
               id={nd.id}
               x={nd.x}
               y={nd.y}
-              isHighlighted={highlightedId === nd.id}
-              isShined={shinedId === nd.id}
-              onHover={handleHover}
-              onClick={handleClick}
+              onHover={(id, hovered) => setHighlightedId(hovered ? id : null)}
+              onClick={() => setHighlightedId(null)} // You can add specific behavior for click
+              isActive={path.includes(nd.id)} // Change color based on path
             />
           ))}
         </g>
