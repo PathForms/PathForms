@@ -5,7 +5,10 @@ interface EdgeProps {
   sourceY: number;
   targetX: number;
   targetY: number;
+  source: string;
+  target: string;
   isHighlighted?: boolean;
+  isActive?: boolean;
   onHover?: (hovered: boolean) => void;
 }
 
@@ -15,14 +18,26 @@ interface EdgeProps {
  * It can highlight on hover if needed.
  */
 const Edge: React.FC<EdgeProps> = ({
+  source,
+  target,
   sourceX,
   sourceY,
   targetX,
   targetY,
   isHighlighted = false,
+  isActive,
   onHover,
 }) => {
-  const strokeColor = isHighlighted ? "orange" : "#999";
+  let strokeColor = "white";
+  const [x, y] = source.split(",").map(Number);
+  const [x2, y2] = target.split(",").map(Number);
+  //use source and target to maintain colors;
+  if ((x == x2 && y < y2) || (y == y2 && x > x2)) {
+    strokeColor = "yellow";
+  }
+  if (isActive) {
+    strokeColor = "red";
+  }
 
   return (
     <line

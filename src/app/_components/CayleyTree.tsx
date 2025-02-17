@@ -78,6 +78,8 @@ interface LayoutNode {
  */
 interface LayoutLink {
   id: string;
+  source: string;
+  target: string;
   sourceX: number;
   sourceY: number;
   targetX: number;
@@ -93,13 +95,16 @@ interface LayoutLink {
  */
 
 interface CayleyTreeProps {
-  path: string[]; // Array of coordinate objects
+  path: string[]; // Array of nodes
+  edgePath: string[]; //array of edges
 }
 
 const CayleyTree: React.FC<CayleyTreeProps> = ({
   path, // Array of node IDs to highlight
+  edgePath,
 }: {
   path: string[];
+  edgePath: string[];
 }) => {
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
 
@@ -150,7 +155,9 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
         const cy = cR * Math.sin(cAngle);
 
         allLinks.push({
-          id: `${d.parent.data.name}->${d.data.name}`,
+          id: `${d.parent.data.name}->${d.data.name}`, //unique id for every edge; This makes things easy. Good.
+          source: d.parent.data.name,
+          target: d.data.name,
           sourceX: px,
           sourceY: py,
           targetX: cx,
@@ -161,6 +168,8 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
 
     setNodes(allNodes);
     setLinks(allLinks);
+
+    console.log(allLinks);
 
     const zoomBehavior = d3
       .zoom<SVGSVGElement, unknown>()
@@ -199,10 +208,13 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
           {links.map((lk) => (
             <Edge
               key={lk.id}
+              source={lk.source}
+              target={lk.target}
               sourceX={lk.sourceX}
               sourceY={lk.sourceY}
               targetX={lk.targetX}
               targetY={lk.targetY}
+              isActive={edgePath.includes(lk.id)}
             />
           ))}
 

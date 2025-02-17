@@ -8,11 +8,13 @@ type Direction = "up" | "down" | "left" | "right";
 
 const Interface = () => {
   // Initialize the starting coordinate
-  const [path, setPath] = useState<string[]>(["0,0"]);
+  const [path, setPath] = useState<string[]>(["0,0"]); // Node path
   const [moves, setMoves] = useState<Direction[]>([]); // Persist moves across renders
+  const [edges, setEdges] = useState<string[]>([]); // Edge path, start with an empty list;
 
   const handleMove = (direction: Direction) => {
-    if (path.length === 0) return;
+    ////////////////// Node /////////////////
+    if (path.length === 0) return; // ? Useful ?
 
     const current_Node = path[path.length - 1];
 
@@ -31,6 +33,7 @@ const Interface = () => {
       moves.length > 0 &&
       moves[moves.length - 1] === oppositeMoves[direction]
     ) {
+      setEdges((edges) => edges.slice(0, -1));
       setMoves((prevMoves) => prevMoves.slice(0, -1)); // Remove last move
       setPath((prevPath) => prevPath.slice(0, -1)); // Remove last position
       return;
@@ -61,12 +64,24 @@ const Interface = () => {
     console.log(next_Node);
     console.log(moves.length);
     console.log(moves[moves.length - 1]);
+
+    /////////////////Edge///////////////////
+    //x,y: start point
+    //x2,y2: end point
+    const x2 = next_Node_raw[0];
+    const y2 = next_Node_raw[1];
+    console.log(y2);
+    //make id
+    const edge_id = `${x},${y}->${x2},${y2}`;
+    console.log(edge_id);
+    //push into edge
+    setEdges((edges) => [...edges, edge_id]);
   };
 
   return (
     <div>
       <ButtonBar onMove={handleMove} />
-      <CayleyTree path={path} />
+      <CayleyTree path={path} edgePath={edges} />
     </div>
   );
 };
