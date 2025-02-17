@@ -24,9 +24,6 @@ const Edge: React.FC<EdgeProps> = ({
 }) => {
   const strokeColor = isHighlighted ? "orange" : "#999";
 
-  const handleMouseEnter = () => onHover?.(true);
-  const handleMouseLeave = () => onHover?.(false);
-
   return (
     <line
       x1={sourceX}
@@ -35,8 +32,6 @@ const Edge: React.FC<EdgeProps> = ({
       y2={targetY}
       stroke={strokeColor}
       strokeWidth={1}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
     />
   );
 };
