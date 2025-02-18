@@ -106,8 +106,6 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
   path: string[];
   edgePath: string[];
 }) => {
-  const [highlightedId, setHighlightedId] = useState<string | null>(null);
-
   const [nodes, setNodes] = useState<LayoutNode[]>([]);
   const [links, setLinks] = useState<LayoutLink[]>([]);
 
@@ -225,8 +223,6 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
               id={nd.id}
               x={nd.x}
               y={nd.y}
-              onHover={(id, hovered) => setHighlightedId(hovered ? id : null)}
-              onClick={() => setHighlightedId(null)} // You can add specific behavior for click
               isActive={path.includes(nd.id)} // Change color based on path
             />
           ))}
