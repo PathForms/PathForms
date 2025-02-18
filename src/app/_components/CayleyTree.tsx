@@ -3,7 +3,6 @@ import React, { useEffect, useState, useRef } from "react";
 import * as d3 from "d3";
 import Edge from "./Edge";
 import Vertex from "./Vertex";
-import ButtonBar from "./ButtonBar";
 
 /**
  * Directions for the 4-way expansion in a Cayley tree.

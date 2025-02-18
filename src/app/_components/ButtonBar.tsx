@@ -12,6 +12,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({ onMove }) => {
     // You can add additional logic here if needed
     onMove(direction);
   };
+
   return (
     <div
       style={{
@@ -22,10 +23,10 @@ const ButtonBar: React.FC<ButtonBarProps> = ({ onMove }) => {
         zIndex: 10,
       }}
     >
-      <button onClick={() => onMove("up")}>A</button>
-      <button onClick={() => onMove("down")}>A'</button>
-      <button onClick={() => onMove("left")}>B'</button>
-      <button onClick={() => onMove("right")}>B</button>
+      <button onClick={() => handleClick("up")}>A</button>
+      <button onClick={() => handleClick("down")}>A'</button>
+      <button onClick={() => handleClick("left")}>B'</button>
+      <button onClick={() => handleClick("right")}>B</button>
     </div>
   );
 };
