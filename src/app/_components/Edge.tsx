@@ -7,9 +7,7 @@ interface EdgeProps {
   targetY: number;
   source: string;
   target: string;
-  isHighlighted?: boolean;
   isActive?: boolean;
-  onHover?: (hovered: boolean) => void;
 }
 
 /**
@@ -24,9 +22,8 @@ const Edge: React.FC<EdgeProps> = ({
   sourceY,
   targetX,
   targetY,
-  isHighlighted = false,
+
   isActive,
-  onHover,
 }) => {
   let strokeColor = "white";
   const [x, y] = source.split(",").map(Number);

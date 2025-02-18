@@ -7,8 +7,6 @@ interface VertexProps {
   isHighlighted?: boolean;
   isShined?: boolean;
   isActive?: boolean;
-  onHover?: (id: string, hovered: boolean) => void;
-  onClick?: (id: string) => void;
 }
 
 /**
@@ -23,8 +21,6 @@ const Vertex: React.FC<VertexProps> = ({
   isHighlighted = false,
   isShined = false,
   isActive,
-  onHover,
-  onClick,
 }) => {
   const [hovered, setHovered] = useState(false);
 
@@ -40,15 +36,6 @@ const Vertex: React.FC<VertexProps> = ({
     fillColor = "red";
   }
 
-  const handleMouseEnter = () => {
-    setHovered(true);
-    onHover?.(id, true);
-  };
-  const handleMouseLeave = () => {
-    setHovered(false);
-    onHover?.(id, false);
-  };
-
   return (
     <circle
       cx={x}
@@ -56,9 +43,6 @@ const Vertex: React.FC<VertexProps> = ({
       r={2}
       fill={fillColor}
       style={{ cursor: "pointer", transition: "fill 0.3s" }}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      onClick={() => onClick?.(id)}
     />
   );
 };
