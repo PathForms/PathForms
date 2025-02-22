@@ -3,7 +3,6 @@ import React, { useEffect, useState, useRef } from "react";
 import * as d3 from "d3";
 import Edge from "./Edge";
 import Vertex from "./Vertex";
-import ButtonBar from "./ButtonBar";
 
 /**
  * Directions for the 4-way expansion in a Cayley tree.
@@ -11,8 +10,8 @@ import ButtonBar from "./ButtonBar";
  */
 const directions = {
   up: { dx: 0, dy: 1, opposite: "down" },
-  down: { dx: 0, dy: -1, opposite: "up" },
-  left: { dx: -1, dy: 0, opposite: "right" },
+  down: { dx: -1, dy: 0, opposite: "up" },
+  left: { dx: 0, dy: -1, opposite: "right" },
   right: { dx: 1, dy: 0, opposite: "left" },
 };
 type DirKey = keyof typeof directions;
@@ -127,7 +126,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
     clusterLayout(root);
 
     const allNodes: LayoutNode[] = root.descendants().map((d) => {
-      const angle = d.x - Math.PI / 2;
+      const angle = d.x - Math.PI / 4;
       const r = d.y;
       const xPos = r * Math.cos(angle);
       const yPos = r * Math.sin(angle);
@@ -142,12 +141,12 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
     const allLinks: LayoutLink[] = [];
     root.descendants().forEach((d) => {
       if (d.parent) {
-        const pAngle = d.parent.x - Math.PI / 2;
+        const pAngle = d.parent.x - Math.PI / 4;
         const pR = d.parent.y;
         const px = pR * Math.cos(pAngle);
         const py = pR * Math.sin(pAngle);
 
-        const cAngle = d.x - Math.PI / 2;
+        const cAngle = d.x - Math.PI / 4;
         const cR = d.y;
         const cx = cR * Math.cos(cAngle);
         const cy = cR * Math.sin(cAngle);
