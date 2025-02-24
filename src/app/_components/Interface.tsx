@@ -214,7 +214,7 @@ const Interface = () => {
   };
   // clear function
   const clear = () => {
-    setNodes([]);
+    setNodes(["0,0"]);
     setEdges([]);
     setEdgePaths([]);
     setNodePaths([]);

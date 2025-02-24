@@ -29,8 +29,9 @@ const Edge: React.FC<EdgeProps> = ({
   let strokeWidth = 1;
   const [x, y] = source.split(",").map(Number);
   const [x2, y2] = target.split(",").map(Number);
+
   //use source and target to maintain colors;
-  if ((x == x2 && y < y2) || (y == y2 && x > x2)) {
+  if ((x == x2 && y <= y2) || (x == x2 && y >= y2)) {
     strokeColor = "rgba(251, 251, 0, 0.49)";
   }
   if (isActive) {
