@@ -21,12 +21,14 @@ const ButtonBar: React.FC<ButtonBarProps> = ({ onMove }) => {
         left: "50%",
         transform: "translateX(-50%)",
         zIndex: 10,
+        display: "flex",
+        gap: "8px",
       }}
     >
       <button onClick={() => handleClick("up")}>A</button>
       <button onClick={() => handleClick("down")}>A'</button>
-      <button onClick={() => handleClick("left")}>B'</button>
       <button onClick={() => handleClick("right")}>B</button>
+      <button onClick={() => handleClick("left")}>B'</button>
     </div>
   );
 };

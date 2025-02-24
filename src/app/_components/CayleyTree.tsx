@@ -10,8 +10,8 @@ import Vertex from "./Vertex";
  */
 const directions = {
   up: { dx: 0, dy: 1, opposite: "down" },
-  down: { dx: -1, dy: 0, opposite: "up" },
-  left: { dx: 0, dy: -1, opposite: "right" },
+  down: { dx: 0, dy: -1, opposite: "up" },
+  left: { dx: -1, dy: 0, opposite: "right" },
   right: { dx: 1, dy: 0, opposite: "left" },
 };
 type DirKey = keyof typeof directions;
@@ -112,13 +112,14 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
   const gRef = useRef<SVGGElement | null>(null);
 
   useEffect(() => {
-    const rootData = buildCayleyTreeData(0, 0, 0, 8, null, 100);
+    const rootData = buildCayleyTreeData(0, 0, 0, 7, null, 100);
     const root = d3.hierarchy<TreeNode>(rootData);
 
     const screenW = 1024;
     const screenH = 768;
     const outerRadius = Math.min(screenW, screenH) / 2;
 
+    // Create an elliptical cluster layout
     const clusterLayout = d3
       .cluster<TreeNode>()
       .size([2 * Math.PI, outerRadius - 50]);
@@ -127,9 +128,11 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
 
     const allNodes: LayoutNode[] = root.descendants().map((d) => {
       const angle = d.x - Math.PI / 4;
-      const r = d.y;
-      const xPos = r * Math.cos(angle);
-      const yPos = r * Math.sin(angle);
+      // Apply different scaling to x and y to create an ellipse shape
+      const rX = d.y * (1 + 0.2 * d.depth); // X scaling factor
+      const rY = d.y * (1 + 0.1 * d.depth); // Y scaling factor
+      const xPos = rX * Math.cos(angle); // Apply rX to the x position
+      const yPos = rY * Math.sin(angle); // Apply rY to the y position
 
       return {
         id: d.data.name,
@@ -141,24 +144,27 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
     const allLinks: LayoutLink[] = [];
     root.descendants().forEach((d) => {
       if (d.parent) {
-        const pAngle = d.parent.x - Math.PI / 4;
-        const pR = d.parent.y;
-        const px = pR * Math.cos(pAngle);
-        const py = pR * Math.sin(pAngle);
+        const getPosition = (node: d3.HierarchyPointNode<TreeNode>) => {
+          const angle = node.x - Math.PI / 4;
+          const rX = node.y * (1 + 0.2 * node.depth); // Elliptical scaling for X
+          const rY = node.y * (1 + 0.1 * node.depth); // Elliptical scaling for Y
+          return {
+            x: rX * Math.cos(angle), // Apply rX scaling
+            y: rY * Math.sin(angle), // Apply rY scaling
+          };
+        };
 
-        const cAngle = d.x - Math.PI / 4;
-        const cR = d.y;
-        const cx = cR * Math.cos(cAngle);
-        const cy = cR * Math.sin(cAngle);
+        const parentPos = getPosition(d.parent);
+        const childPos = getPosition(d);
 
         allLinks.push({
-          id: `${d.parent.data.name}->${d.data.name}`, //unique id for every edge; This makes things easy. Good.
+          id: `${d.parent.data.name}->${d.data.name}`,
           source: d.parent.data.name,
           target: d.data.name,
-          sourceX: px,
-          sourceY: py,
-          targetX: cx,
-          targetY: cy,
+          sourceX: parentPos.x,
+          sourceY: parentPos.y,
+          targetX: childPos.x,
+          targetY: childPos.y,
         });
       }
     });
@@ -166,8 +172,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
     setNodes(allNodes);
     setLinks(allLinks);
 
-    console.log(allLinks);
-
+    // Set up zoom behavior
     const zoomBehavior = d3
       .zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.1, 10])

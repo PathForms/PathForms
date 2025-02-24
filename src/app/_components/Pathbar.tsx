@@ -4,7 +4,9 @@ import React, { useEffect, useState, useRef } from "react";
 interface PathBarProps {
   store: () => void;
   demonstratePath: (index: number) => void;
-  concatennate: (paths: string[][]) => void;
+  concatennate: () => void;
+  reset: () => void;
+  clear: () => void;
   nodePath: string[][];
   edgePath: string[][];
 }
@@ -13,6 +15,8 @@ const Pathbar: React.FC<PathBarProps> = ({
   store,
   demonstratePath,
   concatennate,
+  reset,
+  clear,
   nodePath,
   edgePath,
 }) => {
@@ -22,8 +26,9 @@ const Pathbar: React.FC<PathBarProps> = ({
     <div
       style={{
         position: "absolute",
-        bottom: 5,
-        left: "20%",
+        top: 5,
+        left: "8%",
+        color: "red",
         transform: "translateX(-50%)",
         zIndex: 10,
       }}
@@ -67,10 +72,14 @@ const Pathbar: React.FC<PathBarProps> = ({
         </tbody>
       </table>
 
-      <button onClick={() => store()}>Store Current Path</button>
-      <button onClick={() => demonstratePath(0)}>Demonstrate Path 1</button>
-      <button onClick={() => demonstratePath(1)}>Demonstrate Path 2</button>
-      {/* <button onClick={() => concatennate()}>Concatenate Stored Paths</button> */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+        <button onClick={() => store()}>Store Current Path</button>
+        <button onClick={() => reset()}>Reset Current Path</button>
+        <button onClick={() => demonstratePath(0)}>Show Path 1</button>
+        <button onClick={() => demonstratePath(1)}>Show Path 2</button>
+        <button onClick={() => clear()}>Clear Stored Data</button>
+        <button onClick={() => concatennate()}>Concatenate Stored Paths</button>
+      </div>
     </div>
   );
 };
