@@ -7,6 +7,13 @@ import Pathbar from "./Pathbar";
 
 type Direction = "up" | "down" | "left" | "right";
 
+const oppositeMoves: Record<Direction, Direction> = {
+  up: "down",
+  down: "up",
+  left: "right",
+  right: "left",
+};
+
 const Interface = () => {
   // Initialize the starting coordinate
 
@@ -27,14 +34,6 @@ const Interface = () => {
     const current_Node = nodes[nodes.length - 1];
     const [x, y] = current_Node.split(",").map(Number);
     let next_Node_raw: [number, number] | null = null;
-
-    // Map of opposite moves
-    const oppositeMoves: Record<Direction, Direction> = {
-      up: "down",
-      down: "up",
-      left: "right",
-      right: "left",
-    };
 
     if (
       moves.length > 0 &&
@@ -118,16 +117,9 @@ const Interface = () => {
     setMoves([...moveRecords[index]]);
   };
 
-  // function for concatennate button in Pathbar
+  // function for concatenate button in Pathbar
   // Concatenate two paths and demonstrate the result onto caylaytree
-  const concatennate = () => {
-    // Map of opposite moves
-    const oppositeMoves: Record<Direction, Direction> = {
-      up: "down",
-      down: "up",
-      left: "right",
-      right: "left",
-    };
+  const concatenate = () => {
     // Combine the first two data paths.
     // Future implementation: Let the player choose which two paths to concatenate.
     // up: A; right: B;
@@ -165,7 +157,7 @@ const Interface = () => {
       }
     }
 
-    //after this, get the final concatennated graph;
+    //after this, get the final concatenated graph;
     new_moves = path_1_moves;
     new_moves.push(...path_2_moves);
 
@@ -220,12 +212,66 @@ const Interface = () => {
     setEdges([]);
     setMoves([]);
   };
+  // clear function
   const clear = () => {
     setNodes([]);
     setEdges([]);
     setEdgePaths([]);
     setNodePaths([]);
     setMoveRecords([]);
+  };
+
+  // Invert paths
+  const Invert = (index: number) => {
+    // Get current path moves
+    if (moveRecords[index]) {
+      let curr_moves = [...moveRecords[index]];
+
+      let inverted_nodes: string[] = ["0,0"];
+      let inverted_edges: string[] = [];
+      let inverted_moves: Direction[] = [];
+
+      for (let i = curr_moves.length - 1; i >= 0; i--) {
+        let oppositeMove = oppositeMoves[curr_moves[i]];
+
+        inverted_moves.push(oppositeMove);
+
+        let prev_node = inverted_nodes[inverted_nodes.length - 1];
+        const [x, y] = prev_node.split(",").map(Number);
+
+        let next_Node_raw: [number, number] | null = null;
+
+        switch (oppositeMove) {
+          case "up":
+            next_Node_raw = [x, y + 100.0 / 2 ** (inverted_nodes.length - 1)];
+            break;
+          case "down":
+            next_Node_raw = [x, y - 100.0 / 2 ** (inverted_nodes.length - 1)];
+            break;
+          case "left":
+            next_Node_raw = [x - 100.0 / 2 ** (inverted_nodes.length - 1), y];
+            break;
+          case "right":
+            next_Node_raw = [x + 100.0 / 2 ** (inverted_nodes.length - 1), y];
+            break;
+          default:
+            return;
+        }
+
+        const next_Node = `${next_Node_raw[0]},${next_Node_raw[1]}`;
+        inverted_nodes.push(next_Node);
+
+        const [x2, y2] = next_Node_raw;
+        const edge_id = `${x},${y}->${x2},${y2}`;
+        inverted_edges.push(edge_id);
+      }
+
+      setNodes(inverted_nodes);
+      setEdges(inverted_edges);
+      setMoves(inverted_moves);
+    } else {
+      console.error(`moveRecords[${index}] is undefined or does not exist.`);
+    }
   };
 
   return (
@@ -235,11 +281,13 @@ const Interface = () => {
       <Pathbar
         nodePath={nodePaths}
         edgePath={edgePaths}
+        movePath={moveRecords}
         reset={reset}
         clear={clear}
         store={Store}
         demonstratePath={demonstratePath}
-        concatennate={concatennate}
+        concatenate={concatenate}
+        invert={Invert}
       />
     </div>
   );
