@@ -98,10 +98,10 @@ const Interface = () => {
     setNodePaths((prev) => [...prev, nodes]);
     setEdgePaths((prev) => [...prev, edges]);
     setMoveRecords((prev) => [...prev, moves]);
-    //empty the paths
-    setNodes(["0,0"]);
-    setEdges([]);
-    setMoves([]);
+    // //empty the paths
+    // setNodes(["0,0"]);
+    // setEdges([]);
+    // setMoves([]);
   };
 
   ///// Debug Session for moveRecords /////
@@ -207,12 +207,14 @@ const Interface = () => {
   };
 
   // Reset function
+  // Reset only the unstored user input
   const reset = () => {
     setNodes(["0,0"]);
     setEdges([]);
     setMoves([]);
   };
   // clear function
+  // clear all data stored
   const clear = () => {
     setNodes(["0,0"]);
     setEdges([]);

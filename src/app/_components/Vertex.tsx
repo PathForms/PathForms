@@ -27,7 +27,7 @@ const Vertex: React.FC<VertexProps> = ({
   //color logic
   let fillColor = "rgba(0, 159, 251, 0.49)";
   if (isActive) {
-    fillColor = "rgb(251, 0, 0)";
+    fillColor = "rgb(251, 251, 0)";
   }
 
   return (
