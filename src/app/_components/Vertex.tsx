@@ -25,9 +25,9 @@ const Vertex: React.FC<VertexProps> = ({
   const [hovered, setHovered] = useState(false);
 
   //color logic
-  let fillColor = "rgba(0, 159, 251, 0.49)";
+  let fillColor = "rgba(0, 159, 251, 0.25)";
   if (isActive) {
-    fillColor = "rgb(251, 251, 0)";
+    fillColor = "rgba(15, 114, 163, 0.54)";
   }
 
   return (

@@ -46,12 +46,12 @@ const ButtonBar: React.FC<ButtonBarProps> = ({ onMove }) => {
           onClick={() => handleClick(dir)}
         >
           {dir === "up"
-            ? "A"
+            ? "a"
             : dir === "down"
-            ? "A'"
+            ? "a-"
             : dir === "right"
-            ? "B"
-            : "B'"}
+            ? "b"
+            : "b-"}
         </button>
       ))}
     </div>

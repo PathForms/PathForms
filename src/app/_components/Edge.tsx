@@ -29,16 +29,16 @@ const Edge: React.FC<EdgeProps> = ({
   const [x2, y2] = target.split(",").map(Number);
 
   //use source and target to maintain colors;
-  let strokeColor = "rgba(233, 136, 125, 0.49)";
+  let strokeColor = "rgba(255, 30, 0, 0.2)";
   let strokeWidth = 1;
   if ((x == x2 && y <= y2) || (x == x2 && y >= y2)) {
-    strokeColor = "rgba(74, 127, 243, 0.49)";
+    strokeColor = "rgba(74, 237, 243, 0.2)";
   }
 
   if (isActive) {
     strokeColor = "rgb(251, 0, 0)";
     if ((x == x2 && y <= y2) || (x == x2 && y >= y2)) {
-      strokeColor = "rgb(0, 255, 213)";
+      strokeColor = "rgb(0, 247, 255)";
     }
 
     strokeWidth = 3;

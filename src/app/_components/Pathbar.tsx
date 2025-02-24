@@ -1,6 +1,13 @@
 "use client";
 import React, { useEffect, useState, useRef } from "react";
 
+type Direction = "up" | "down" | "left" | "right";
+const translation: Record<Direction, string> = {
+  up: "a",
+  down: "a-",
+  right: "b",
+  left: "b-",
+};
 interface PathBarProps {
   store: () => void;
   demonstratePath: (index: number) => void;
@@ -35,7 +42,7 @@ const Pathbar: React.FC<PathBarProps> = ({
         color: "rgb(13, 255, 0)",
         zIndex: 10,
         width: "auto",
-        maxWidth: "300px", // Limits width to avoid overflow
+        maxWidth: "250px", // Limits width to avoid overflow
         backgroundColor: "rgba(0, 0, 0, 0.5)", // Optional subtle background for visibility
         padding: "10px",
         borderRadius: "8px",
@@ -71,10 +78,11 @@ const Pathbar: React.FC<PathBarProps> = ({
                 <td
                   colSpan={movePath[0]?.length || 1}
                   style={{
-                    textAlign: "center",
-                    minWidth: "50px",
-                    maxWidth: "50px",
-                    width: "50px",
+                    textAlign: "left",
+
+                    minWidth: "5px",
+                    maxWidth: "5px",
+                    width: "5px",
                   }}
                 >
                   No Data
@@ -87,10 +95,10 @@ const Pathbar: React.FC<PathBarProps> = ({
                     <td
                       colSpan={movePath[0]?.length || 1}
                       style={{
-                        textAlign: "center",
-                        minWidth: "50px",
-                        maxWidth: "50px",
-                        width: "50px",
+                        textAlign: "left",
+                        minWidth: "5px",
+                        maxWidth: "5px",
+                        width: "5px",
                       }}
                     >
                       No Data
@@ -100,17 +108,17 @@ const Pathbar: React.FC<PathBarProps> = ({
                       <td
                         key={colIndex}
                         style={{
-                          padding: "4px",
-                          textAlign: "center",
-                          minWidth: "50px",
-                          maxWidth: "50px",
-                          width: "50px",
+                          padding: "2px",
+                          textAlign: "left",
+                          minWidth: "5px",
+                          maxWidth: "5px",
+                          width: "5px",
                           overflow: "hidden",
                           whiteSpace: "nowrap",
                           textOverflow: "ellipsis", // Truncate long text
                         }}
                       >
-                        {node}
+                        {translation[node as keyof typeof translation]}
                       </td>
                     ))
                   )}
