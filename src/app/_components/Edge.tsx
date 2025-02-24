@@ -25,7 +25,7 @@ const Edge: React.FC<EdgeProps> = ({
 
   isActive,
 }) => {
-  let strokeColor = "white";
+  let strokeColor = "rgba(255, 255, 255, 0.49)";
   let strokeWidth = 1;
   const [x, y] = source.split(",").map(Number);
   const [x2, y2] = target.split(",").map(Number);
