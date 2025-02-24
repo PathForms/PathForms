@@ -1,6 +1,14 @@
 # PathForms
 
-run:
+To sync with latest remote (Pathforms/PathForms):
+
+```bash
+git fetch upstream
+git merge upstream/haochen
+git push
+```
+
+Run:
 
 ensure that npm or pnpm is installed
 
