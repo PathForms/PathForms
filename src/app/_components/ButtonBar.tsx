@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import "./components.module.css";
 
 type Direction = "up" | "down" | "left" | "right";
 

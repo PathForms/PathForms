@@ -18,16 +18,13 @@ const Vertex: React.FC<VertexProps> = ({
   id,
   x,
   y,
-  isHighlighted = false,
-  isShined = false,
+
   isActive,
 }) => {
-  const [hovered, setHovered] = useState(false);
-
   //color logic
   let fillColor = "rgba(0, 159, 251, 0.25)";
   if (isActive) {
-    fillColor = "rgba(15, 114, 163, 0.54)";
+    fillColor = "rgba(255, 255, 255, 0.85)";
   }
 
   return (

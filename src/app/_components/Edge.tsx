@@ -36,9 +36,9 @@ const Edge: React.FC<EdgeProps> = ({
   }
 
   if (isActive) {
-    strokeColor = "rgb(251, 0, 0)";
+    strokeColor = "rgba(251, 0, 0, 1)";
     if ((x == x2 && y <= y2) || (x == x2 && y >= y2)) {
-      strokeColor = "rgb(0, 247, 255)";
+      strokeColor = "rgba(0, 247, 255, 1)";
     }
 
     strokeWidth = 3;
