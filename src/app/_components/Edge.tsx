@@ -7,9 +7,7 @@ interface EdgeProps {
   targetY: number;
   source: string;
   target: string;
-  isHighlighted?: boolean;
   isActive?: boolean;
-  onHover?: (hovered: boolean) => void;
 }
 
 /**
@@ -24,19 +22,26 @@ const Edge: React.FC<EdgeProps> = ({
   sourceY,
   targetX,
   targetY,
-  isHighlighted = false,
+
   isActive,
-  onHover,
 }) => {
-  let strokeColor = "white";
   const [x, y] = source.split(",").map(Number);
   const [x2, y2] = target.split(",").map(Number);
+
   //use source and target to maintain colors;
-  if ((x == x2 && y < y2) || (y == y2 && x > x2)) {
-    strokeColor = "yellow";
+  let strokeColor = "rgba(255, 30, 0, 0.2)";
+  let strokeWidth = 1;
+  if ((x == x2 && y <= y2) || (x == x2 && y >= y2)) {
+    strokeColor = "rgba(74, 237, 243, 0.2)";
   }
+
   if (isActive) {
-    strokeColor = "red";
+    strokeColor = "rgb(251, 0, 0)";
+    if ((x == x2 && y <= y2) || (x == x2 && y >= y2)) {
+      strokeColor = "rgb(0, 247, 255)";
+    }
+
+    strokeWidth = 3;
   }
 
   return (
@@ -46,7 +51,7 @@ const Edge: React.FC<EdgeProps> = ({
       x2={targetX}
       y2={targetY}
       stroke={strokeColor}
-      strokeWidth={1}
+      strokeWidth={strokeWidth}
     />
   );
 };
