@@ -4,31 +4,19 @@ import * as d3 from "d3";
 import Edge from "./Edge";
 import Vertex from "./Vertex";
 
-/**
- * Directions for the 4-way expansion in a Cayley tree.
- * We skip the opposite direction to avoid immediate backtracking.
- */
+// Directions for the 4-way expansion in a Cayley tree.
 const directions = {
   up: { dx: 0, dy: 1, opposite: "down" },
+  right: { dx: 1, dy: 0, opposite: "left" },
   down: { dx: 0, dy: -1, opposite: "up" },
   left: { dx: -1, dy: 0, opposite: "right" },
-  right: { dx: 1, dy: 0, opposite: "left" },
 };
 type DirKey = keyof typeof directions;
 
-/**
- * TreeNode interface for hierarchical data used by d3.hierarchy.
- */
 interface TreeNode {
   name: string;
   children?: TreeNode[];
 }
-
-/**
- * Recursively builds a nested data structure for a Cayley tree:
- * - Each node is { name: "x,y", children: [...] }.
- * - Skips the opposite direction to prevent backtracking.
- */
 
 function buildCayleyTreeData(
   x: number,
@@ -49,10 +37,12 @@ function buildCayleyTreeData(
     DirKey,
     { dx: number; dy: number; opposite: string }
   ][]) {
+    console.log(dirName, info);
     if (fromDir && info.opposite === fromDir) continue;
 
     const nx = x + info.dx * step;
     const ny = y + info.dy * step;
+    console.log(nx, ny);
 
     node.children!.push(
       buildCayleyTreeData(nx, ny, depth + 1, maxDepth, dirName, step * 0.5)
@@ -62,19 +52,12 @@ function buildCayleyTreeData(
   return node;
 }
 
-/**
- * LayoutNode holds the final Cartesian position (x, y) after
- * converting from polar coordinates (angle, radius).
- */
 interface LayoutNode {
   id: string;
   x: number;
   y: number;
 }
-/**
- * LayoutLink holds the Cartesian coordinates for an edge
- * from (sourceX, sourceY) to (targetX, targetY).
- */
+
 interface LayoutLink {
   id: string;
   source: string;
@@ -85,25 +68,19 @@ interface LayoutLink {
   targetY: number;
 }
 
-/**
- * CayleyTree component:
- * - Builds a hierarchical Cayley tree
- * - Uses d3.cluster for a radial layout
- * - Renders the result as edges and vertices
- * - Supports basic zoom/pan and hover/click events
- */
-
+// Extend the props interface to include edgeThickness and vertexSize.
 interface CayleyTreeProps {
-  path: string[]; // Array of nodes
-  edgePath: string[]; //array of edges
+  path: string[]; // Array of node IDs to highlight
+  edgePath: string[]; // Array of edge IDs to highlight
+  edgeThickness: number;
+  vertexSize: number;
 }
 
 const CayleyTree: React.FC<CayleyTreeProps> = ({
-  path, // Array of node IDs to highlight
+  path,
   edgePath,
-}: {
-  path: string[];
-  edgePath: string[];
+  edgeThickness,
+  vertexSize,
 }) => {
   const [nodes, setNodes] = useState<LayoutNode[]>([]);
   const [links, setLinks] = useState<LayoutLink[]>([]);
@@ -112,7 +89,8 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
   const gRef = useRef<SVGGElement | null>(null);
 
   useEffect(() => {
-    const rootData = buildCayleyTreeData(0, 0, 0, 7, null, 100);
+    const rootData = buildCayleyTreeData(0, 0, 0, 5, null, 100);
+    console.log(rootData);
     const root = d3.hierarchy<TreeNode>(rootData);
 
     const screenW = 1024;
@@ -128,16 +106,13 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
 
     const allNodes: LayoutNode[] = root.descendants().map((d) => {
       const angle = d.x - Math.PI / 4;
-      // Apply different scaling to x and y to create an ellipse shape
-      const rX = d.y * (1 + 0.2 * d.depth); // X scaling factor
-      const rY = d.y * (1 + 0.1 * d.depth); // Y scaling factor
-      const xPos = rX * Math.cos(angle); // Apply rX to the x position
-      const yPos = rY * Math.sin(angle); // Apply rY to the y position
-
+      // Apply different scaling to create an ellipse shape
+      const rX = d.y * (1 + 0.2 * d.depth);
+      const rY = d.y * (1 + 0.1 * d.depth);
       return {
         id: d.data.name,
-        x: xPos,
-        y: yPos,
+        x: rX * Math.cos(angle),
+        y: rY * Math.sin(angle),
       };
     });
 
@@ -146,17 +121,16 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
       if (d.parent) {
         const getPosition = (node: d3.HierarchyPointNode<TreeNode>) => {
           const angle = node.x - Math.PI / 4;
-          const rX = node.y * (1 + 0.2 * node.depth); // Elliptical scaling for X
-          const rY = node.y * (1 + 0.1 * node.depth); // Elliptical scaling for Y
+          const rX = node.y * (1 + 0.2 * node.depth);
+          const rY = node.y * (1 + 0.1 * node.depth);
           return {
-            x: rX * Math.cos(angle), // Apply rX scaling
-            y: rY * Math.sin(angle), // Apply rY scaling
+            x: rX * Math.cos(angle),
+            y: rY * Math.sin(angle),
           };
         };
 
         const parentPos = getPosition(d.parent);
         const childPos = getPosition(d);
-
         allLinks.push({
           id: `${d.parent.data.name}->${d.data.name}`,
           source: d.parent.data.name,
@@ -172,7 +146,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
     setNodes(allNodes);
     setLinks(allLinks);
 
-    // Set up zoom behavior
+    // Setup zoom behavior
     const zoomBehavior = d3
       .zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.1, 10])
@@ -190,23 +164,10 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
   }, []);
 
   return (
-    <div
-      style={{
-        width: "100vw",
-        height: "100vh",
-        margin: 0,
-        padding: 0,
-        overflow: "hidden",
-      }}
-    >
-      <svg
-        ref={svgRef}
-        width="100%"
-        height="100%"
-        style={{ border: "none", display: "block" }}
-      >
+    <div style={{ width: "100vw", height: "100vh", margin: 0, padding: 0, overflow: "hidden" }}>
+      <svg ref={svgRef} width="100%" height="100%" style={{ border: "none", display: "block" }}>
         <g ref={gRef}>
-          {/* Render edges */}
+          {/* Render edges with edgeThickness prop */}
           {links.map((lk) => (
             <Edge
               key={lk.id}
@@ -217,17 +178,18 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
               targetX={lk.targetX}
               targetY={lk.targetY}
               isActive={edgePath.includes(lk.id)}
+              edgeThickness={edgeThickness}
             />
           ))}
-
-          {/* Render nodes */}
+          {/* Render nodes with vertexSize prop */}
           {nodes.map((nd) => (
             <Vertex
               key={nd.id}
               id={nd.id}
               x={nd.x}
               y={nd.y}
-              isActive={path.includes(nd.id)} // Change color based on path
+              isActive={path.includes(nd.id)}
+              vertexSize={vertexSize}
             />
           ))}
         </g>

@@ -37,7 +37,7 @@ const Pathbar: React.FC<PathBarProps> = ({
     <div
       style={{
         position: "fixed",
-        top: 5,
+        top: 60,
         left: 10,
         color: "rgb(13, 255, 0)",
         zIndex: 10,
