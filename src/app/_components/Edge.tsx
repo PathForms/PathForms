@@ -30,25 +30,29 @@ const Edge: React.FC<EdgeProps> = ({
     strokeColor = "rgba(74, 237, 243, 0.2)";
   }
 
-  // Use the provided edgeThickness prop, default to 1 if not given.
   const thickness = edgeThickness ?? 1;
   if (isActive) {
     strokeColor = "rgb(251, 0, 0)";
     if ((x === x2 && y <= y2) || (x === x2 && y >= y2)) {
       strokeColor = "rgb(0, 247, 255)";
     }
-    // Optionally, you can adjust thickness for active edges if desired.
   }
 
+  // Compute the midpoint coordinates
+  const midX = (sourceX + targetX) / 2;
+  const midY = (sourceY + targetY) / 2;
+  // Create a path with two segments (source -> midpoint, midpoint -> target)
+  const d = `M ${sourceX} ${sourceY} L ${midX} ${midY} L ${targetX} ${targetY}`;
+
   return (
-    <line
-      x1={sourceX}
-      y1={sourceY}
-      x2={targetX}
-      y2={targetY}
+    <path
+      d={d}
+      fill="none"
       stroke={strokeColor}
       strokeWidth={thickness}
-      markerEnd="url(#arrowhead)"
+      markerMid="url(#arrowhead)"
+      // Set the parent's current color so that the marker (using currentColor) matches the stroke
+      style={{ color: strokeColor }}
     />
   );
 };

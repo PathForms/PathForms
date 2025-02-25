@@ -4,7 +4,6 @@ import * as d3 from "d3";
 import Edge from "./Edge";
 import Vertex from "./Vertex";
 
-// Directions for the 4-way expansion in a Cayley tree.
 const directions = {
   up: { dx: 0, dy: 1, opposite: "down" },
   right: { dx: 1, dy: 0, opposite: "left" },
@@ -37,18 +36,14 @@ function buildCayleyTreeData(
     DirKey,
     { dx: number; dy: number; opposite: string }
   ][]) {
-    console.log(dirName, info);
     if (fromDir && info.opposite === fromDir) continue;
 
     const nx = x + info.dx * step;
     const ny = y + info.dy * step;
-    console.log(nx, ny);
-
     node.children!.push(
       buildCayleyTreeData(nx, ny, depth + 1, maxDepth, dirName, step * 0.5)
     );
   }
-
   return node;
 }
 
@@ -68,10 +63,9 @@ interface LayoutLink {
   targetY: number;
 }
 
-// Extend the props interface to include edgeThickness and vertexSize.
 interface CayleyTreeProps {
-  path: string[]; // Array of node IDs to highlight
-  edgePath: string[]; // Array of edge IDs to highlight
+  path: string[];
+  edgePath: string[];
   edgeThickness: number;
   vertexSize: number;
 }
@@ -89,24 +83,19 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
   const gRef = useRef<SVGGElement | null>(null);
 
   useEffect(() => {
-    const rootData = buildCayleyTreeData(0, 0, 0, 5, null, 100);
-    console.log(rootData);
+    const rootData = buildCayleyTreeData(0, 0, 0, 7, null, 100);
     const root = d3.hierarchy<TreeNode>(rootData);
-
     const screenW = 1024;
     const screenH = 768;
     const outerRadius = Math.min(screenW, screenH) / 2;
 
-    // Create an elliptical cluster layout
     const clusterLayout = d3
       .cluster<TreeNode>()
       .size([2 * Math.PI, outerRadius - 50]);
-
     clusterLayout(root);
 
     const allNodes: LayoutNode[] = root.descendants().map((d) => {
       const angle = d.x - Math.PI / 4;
-      // Apply different scaling to create an ellipse shape
       const rX = d.y * (1 + 0.2 * d.depth);
       const rY = d.y * (1 + 0.1 * d.depth);
       return {
@@ -142,11 +131,9 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
         });
       }
     });
-
     setNodes(allNodes);
     setLinks(allLinks);
 
-    // Setup zoom behavior
     const zoomBehavior = d3
       .zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.1, 10])
@@ -156,7 +143,6 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
 
     const svgSelection = d3.select(svgRef.current);
     svgSelection.call(zoomBehavior as any);
-
     d3.select(gRef.current).attr(
       "transform",
       `translate(${screenW / 2}, ${screenH / 2})`
@@ -165,9 +151,28 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
 
   return (
     <div style={{ width: "100vw", height: "100vh", margin: 0, padding: 0, overflow: "hidden" }}>
-      <svg ref={svgRef} width="100%" height="100%" style={{ border: "none", display: "block" }}>
+      <svg
+        ref={svgRef}
+        width="100%"
+        height="100%"
+        style={{ border: "none", display: "block" }}
+      >
+        <defs>
+          <marker
+            id="arrowhead"
+            markerUnits="strokeWidth"
+            markerWidth="5"
+            markerHeight="5"
+            refX="2.5"
+            refY="2.5"
+            orient="auto"
+          >
+            <polygon points="0 0, 5 2.5, 0 5" fill="currentColor" />
+          </marker>
+        </defs>
+
         <g ref={gRef}>
-          {/* Render edges with edgeThickness prop */}
+          {/* Use a path element so that we can place a marker at the midpoint */}
           {links.map((lk) => (
             <Edge
               key={lk.id}
@@ -181,7 +186,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
               edgeThickness={edgeThickness}
             />
           ))}
-          {/* Render nodes with vertexSize prop */}
+
           {nodes.map((nd) => (
             <Vertex
               key={nd.id}
