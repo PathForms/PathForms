@@ -13,6 +13,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({ onMove }) => {
     // You can add additional logic here if needed
     onMove(direction);
   };
+
   return (
     <div
       style={{
