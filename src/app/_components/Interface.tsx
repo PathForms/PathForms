@@ -98,10 +98,10 @@ const Interface = () => {
     setNodePaths((prev) => [...prev, nodes]);
     setEdgePaths((prev) => [...prev, edges]);
     setMoveRecords((prev) => [...prev, moves]);
-    //empty the paths
-    setNodes(["0,0"]);
-    setEdges([]);
-    setMoves([]);
+    // //empty the paths
+    // setNodes(["0,0"]);
+    // setEdges([]);
+    // setMoves([]);
   };
 
   ///// Debug Session for moveRecords /////
@@ -207,14 +207,16 @@ const Interface = () => {
   };
 
   // Reset function
+  // Reset only the unstored user input
   const reset = () => {
     setNodes(["0,0"]);
     setEdges([]);
     setMoves([]);
   };
   // clear function
+  // clear all data stored
   const clear = () => {
-    setNodes([]);
+    setNodes(["0,0"]);
     setEdges([]);
     setEdgePaths([]);
     setNodePaths([]);
@@ -269,6 +271,32 @@ const Interface = () => {
       setNodes(inverted_nodes);
       setEdges(inverted_edges);
       setMoves(inverted_moves);
+
+      // I think invert will actually change not only the current path, but also the records that are going to be displayed.
+      setNodePaths((prevArray) => {
+        if (prevArray.length === 0) return prevArray; // Handle empty array case
+        return [
+          ...prevArray.slice(0, index),
+          inverted_nodes,
+          ...prevArray.slice(index + 1),
+        ];
+      });
+      setEdgePaths((prevArray) => {
+        if (prevArray.length === 0) return prevArray; // Handle empty array case
+        return [
+          ...prevArray.slice(0, index),
+          inverted_edges,
+          ...prevArray.slice(index + 1),
+        ];
+      });
+      setMoveRecords((prevArray) => {
+        if (prevArray.length === 0) return prevArray; // Handle empty array case
+        return [
+          ...prevArray.slice(0, index),
+          inverted_moves,
+          ...prevArray.slice(index + 1),
+        ];
+      });
     } else {
       console.error(`moveRecords[${index}] is undefined or does not exist.`);
     }

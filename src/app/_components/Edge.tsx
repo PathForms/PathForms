@@ -25,17 +25,23 @@ const Edge: React.FC<EdgeProps> = ({
 
   isActive,
 }) => {
-  let strokeColor = "white";
   const [x, y] = source.split(",").map(Number);
   const [x2, y2] = target.split(",").map(Number);
-  //use source and target to maintain colors;
 
-  //This is wrong;
-  if ((x == x2 && y < y2) || (y == y2 && x > x2)) {
-    strokeColor = "yellow";
+  //use source and target to maintain colors;
+  let strokeColor = "rgba(255, 30, 0, 0.2)";
+  let strokeWidth = 1;
+  if ((x == x2 && y <= y2) || (x == x2 && y >= y2)) {
+    strokeColor = "rgba(74, 237, 243, 0.2)";
   }
+
   if (isActive) {
-    strokeColor = "red";
+    strokeColor = "rgba(251, 0, 0, 1)";
+    if ((x == x2 && y <= y2) || (x == x2 && y >= y2)) {
+      strokeColor = "rgba(0, 247, 255, 1)";
+    }
+
+    strokeWidth = 3;
   }
 
   return (
@@ -45,7 +51,7 @@ const Edge: React.FC<EdgeProps> = ({
       x2={targetX}
       y2={targetY}
       stroke={strokeColor}
-      strokeWidth={1}
+      strokeWidth={strokeWidth}
     />
   );
 };

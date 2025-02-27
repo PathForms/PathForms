@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import "./components.module.css";
 
 type Direction = "up" | "down" | "left" | "right";
 
@@ -13,6 +14,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({ onMove }) => {
     // You can add additional logic here if needed
     onMove(direction);
   };
+
   return (
     <div
       style={{
@@ -20,15 +22,40 @@ const ButtonBar: React.FC<ButtonBarProps> = ({ onMove }) => {
         bottom: 20,
         left: "50%",
         transform: "translateX(-50%)",
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        padding: "10px",
+        borderRadius: "8px",
         zIndex: 10,
         display: "flex",
         gap: "8px",
       }}
     >
-      <button onClick={() => handleClick("up")}>A</button>
-      <button onClick={() => handleClick("down")}>A'</button>
-      <button onClick={() => handleClick("right")}>B</button>
-      <button onClick={() => handleClick("left")}>B'</button>
+      {(["up", "down", "right", "left"] as Direction[]).map((dir, i) => (
+        <button
+          key={i}
+          style={{
+            width: "50px",
+            height: "30px",
+            fontSize: "16px",
+            backgroundColor: "transparent",
+            border: "2px solid",
+            borderColor: "rgb(13, 255, 0)",
+            color: "rgb(13, 255, 0)",
+            cursor: "pointer",
+            borderRadius: "4px",
+            transition: "0.3s",
+          }}
+          onClick={() => handleClick(dir)}
+        >
+          {dir === "up"
+            ? "a"
+            : dir === "down"
+            ? "a-"
+            : dir === "right"
+            ? "b"
+            : "b-"}
+        </button>
+      ))}
     </div>
   );
 };

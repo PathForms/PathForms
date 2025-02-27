@@ -1,6 +1,14 @@
 "use client";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
+import "./components.module.css";
 
+type Direction = "up" | "down" | "left" | "right";
+const translation: Record<Direction, string> = {
+  up: "a",
+  down: "a-",
+  right: "b",
+  left: "b-",
+};
 interface PathBarProps {
   store: () => void;
   demonstratePath: (index: number) => void;
@@ -31,60 +39,134 @@ const Pathbar: React.FC<PathBarProps> = ({
       style={{
         position: "fixed",
         top: 5,
-        left: 10, // Align it to the left of the screen
-        color: "red",
+        left: 10,
+        color: "rgb(13, 255, 0)",
         zIndex: 10,
-        width: "auto", // Allow the container to grow
+        width: "auto",
+        maxWidth: "250px", // Limits width to avoid overflow
+        backgroundColor: "rgba(0, 0, 0, 0.5)", // Optional subtle background for visibility
+        padding: "10px",
+        borderRadius: "8px",
+        overflow: "auto",
       }}
     >
-      <h2>Node Path</h2>
-      <table style={{ width: "auto" }}>
-        <thead>
-          <tr>
-            {/* Iterate manually over the first row */}
-            {movePath[0] && movePath[0].length > 0 ? (
-              // Render header only if there is at least one node in the first row
-              [...Array(movePath[0].length)].map((_, index) => (
-                <th key={index}>Node {index + 1}</th>
-              ))
-            ) : (
-              // Render nothing if the first row is empty
-              <th>No Nodes</th>
-            )}
-          </tr>
-        </thead>
-        <tbody>
-          {/* Check if nodePath has any rows to display */}
-          {movePath.length === 0 ? (
-            // Show a message if no rows are present
-            <tr>
-              <td colSpan={movePath[0]?.length || 1}>No Data</td>
-            </tr>
-          ) : (
-            // Iterate manually over the rows and cells
-            movePath.map((path, rowIndex) => (
-              <tr key={rowIndex}>
-                {path.length === 0 ? (
-                  // Display an empty cell if the row is empty
-                  <td colSpan={movePath[0]?.length || 1}>No Data</td>
-                ) : (
-                  path.map((node, colIndex) => <td key={colIndex}>{node}</td>)
-                )}
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+      <h2 style={{ margin: "0 0 8px 0", fontSize: "18px" }}>Node Path</h2>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-        <button onClick={() => store()}>Store Current Path</button>
-        <button onClick={() => reset()}>Reset Current Path</button>
-        <button onClick={() => clear()}>Clear Stored Data</button>
-        <button onClick={() => demonstratePath(0)}>Show Path 1</button>
-        <button onClick={() => demonstratePath(1)}>Show Path 2</button>
-        <button onClick={() => invert(0)}>Invert Path 1</button>
-        <button onClick={() => invert(1)}>Invert Path 2</button>
-        <button onClick={() => concatenate()}>Concatenate Stored Paths</button>
+      <div style={{ overflowX: "auto", maxWidth: "100%" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          {/* <thead>
+            <tr>
+              {movePath[0] && movePath[0].length > 0 ? (
+                [...Array(movePath[0].length)].map((_, index) => (
+                  <th
+                    key={index}
+                    style={{
+                      padding: "4px",
+                      borderBottom: "1px solid rgb(13, 255, 0)",
+                    }}
+                  >
+                    Node {index + 1}
+                  </th>
+                ))
+              ) : (
+                <th>No Nodes</th>
+              )}
+            </tr>
+          </thead> */}
+          <tbody>
+            {movePath.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={movePath[0]?.length || 1}
+                  style={{
+                    textAlign: "left",
+
+                    minWidth: "5px",
+                    maxWidth: "5px",
+                    width: "5px",
+                  }}
+                >
+                  No Data
+                </td>
+              </tr>
+            ) : (
+              movePath.map((path, rowIndex) => (
+                <tr key={rowIndex}>
+                  {path.length === 0 ? (
+                    <td
+                      colSpan={movePath[0]?.length || 1}
+                      style={{
+                        textAlign: "left",
+                        minWidth: "5px",
+                        maxWidth: "5px",
+                        width: "5px",
+                      }}
+                    >
+                      No Data
+                    </td>
+                  ) : (
+                    path.map((node, colIndex) => (
+                      <td
+                        key={colIndex}
+                        style={{
+                          padding: "2px",
+                          textAlign: "left",
+                          minWidth: "5px",
+                          maxWidth: "5px",
+                          width: "5px",
+                          overflow: "hidden",
+                          whiteSpace: "nowrap",
+                          textOverflow: "ellipsis", // Truncate long text
+                        }}
+                      >
+                        {translation[node as keyof typeof translation]}
+                      </td>
+                    ))
+                  )}
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "6px",
+          marginTop: "10px",
+        }}
+      >
+        {[
+          { label: "Reset Current Path", action: reset },
+          { label: "Store Current Path", action: store },
+          { label: "Show Path 1", action: () => demonstratePath(0) },
+          { label: "Show Path 2", action: () => demonstratePath(1) },
+          { label: "Invert Path 1", action: () => invert(0) },
+          { label: "Invert Path 2", action: () => invert(1) },
+          { label: "Concatenate Stored Paths", action: concatenate },
+          { label: "Clear Stored Data", action: clear },
+        ].map((btn, i) => (
+          <button
+            key={i}
+            onClick={btn.action}
+            style={{
+              height: "35px",
+              width: "100%", // Responsive width
+              backgroundColor: "transparent",
+              border: "2px solid",
+              borderColor: "rgb(13, 255, 0)",
+              color: "rgb(13, 255, 0)",
+              fontSize: "14px",
+              cursor: "pointer",
+              borderRadius: "4px",
+              transition: "0.3s",
+            }}
+          >
+            {btn.label}
+          </button>
+        ))}
       </div>
     </div>
   );

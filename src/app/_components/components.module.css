@@ -8,3 +8,8 @@
   justify-content: center; /* Centers the SVG */
   margin: auto;
 }
+
+button:active {
+  background-color: rgb(13, 255, 0);
+  color: black;
+}
