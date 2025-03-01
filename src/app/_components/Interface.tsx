@@ -4,7 +4,8 @@ import React, { useState, useEffect } from "react";
 import ButtonBar from "./ButtonBar";
 import CayleyTree from "./CayleyTree";
 import Pathbar from "./Pathbar";
-import "./Interface.css";
+import Headbar from "./Headbar";
+import styles from "./components.module.css";
 
 type Direction = "up" | "down" | "left" | "right";
 
@@ -243,6 +244,7 @@ const Interface = () => {
     }
   };
 
+  /////////////////////// Headbar Functions ///////////////////////////////
   // Toggle the visibility of the settings panel
   const toggleSettings = () => {
     setShowSettings((prev) => !prev);
@@ -267,50 +269,17 @@ const Interface = () => {
   };
 
   return (
-    <div className={`container ${theme}`}>
-      {/* Header with the game title and a settings button */}
-      <div className={`header ${theme}`}>
-        <h1>PathForms</h1>
-        <button className="settings-button" onClick={toggleSettings}>
-          Settings
-        </button>
-      </div>
-
-      {/* Settings panel */}
-      {showSettings && (
-        <div className={`settings-modal ${theme}`}>
-          <div>
-            <label>Edge Thickness:</label>
-            <input
-              type="range"
-              min="1"
-              max="10"
-              value={edgeThickness}
-              onChange={handleEdgeThicknessChange}
-            />
-            <span>{edgeThickness}</span>
-          </div>
-          <div>
-            <label>Vertex Size:</label>
-            <input
-              type="range"
-              min="1"
-              max="20"
-              value={vertexSize}
-              onChange={handleVertexSizeChange}
-            />
-            <span>{vertexSize}</span>
-          </div>
-          <div>
-            <label>Theme:</label>
-            <select value={theme} onChange={handleThemeChange}>
-              <option value="light">Light</option>
-              <option value="dark">Dark</option>
-            </select>
-          </div>
-          <button onClick={toggleSettings}>Close</button>
-        </div>
-      )}
+    <div className={`${styles.container} ${theme}`}>
+      <Headbar
+        theme={theme}
+        toggleSettings={toggleSettings}
+        showSettings={showSettings}
+        edgeThickness={edgeThickness}
+        handleEdgeThicknessChange={handleEdgeThicknessChange}
+        vertexSize={vertexSize}
+        handleVertexSizeChange={handleVertexSizeChange}
+        handleThemeChange={handleThemeChange}
+      />
 
       {/* Main components */}
       <ButtonBar onMove={handleMove} />

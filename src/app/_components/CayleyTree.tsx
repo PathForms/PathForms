@@ -150,7 +150,15 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
   }, []);
 
   return (
-    <div style={{ width: "100vw", height: "100vh", margin: 0, padding: 0, overflow: "hidden" }}>
+    <div
+      style={{
+        width: "100vw",
+        height: "100vh",
+        margin: 0,
+        padding: 0,
+        overflow: "hidden",
+      }}
+    >
       <svg
         ref={svgRef}
         width="100%"
