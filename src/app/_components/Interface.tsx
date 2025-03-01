@@ -4,9 +4,11 @@ import React, { useState, useEffect } from "react";
 import ButtonBar from "./ButtonBar";
 import CayleyTree from "./CayleyTree";
 import Pathbar from "./Pathbar";
+import "./Interface.css";
 
 type Direction = "up" | "down" | "left" | "right";
 
+// Define opposite moves for backtracking
 const oppositeMoves: Record<Direction, Direction> = {
   up: "down",
   down: "up",
@@ -15,206 +17,158 @@ const oppositeMoves: Record<Direction, Direction> = {
 };
 
 const Interface = () => {
-  // Initialize the starting coordinate
-
+  // State for storing historical paths
   const [nodePaths, setNodePaths] = useState<string[][]>([]);
   const [edgePaths, setEdgePaths] = useState<string[][]>([]);
   const [moveRecords, setMoveRecords] = useState<Direction[][]>([]);
 
-  const [nodes, setNodes] = useState<string[]>(["0,0"]); // Node path
-  const [moves, setMoves] = useState<Direction[]>([]); // Persist moves across renders
-  const [edges, setEdges] = useState<string[]>([]); // Edge path, start with an empty list;
+  // State for the current path (nodes, moves, and edges)
+  const [nodes, setNodes] = useState<string[]>(["0,0"]);
+  const [moves, setMoves] = useState<Direction[]>([]);
+  const [edges, setEdges] = useState<string[]>([]);
 
-  // function for move in Buttonsbar;
-  //make a move on the current graph;
+  // Settings state: edge thickness, vertex size, theme and settings panel visibility
+  const [edgeThickness, setEdgeThickness] = useState<number>(2);
+  const [vertexSize, setVertexSize] = useState<number>(5);
+  const [theme, setTheme] = useState<"dark" | "light">("light");
+  const [showSettings, setShowSettings] = useState<boolean>(false);
+
+  // Handle a move action triggered from the ButtonBar
   const handleMove = (direction: Direction) => {
-    ////////////////// Node /////////////////
-    if (nodes.length === 0) return; // ? Useful ?
+    if (nodes.length === 0) return;
+    const currentNode = nodes[nodes.length - 1];
+    const [x, y] = currentNode.split(",").map(Number);
+    let nextNodeRaw: [number, number] | null = null;
 
-    const current_Node = nodes[nodes.length - 1];
-    const [x, y] = current_Node.split(",").map(Number);
-    let next_Node_raw: [number, number] | null = null;
-
+    // If the new move is the opposite of the previous move, perform backtracking
     if (
       moves.length > 0 &&
       moves[moves.length - 1] === oppositeMoves[direction]
     ) {
-      setEdges((edges) => edges.slice(0, -1));
-      setMoves((prevMoves) => prevMoves.slice(0, -1)); // Remove last move
-      setNodes((prevPath) => prevPath.slice(0, -1)); // Remove last position
+      setEdges((prevEdges) => prevEdges.slice(0, -1));
+      setMoves((prevMoves) => prevMoves.slice(0, -1));
+      setNodes((prevNodes) => prevNodes.slice(0, -1));
       return;
     }
 
+    // Calculate the next node coordinates based on the direction
     switch (direction) {
       case "up":
-        next_Node_raw = [x, y + 100.0 / 2 ** (nodes.length - 1)];
+        nextNodeRaw = [x, y + 100.0 / 2 ** (nodes.length - 1)];
         break;
       case "down":
-        next_Node_raw = [x, y - 100.0 / 2 ** (nodes.length - 1)];
+        nextNodeRaw = [x, y - 100.0 / 2 ** (nodes.length - 1)];
         break;
       case "left":
-        next_Node_raw = [x - 100.0 / 2 ** (nodes.length - 1), y];
+        nextNodeRaw = [x - 100.0 / 2 ** (nodes.length - 1), y];
         break;
       case "right":
-        next_Node_raw = [x + 100.0 / 2 ** (nodes.length - 1), y];
+        nextNodeRaw = [x + 100.0 / 2 ** (nodes.length - 1), y];
         break;
       default:
         return;
     }
 
-    const next_Node = `${next_Node_raw[0]},${next_Node_raw[1]}`;
-    //add move
+    const nextNode = `${nextNodeRaw[0]},${nextNodeRaw[1]}`;
     setMoves((prevMoves) => [...prevMoves, direction]);
-    //add node
-    setNodes((prevPath) => [...prevPath, next_Node]);
+    setNodes((prevNodes) => [...prevNodes, nextNode]);
 
-    /////////////////Edge///////////////////
-    //x,y: start point
-    //x2,y2: end point
-    const x2 = next_Node_raw[0];
-    const y2 = next_Node_raw[1];
-    console.log(y2);
-    //make id
-    const edge_id = `${x},${y}->${x2},${y2}`;
-    console.log(edge_id);
-    //push into edge
-    setEdges((edges) => [...edges, edge_id]);
+    const edgeId = `${x},${y}->${nextNodeRaw[0]},${nextNodeRaw[1]}`;
+    setEdges((prevEdges) => [...prevEdges, edgeId]);
   };
 
-  ///// Debug Session for handleMove /////
+  // Log moves and nodes for debugging
   useEffect(() => {
-    console.log(moves.length);
-    console.log(moves);
-  }, [moves]); // This will run after moves has been updated
+    console.log("Moves:", moves);
+  }, [moves]);
 
   useEffect(() => {
-    console.log(nodes);
-  }, [nodes]); // This will run after nodes has been updated
+    console.log("Nodes:", nodes);
+  }, [nodes]);
 
-  //function for store button in Pathsbar
-  // Stores the path and demonstrate that in pathbar
-  const Store = () => {
-    //store current path
+  // Store the current path into history
+  const storePath = () => {
     setNodePaths((prev) => [...prev, nodes]);
     setEdgePaths((prev) => [...prev, edges]);
     setMoveRecords((prev) => [...prev, moves]);
-    // //empty the paths
-    // setNodes(["0,0"]);
-    // setEdges([]);
-    // setMoves([]);
   };
 
-  ///// Debug Session for moveRecords /////
   useEffect(() => {
-    console.log(moveRecords);
-  }, [moveRecords]); // This will run after nodes has been updated
+    console.log("Move Records:", moveRecords);
+  }, [moveRecords]);
 
-  //function for demonstrate buttons in Pathbar
-  //Demonstrate a specific path onto Caylay tree
+  // Demonstrate a specific stored path on the Cayley tree
   const demonstratePath = (index: number) => {
     setNodes([...nodePaths[index]]);
     setEdges([...edgePaths[index]]);
     setMoves([...moveRecords[index]]);
   };
 
-  // function for concatenate button in Pathbar
-  // Concatenate two paths and demonstrate the result onto caylaytree
+  // Concatenate two stored paths (for example, the first two paths)
   const concatenate = () => {
-    // Combine the first two data paths.
-    // Future implementation: Let the player choose which two paths to concatenate.
-    // up: A; right: B;
-    // set up, shallow copies of data to be concatenated.
+    const path1Moves = [...moveRecords[0]];
+    const path2Moves = [...moveRecords[1]];
+    let newMoves: Direction[] = [];
 
-    const path_1_moves = [...moveRecords[0]];
-    const path_2_moves = [...moveRecords[1]];
-
-    // construct new nodePath and edgePath
-
-    let new_moves: Direction[] = [];
-
-    //recursively check and update the nodes and edges;
-    //default: append th head of path 2 to the tail of path 1;
-
-    while (path_1_moves.length != 0 && path_2_moves.length != 0) {
-      //get head and tail
-      const tail = path_1_moves.at(-1);
-      const head = path_2_moves.at(0);
-
-      // Ensure that head and tail are not undefined
+    // Remove canceling moves at the junction
+    while (path1Moves.length !== 0 && path2Moves.length !== 0) {
+      const tail = path1Moves.at(-1);
+      const head = path2Moves.at(0);
       if (tail !== undefined && head !== undefined) {
-        // Check for concatenation condition
         if (head === oppositeMoves[tail]) {
-          //remove the first element of path 2 and last element if path 1
-          path_1_moves.pop(); // Removes and returns the last element of path_1_moves
-          path_2_moves.shift(); // Removes and returns the first element of path_2_moves
+          path1Moves.pop();
+          path2Moves.shift();
         } else {
           break;
         }
       } else {
-        // Handle the case where head or tail is undefined
         console.log("One of the elements is undefined");
-        break; // Exit or handle the error gracefully
+        break;
       }
     }
+    newMoves = path1Moves;
+    newMoves.push(...path2Moves);
 
-    //after this, get the final concatenated graph;
-    new_moves = path_1_moves;
-    new_moves.push(...path_2_moves);
-
-    //draw the path
-    let nodes_result: string[] = ["0,0"];
-    let edges_result: string[] = [];
-
-    //nodes setup
-
-    for (const direction of new_moves) {
-      let prev_node = nodes_result[nodes_result.length - 1];
-      const [x, y] = prev_node.split(",").map(Number);
-      let next_Node_raw: [number, number] | null = null;
+    // Reconstruct nodes and edges from the concatenated moves
+    let newNodes: string[] = ["0,0"];
+    let newEdges: string[] = [];
+    for (const direction of newMoves) {
+      let prevNode = newNodes[newNodes.length - 1];
+      const [x, y] = prevNode.split(",").map(Number);
+      let nextNodeRaw: [number, number] | null = null;
       switch (direction) {
         case "up":
-          next_Node_raw = [x, y + 100.0 / 2 ** (nodes_result.length - 1)];
+          nextNodeRaw = [x, y + 100.0 / 2 ** (newNodes.length - 1)];
           break;
         case "down":
-          next_Node_raw = [x, y - 100.0 / 2 ** (nodes_result.length - 1)];
+          nextNodeRaw = [x, y - 100.0 / 2 ** (newNodes.length - 1)];
           break;
         case "left":
-          next_Node_raw = [x - 100.0 / 2 ** (nodes_result.length - 1), y];
+          nextNodeRaw = [x - 100.0 / 2 ** (newNodes.length - 1), y];
           break;
         case "right":
-          next_Node_raw = [x + 100.0 / 2 ** (nodes_result.length - 1), y];
+          nextNodeRaw = [x + 100.0 / 2 ** (newNodes.length - 1), y];
           break;
         default:
           return;
       }
-      const next_Node = `${next_Node_raw[0]},${next_Node_raw[1]}`;
-      nodes_result.push(next_Node);
-
-      //edge setup
-      //x,y: start point
-      //x2,y2: end point
-      const x2 = next_Node_raw[0];
-      const y2 = next_Node_raw[1];
-      //make id
-      const edge_id = `${x},${y}->${x2},${y2}`;
-      edges_result.push(edge_id);
+      const nextNode = `${nextNodeRaw[0]},${nextNodeRaw[1]}`;
+      newNodes.push(nextNode);
+      const edgeId = `${x},${y}->${nextNodeRaw[0]},${nextNodeRaw[1]}`;
+      newEdges.push(edgeId);
     }
-
-    //draw concatennation result;
-    //do not need to do anything else;
-    setNodes(nodes_result);
-    setEdges(edges_result);
+    setNodes(newNodes);
+    setEdges(newEdges);
   };
 
-  // Reset function
-  // Reset only the unstored user input
+  // Reset the current (unsaved) path
   const reset = () => {
     setNodes(["0,0"]);
     setEdges([]);
     setMoves([]);
   };
-  // clear function
-  // clear all data stored
+
+  // Clear all stored paths and current data
   const clear = () => {
     setNodes(["0,0"]);
     setEdges([]);
@@ -223,78 +177,65 @@ const Interface = () => {
     setMoveRecords([]);
   };
 
-  // Invert paths
-  const Invert = (index: number) => {
-    // Get current path moves
+  // Invert a stored path at a given index
+  const invertPath = (index: number) => {
     if (moveRecords[index]) {
-      let curr_moves = [...moveRecords[index]];
-
-      let inverted_nodes: string[] = ["0,0"];
-      let inverted_edges: string[] = [];
-      let inverted_moves: Direction[] = [];
-
-      for (let i = curr_moves.length - 1; i >= 0; i--) {
-        let oppositeMove = oppositeMoves[curr_moves[i]];
-
-        inverted_moves.push(oppositeMove);
-
-        let prev_node = inverted_nodes[inverted_nodes.length - 1];
-        const [x, y] = prev_node.split(",").map(Number);
-
-        let next_Node_raw: [number, number] | null = null;
-
+      let currentMoves = [...moveRecords[index]];
+      let invertedNodes: string[] = ["0,0"];
+      let invertedEdges: string[] = [];
+      let invertedMoves: Direction[] = [];
+      for (let i = currentMoves.length - 1; i >= 0; i--) {
+        let oppositeMove = oppositeMoves[currentMoves[i]];
+        invertedMoves.push(oppositeMove);
+        let prevNode = invertedNodes[invertedNodes.length - 1];
+        const [x, y] = prevNode.split(",").map(Number);
+        let nextNodeRaw: [number, number] | null = null;
         switch (oppositeMove) {
           case "up":
-            next_Node_raw = [x, y + 100.0 / 2 ** (inverted_nodes.length - 1)];
+            nextNodeRaw = [x, y + 100.0 / 2 ** (invertedNodes.length - 1)];
             break;
           case "down":
-            next_Node_raw = [x, y - 100.0 / 2 ** (inverted_nodes.length - 1)];
+            nextNodeRaw = [x, y - 100.0 / 2 ** (invertedNodes.length - 1)];
             break;
           case "left":
-            next_Node_raw = [x - 100.0 / 2 ** (inverted_nodes.length - 1), y];
+            nextNodeRaw = [x - 100.0 / 2 ** (invertedNodes.length - 1), y];
             break;
           case "right":
-            next_Node_raw = [x + 100.0 / 2 ** (inverted_nodes.length - 1), y];
+            nextNodeRaw = [x + 100.0 / 2 ** (invertedNodes.length - 1), y];
             break;
           default:
             return;
         }
-
-        const next_Node = `${next_Node_raw[0]},${next_Node_raw[1]}`;
-        inverted_nodes.push(next_Node);
-
-        const [x2, y2] = next_Node_raw;
-        const edge_id = `${x},${y}->${x2},${y2}`;
-        inverted_edges.push(edge_id);
+        const nextNode = `${nextNodeRaw[0]},${nextNodeRaw[1]}`;
+        invertedNodes.push(nextNode);
+        const edgeId = `${x},${y}->${nextNodeRaw[0]},${nextNodeRaw[1]}`;
+        invertedEdges.push(edgeId);
       }
-
-      setNodes(inverted_nodes);
-      setEdges(inverted_edges);
-      setMoves(inverted_moves);
-
-      // I think invert will actually change not only the current path, but also the records that are going to be displayed.
-      setNodePaths((prevArray) => {
-        if (prevArray.length === 0) return prevArray; // Handle empty array case
+      setNodes(invertedNodes);
+      setEdges(invertedEdges);
+      setMoves(invertedMoves);
+      setNodePaths((prev) => {
+        if (prev.length === 0) return prev;
         return [
-          ...prevArray.slice(0, index),
-          inverted_nodes,
-          ...prevArray.slice(index + 1),
+          ...prev.slice(0, index),
+          invertedNodes,
+          ...prev.slice(index + 1),
         ];
       });
-      setEdgePaths((prevArray) => {
-        if (prevArray.length === 0) return prevArray; // Handle empty array case
+      setEdgePaths((prev) => {
+        if (prev.length === 0) return prev;
         return [
-          ...prevArray.slice(0, index),
-          inverted_edges,
-          ...prevArray.slice(index + 1),
+          ...prev.slice(0, index),
+          invertedEdges,
+          ...prev.slice(index + 1),
         ];
       });
-      setMoveRecords((prevArray) => {
-        if (prevArray.length === 0) return prevArray; // Handle empty array case
+      setMoveRecords((prev) => {
+        if (prev.length === 0) return prev;
         return [
-          ...prevArray.slice(0, index),
-          inverted_moves,
-          ...prevArray.slice(index + 1),
+          ...prev.slice(0, index),
+          invertedMoves,
+          ...prev.slice(index + 1),
         ];
       });
     } else {
@@ -302,20 +243,94 @@ const Interface = () => {
     }
   };
 
+  // Toggle the visibility of the settings panel
+  const toggleSettings = () => {
+    setShowSettings((prev) => !prev);
+  };
+
+  // Handle change for edge thickness setting
+  const handleEdgeThicknessChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setEdgeThickness(Number(e.target.value));
+  };
+
+  // Handle change for vertex size setting
+  const handleVertexSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setVertexSize(Number(e.target.value));
+  };
+
+  // Handle theme change
+  const handleThemeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedTheme = e.target.value as "dark" | "light";
+    setTheme(selectedTheme);
+  };
+
   return (
-    <div>
+    <div className={`container ${theme}`}>
+      {/* Header with the game title and a settings button */}
+      <div className={`header ${theme}`}>
+        <h1>PathForms</h1>
+        <button className="settings-button" onClick={toggleSettings}>
+          Settings
+        </button>
+      </div>
+
+      {/* Settings panel */}
+      {showSettings && (
+        <div className={`settings-modal ${theme}`}>
+          <div>
+            <label>Edge Thickness:</label>
+            <input
+              type="range"
+              min="1"
+              max="10"
+              value={edgeThickness}
+              onChange={handleEdgeThicknessChange}
+            />
+            <span>{edgeThickness}</span>
+          </div>
+          <div>
+            <label>Vertex Size:</label>
+            <input
+              type="range"
+              min="1"
+              max="20"
+              value={vertexSize}
+              onChange={handleVertexSizeChange}
+            />
+            <span>{vertexSize}</span>
+          </div>
+          <div>
+            <label>Theme:</label>
+            <select value={theme} onChange={handleThemeChange}>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
+          </div>
+          <button onClick={toggleSettings}>Close</button>
+        </div>
+      )}
+
+      {/* Main components */}
       <ButtonBar onMove={handleMove} />
-      <CayleyTree path={nodes} edgePath={edges} />
+      {/* Pass edgeThickness and vertexSize to CayleyTree for styling adjustments */}
+      <CayleyTree
+        path={nodes}
+        edgePath={edges}
+        edgeThickness={edgeThickness}
+        vertexSize={vertexSize}
+      />
       <Pathbar
         nodePath={nodePaths}
         edgePath={edgePaths}
         movePath={moveRecords}
         reset={reset}
         clear={clear}
-        store={Store}
+        store={storePath}
         demonstratePath={demonstratePath}
         concatenate={concatenate}
-        invert={Invert}
+        invert={invertPath}
       />
     </div>
   );

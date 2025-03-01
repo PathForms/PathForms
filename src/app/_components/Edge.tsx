@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 
 interface EdgeProps {
@@ -8,13 +9,9 @@ interface EdgeProps {
   source: string;
   target: string;
   isActive?: boolean;
+  edgeThickness?: number;
 }
 
-/**
- * Edge:
- * A basic line connecting source and target coordinates.
- * It can highlight on hover if needed.
- */
 const Edge: React.FC<EdgeProps> = ({
   source,
   target,
@@ -22,36 +19,40 @@ const Edge: React.FC<EdgeProps> = ({
   sourceY,
   targetX,
   targetY,
-
   isActive,
+  edgeThickness,
 }) => {
   const [x, y] = source.split(",").map(Number);
   const [x2, y2] = target.split(",").map(Number);
 
-  //use source and target to maintain colors;
   let strokeColor = "rgba(255, 30, 0, 0.2)";
-  let strokeWidth = 1;
-  if ((x == x2 && y <= y2) || (x == x2 && y >= y2)) {
+  if ((x === x2 && y <= y2) || (x === x2 && y >= y2)) {
     strokeColor = "rgba(74, 237, 243, 0.2)";
   }
 
+  const thickness = edgeThickness ?? 1;
   if (isActive) {
     strokeColor = "rgba(251, 0, 0, 1)";
     if ((x == x2 && y <= y2) || (x == x2 && y >= y2)) {
       strokeColor = "rgba(0, 247, 255, 1)";
     }
-
-    strokeWidth = 3;
   }
 
+  // Compute the midpoint coordinates
+  const midX = (sourceX + targetX) / 2;
+  const midY = (sourceY + targetY) / 2;
+  // Create a path with two segments (source -> midpoint, midpoint -> target)
+  const d = `M ${sourceX} ${sourceY} L ${midX} ${midY} L ${targetX} ${targetY}`;
+
   return (
-    <line
-      x1={sourceX}
-      y1={sourceY}
-      x2={targetX}
-      y2={targetY}
+    <path
+      d={d}
+      fill="none"
       stroke={strokeColor}
-      strokeWidth={strokeWidth}
+      strokeWidth={thickness}
+      markerMid="url(#arrowhead)"
+      // Set the parent's current color so that the marker (using currentColor) matches the stroke
+      style={{ color: strokeColor }}
     />
   );
 };

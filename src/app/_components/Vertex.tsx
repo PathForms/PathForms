@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from "react";
 
 interface VertexProps {
@@ -7,19 +8,16 @@ interface VertexProps {
   isHighlighted?: boolean;
   isShined?: boolean;
   isActive?: boolean;
+  vertexSize?: number;
 }
 
-/**
- * Vertex:
- * A circle at (x, y). Different fill colors indicate hover,
- * highlight, or shine states.
- */
 const Vertex: React.FC<VertexProps> = ({
   id,
   x,
   y,
 
   isActive,
+  vertexSize,
 }) => {
   //color logic
   let fillColor = "rgba(0, 159, 251, 0.25)";
@@ -31,7 +29,7 @@ const Vertex: React.FC<VertexProps> = ({
     <circle
       cx={x}
       cy={y}
-      r={2}
+      r={vertexSize ?? 2}
       fill={fillColor}
       style={{ cursor: "pointer", transition: "fill 0.3s" }}
     />
