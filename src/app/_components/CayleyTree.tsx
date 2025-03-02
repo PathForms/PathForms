@@ -67,14 +67,12 @@ interface CayleyTreeProps {
   path: string[];
   edgePath: string[];
   edgeThickness: number;
-  vertexSize: number;
 }
 
 const CayleyTree: React.FC<CayleyTreeProps> = ({
   path,
   edgePath,
   edgeThickness,
-  vertexSize,
 }) => {
   const [nodes, setNodes] = useState<LayoutNode[]>([]);
   const [links, setLinks] = useState<LayoutLink[]>([]);
@@ -202,7 +200,6 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
               x={nd.x}
               y={nd.y}
               isActive={path.includes(nd.id)}
-              vertexSize={vertexSize}
             />
           ))}
         </g>

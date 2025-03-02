@@ -9,8 +9,6 @@ interface HeadbarProps {
   showSettings: boolean;
   edgeThickness: number;
   handleEdgeThicknessChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  vertexSize: number;
-  handleVertexSizeChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleThemeChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
 }
 
@@ -20,8 +18,7 @@ const Headbar: React.FC<HeadbarProps> = ({
   showSettings,
   edgeThickness,
   handleEdgeThicknessChange,
-  vertexSize,
-  handleVertexSizeChange,
+
   handleThemeChange,
 }) => {
   return (
@@ -44,17 +41,6 @@ const Headbar: React.FC<HeadbarProps> = ({
               onChange={handleEdgeThicknessChange}
             />
             <span>{edgeThickness}</span>
-          </div>
-          <div>
-            <label>Vertex Size:</label>
-            <input
-              type="range"
-              min="1"
-              max="20"
-              value={vertexSize}
-              onChange={handleVertexSizeChange}
-            />
-            <span>{vertexSize}</span>
           </div>
           <div>
             <label>Theme:</label>

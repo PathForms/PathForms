@@ -30,7 +30,7 @@ const Interface = () => {
 
   // Settings state: edge thickness, vertex size, theme and settings panel visibility
   const [edgeThickness, setEdgeThickness] = useState<number>(2);
-  const [vertexSize, setVertexSize] = useState<number>(5);
+
   const [theme, setTheme] = useState<"dark" | "light">("light");
   const [showSettings, setShowSettings] = useState<boolean>(false);
 
@@ -257,11 +257,6 @@ const Interface = () => {
     setEdgeThickness(Number(e.target.value));
   };
 
-  // Handle change for vertex size setting
-  const handleVertexSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setVertexSize(Number(e.target.value));
-  };
-
   // Handle theme change
   const handleThemeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedTheme = e.target.value as "dark" | "light";
@@ -276,20 +271,13 @@ const Interface = () => {
         showSettings={showSettings}
         edgeThickness={edgeThickness}
         handleEdgeThicknessChange={handleEdgeThicknessChange}
-        vertexSize={vertexSize}
-        handleVertexSizeChange={handleVertexSizeChange}
         handleThemeChange={handleThemeChange}
       />
 
       {/* Main components */}
       <ButtonBar onMove={handleMove} />
       {/* Pass edgeThickness and vertexSize to CayleyTree for styling adjustments */}
-      <CayleyTree
-        path={nodes}
-        edgePath={edges}
-        edgeThickness={edgeThickness}
-        vertexSize={vertexSize}
-      />
+      <CayleyTree path={nodes} edgePath={edges} edgeThickness={edgeThickness} />
       <Pathbar
         nodePath={nodePaths}
         edgePath={edgePaths}

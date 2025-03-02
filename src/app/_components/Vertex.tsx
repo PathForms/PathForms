@@ -8,7 +8,6 @@ interface VertexProps {
   isHighlighted?: boolean;
   isShined?: boolean;
   isActive?: boolean;
-  vertexSize?: number;
 }
 
 const Vertex: React.FC<VertexProps> = ({
@@ -17,7 +16,6 @@ const Vertex: React.FC<VertexProps> = ({
   y,
 
   isActive,
-  vertexSize,
 }) => {
   //color logic
   let fillColor = "rgba(0, 159, 251, 0.25)";
@@ -29,7 +27,7 @@ const Vertex: React.FC<VertexProps> = ({
     <circle
       cx={x}
       cy={y}
-      r={vertexSize ?? 2}
+      r={2}
       fill={fillColor}
       style={{ cursor: "pointer", transition: "fill 0.3s" }}
     />
