@@ -2,7 +2,7 @@
 
 import React from "react";
 import styles from "./components.module.css"; // Ensure that this is the correct path for your CSS module
-
+import { useRouter } from "next/navigation";
 interface HeadbarProps {
   theme: "dark" | "light";
   toggleSettings: () => void;
@@ -11,6 +11,8 @@ interface HeadbarProps {
   handleEdgeThicknessChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleThemeChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
 }
+
+//function for return
 
 const Headbar: React.FC<HeadbarProps> = ({
   theme,
@@ -21,6 +23,11 @@ const Headbar: React.FC<HeadbarProps> = ({
 
   handleThemeChange,
 }) => {
+  const router = useRouter();
+
+  const goToPlayground = () => {
+    router.push("/");
+  };
   return (
     <div className={`${styles.header} ${styles[theme]}`}>
       {" "}
@@ -52,6 +59,7 @@ const Headbar: React.FC<HeadbarProps> = ({
           <button onClick={toggleSettings}>Close</button>
         </div>
       )}
+      <button onClick={goToPlayground}>Back to Home</button>
     </div>
   );
 };
