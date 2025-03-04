@@ -32,7 +32,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({ generate }) => {
     >
       <button
         style={{
-          width: "50px",
+          width: "200px",
           height: "30px",
           fontSize: "16px",
           backgroundColor: "transparent",

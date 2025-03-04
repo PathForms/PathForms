@@ -10,26 +10,25 @@
 }
 
 button:active {
-  background-color: rgb(13, 255, 0);
+  background-color: rgb(140, 140, 140);
   color: black;
 }
 
 /* Container styling */
 .container {
   min-height: 100vh;
-  padding-top: 10px; /* Reserve space for the header */
 }
 
 /* Light theme styles */
 .container.light {
-  background-color: #fff;
-  color: #111;
+  background-color: #00000000;
+  color: #3c3c3c;
 }
 
 /* Dark theme styles */
 .container.dark {
-  background-color: #222;
-  color: #eee;
+  background-color: #00000000;
+  color: #4d4d4d;
 }
 
 /* Header styling */
@@ -41,17 +40,16 @@ button:active {
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   z-index: 1000;
 }
 
 .header.light {
-  background-color: #f0f0f0;
-  color: #000;
+  background-color: #ffffff00;
+  color: #1eff00c1;
 }
 
 .header.dark {
-  background-color: #333;
+  background-color: #00000000;
   color: #fff;
 }
 

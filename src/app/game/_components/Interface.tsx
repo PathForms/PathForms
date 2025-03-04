@@ -105,15 +105,15 @@ const Interface = () => {
   //
   ////////////// functions forPathBar ///////////////////////
   // Store the current path into history
-  const storePath = () => {
-    setNodePaths((prev) => [...prev, nodes]);
-    setEdgePaths((prev) => [...prev, edges]);
-    setMoveRecords((prev) => [...prev, moves]);
-  };
+  // const storePath = () => {
+  //   setNodePaths((prev) => [...prev, nodes]);
+  //   setEdgePaths((prev) => [...prev, edges]);
+  //   setMoveRecords((prev) => [...prev, moves]);
+  // };
 
-  useEffect(() => {
-    console.log("Move Records:", moveRecords);
-  }, [moveRecords]);
+  // useEffect(() => {
+  //   console.log("Move Records:", moveRecords);
+  // }, [moveRecords]);
 
   // Demonstrate a specific stored path on the Cayley tree
   const demonstratePath = (index: number) => {
@@ -124,7 +124,7 @@ const Interface = () => {
 
   // Concatenate two stored paths (for example, the first two paths)
   const concatenate = (index1: number, index2: number) => {
-    // Get paths from moveRecords based on the user input indices
+    // check for valid
     if (
       index1 < 0 ||
       index1 >= moveRecords.length ||
@@ -132,22 +132,22 @@ const Interface = () => {
       index2 >= moveRecords.length
     ) {
       console.error("Invalid indices:", index1, index2);
-      return; // Exit the function if indices are invalid
+      return;
     }
 
-    const path1Moves = [...moveRecords[index1]]; // Path selected by the user (index1)
-    const path2Moves = [...moveRecords[index2]]; // Path selected by the user (index2)
+    //fetch data
+    const path1Moves = [...moveRecords[index1]];
+    const path2Moves = [...moveRecords[index2]];
     let newMoves: Direction[] = [];
 
-    // Remove canceling moves at the junction
+    // Remove canceling moves
     while (path1Moves.length !== 0 && path2Moves.length !== 0) {
-      const tail = path1Moves.at(-1); // Get last move in path1
-      const head = path2Moves.at(0); // Get first move in path2
+      const tail = path1Moves.at(-1);
+      const head = path2Moves.at(0);
       if (tail !== undefined && head !== undefined) {
-        // Check if the last move in path1 cancels out with the first move in path2
         if (head === oppositeMoves[tail]) {
-          path1Moves.pop(); // Remove the last move from path1
-          path2Moves.shift(); // Remove the first move from path2
+          path1Moves.pop();
+          path2Moves.shift();
         } else {
           break;
         }
@@ -160,7 +160,12 @@ const Interface = () => {
     newMoves = path1Moves; // Combine path1 and path2
     newMoves.push(...path2Moves);
 
-    // Reconstruct nodes and edges from the concatenated moves
+    //moveRecord update for path demonstration
+    const updatedMoveRecords = [...moveRecords];
+    updatedMoveRecords[index1] = newMoves;
+    setMoveRecords(updatedMoveRecords);
+
+    // Reconstruct nodes and edges
     let newNodes: string[] = ["0,0"];
     let newEdges: string[] = [];
     for (const direction of newMoves) {
@@ -188,18 +193,23 @@ const Interface = () => {
       const edgeId = `${x},${y}->${nextNodeRaw[0]},${nextNodeRaw[1]}`;
       newEdges.push(edgeId);
     }
-
-    // Update state with the new nodes and edges
+    //state update
+    const updatedNodePath = [...nodePaths];
+    const updatedEdgePath = [...edgePaths];
+    updatedNodePath[index1] = newNodes;
+    updatedEdgePath[index1] = newEdges;
+    setNodePaths(updatedNodePath);
+    setEdgePaths(updatedEdgePath);
     setNodes(newNodes);
     setEdges(newEdges);
   };
 
-  // Reset the current (unsaved) path
-  const reset = () => {
-    setNodes(["0,0"]);
-    setEdges([]);
-    setMoves([]);
-  };
+  // // Reset the current (unsaved) path
+  // const reset = () => {
+  //   setNodes(["0,0"]);
+  //   setEdges([]);
+  //   setMoves([]);
+  // };
 
   // Clear all stored paths and current data
   const clear = () => {
@@ -455,9 +465,7 @@ const Interface = () => {
         nodePath={nodePaths}
         edgePath={edgePaths}
         movePath={moveRecords}
-        reset={reset}
         clear={clear}
-        store={storePath}
         demonstratePath={demonstratePath}
         concatenate={concatenate}
         invert={invertPath}
