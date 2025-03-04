@@ -16,6 +16,7 @@ interface PathBarProps {
   invert: (index: number) => void;
   reset: () => void;
   clear: () => void;
+
   nodePath: string[][];
   edgePath: string[][];
   movePath: string[][];
@@ -28,12 +29,11 @@ const Pathbar: React.FC<PathBarProps> = ({
   invert,
   reset,
   clear,
+
   nodePath,
   edgePath,
   movePath,
 }) => {
-  const [paths, setPaths] = useState<string[][]>();
-
   return (
     <div
       style={{

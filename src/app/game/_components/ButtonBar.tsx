@@ -5,14 +5,14 @@ import "./components.module.css";
 type Direction = "up" | "down" | "left" | "right";
 
 interface ButtonBarProps {
-  onMove: (direction: Direction) => void;
+  generate: () => void;
 }
 
-const ButtonBar: React.FC<ButtonBarProps> = ({ onMove }) => {
+const ButtonBar: React.FC<ButtonBarProps> = ({ generate }) => {
   // onclick function
-  const handleClick = (direction: Direction) => {
+  const handleClick = () => {
     // You can add additional logic here if needed
-    onMove(direction);
+    generate();
   };
 
   return (
@@ -30,32 +30,23 @@ const ButtonBar: React.FC<ButtonBarProps> = ({ onMove }) => {
         gap: "8px",
       }}
     >
-      {(["up", "down", "right", "left"] as Direction[]).map((dir, i) => (
-        <button
-          key={i}
-          style={{
-            width: "50px",
-            height: "30px",
-            fontSize: "16px",
-            backgroundColor: "transparent",
-            border: "2px solid",
-            borderColor: "rgb(13, 255, 0)",
-            color: "rgb(13, 255, 0)",
-            cursor: "pointer",
-            borderRadius: "4px",
-            transition: "0.3s",
-          }}
-          onClick={() => handleClick(dir)}
-        >
-          {dir === "up"
-            ? "a"
-            : dir === "down"
-            ? "a-"
-            : dir === "right"
-            ? "b"
-            : "b-"}
-        </button>
-      ))}
+      <button
+        style={{
+          width: "50px",
+          height: "30px",
+          fontSize: "16px",
+          backgroundColor: "transparent",
+          border: "2px solid",
+          borderColor: "rgb(13, 255, 0)",
+          color: "rgb(13, 255, 0)",
+          cursor: "pointer",
+          borderRadius: "4px",
+          transition: "0.3s",
+        }}
+        onClick={handleClick}
+      >
+        Generate Paths
+      </button>
     </div>
   );
 };
