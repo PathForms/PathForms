@@ -123,19 +123,31 @@ const Interface = () => {
   };
 
   // Concatenate two stored paths (for example, the first two paths)
-  const concatenate = () => {
-    const path1Moves = [...moveRecords[0]];
-    const path2Moves = [...moveRecords[1]];
+  const concatenate = (index1: number, index2: number) => {
+    // Get paths from moveRecords based on the user input indices
+    if (
+      index1 < 0 ||
+      index1 >= moveRecords.length ||
+      index2 < 0 ||
+      index2 >= moveRecords.length
+    ) {
+      console.error("Invalid indices:", index1, index2);
+      return; // Exit the function if indices are invalid
+    }
+
+    const path1Moves = [...moveRecords[index1]]; // Path selected by the user (index1)
+    const path2Moves = [...moveRecords[index2]]; // Path selected by the user (index2)
     let newMoves: Direction[] = [];
 
     // Remove canceling moves at the junction
     while (path1Moves.length !== 0 && path2Moves.length !== 0) {
-      const tail = path1Moves.at(-1);
-      const head = path2Moves.at(0);
+      const tail = path1Moves.at(-1); // Get last move in path1
+      const head = path2Moves.at(0); // Get first move in path2
       if (tail !== undefined && head !== undefined) {
+        // Check if the last move in path1 cancels out with the first move in path2
         if (head === oppositeMoves[tail]) {
-          path1Moves.pop();
-          path2Moves.shift();
+          path1Moves.pop(); // Remove the last move from path1
+          path2Moves.shift(); // Remove the first move from path2
         } else {
           break;
         }
@@ -144,9 +156,9 @@ const Interface = () => {
         break;
       }
     }
-    newMoves = path1Moves;
+
+    newMoves = path1Moves; // Combine path1 and path2
     newMoves.push(...path2Moves);
-    //setMove ?
 
     // Reconstruct nodes and edges from the concatenated moves
     let newNodes: string[] = ["0,0"];
@@ -176,6 +188,8 @@ const Interface = () => {
       const edgeId = `${x},${y}->${nextNodeRaw[0]},${nextNodeRaw[1]}`;
       newEdges.push(edgeId);
     }
+
+    // Update state with the new nodes and edges
     setNodes(newNodes);
     setEdges(newEdges);
   };
@@ -263,28 +277,26 @@ const Interface = () => {
     }
   };
 
-  // Using useRef for mutable variables (non-rendered state)
+  ////////////// GeneratePath for Game //////////////////////
   const moveRecordsRef = useRef<Direction[][]>([["up"], ["right"]]);
   const nodePathsRef = useRef<string[][]>([]);
   const edgePathsRef = useRef<string[][]>([]);
-  ////////////// GeneratePath for Game //////////////////////
-
-  //we need two paths, both start with a and b;
-  //generating phase:
-  //1. invert the current path
-  //2. add path 2 to the back of path 1 or path 1 to the back of path 2;
-  //
-  //One to notice: the operation better not shorten the length of the path;
-  // There can be optimization for runtime: check the conditions instead of the length of the sentences;
-  // Can make animation effect: paths showing up;
-  //
-  //For demonstrating 2 paths, try add "0,0" as separations
-  //
-  //
-  //
-  //reset current states
   const GeneratePath = () => {
-    // Reset current states
+    //we need two paths, both start with a and b;
+    //generating phase:
+    //1. invert the current path
+    //2. add path 2 to the back of path 1 or path 1 to the back of path 2;
+    //
+    //One to notice: the operation better not shorten the length of the path;
+    // There can be optimization for runtime: check the conditions instead of the length of the sentences;
+    // Can make animation effect: paths showing up;
+    //
+    //For demonstrating 2 paths, try add "0,0" as separations
+    //
+    //
+    //
+    //reset current states
+
     setNodes(["0,0"]);
     setEdges([]);
     setMoves([]);
@@ -297,24 +309,26 @@ const Interface = () => {
     nodePathsRef.current = [];
     edgePathsRef.current = [];
 
-    // Generate paths while length condition holds
+    // Check minimum length
+    // This check can be optimized!
     while (
-      moveRecordsRef.current[0].length <= 5 &&
-      moveRecordsRef.current[1].length <= 5
+      moveRecordsRef.current[0].length <= 2 ||
+      moveRecordsRef.current[1].length <= 2
     ) {
       const operation = Math.random() < 0.5 ? 0 : 1;
 
+      //operation
       if (operation === 0) {
+        //invert one of them
         const index = Math.random() < 0.5 ? 0 : 1;
         let currentMoves = [...moveRecordsRef.current[index]];
-
-        // Reverse the moves
         for (let i = currentMoves.length - 1; i >= 0; i--) {
           let oppositeMove = oppositeMoves[currentMoves[i]];
           moveRecordsRef.current[index][currentMoves.length - 1 - i] =
             oppositeMove;
         }
       } else if (operation === 1) {
+        //concatenate
         const index = Math.random() < 0.5 ? 0 : 1;
         const path1Moves = [...moveRecordsRef.current[index]];
         const path2Moves = [...moveRecordsRef.current[1 - index]];
