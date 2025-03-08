@@ -120,8 +120,11 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
           };
         };
 
-        const parentPos = getPosition(d.parent);
-        const childPos = getPosition(d);
+        //resolve for minor error
+        const parentPos = getPosition(
+          d.parent as d3.HierarchyPointNode<TreeNode>
+        );
+        const childPos = getPosition(d as d3.HierarchyPointNode<TreeNode>);
         allLinks.push({
           id: `${d.parent.data.name}->${d.data.name}`,
           source: d.parent.data.name,
