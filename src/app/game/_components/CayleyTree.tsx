@@ -170,20 +170,6 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
         height="100%"
         style={{ border: "none", display: "block" }}
       >
-        <defs>
-          <marker
-            id="arrowhead"
-            markerUnits="strokeWidth"
-            markerWidth="5"
-            markerHeight="5"
-            refX="2.5"
-            refY="2.5"
-            orient="auto"
-          >
-            <polygon points="0 0, 5 2.5, 0 5" fill="currentColor" />
-          </marker>
-        </defs>
-
         <g ref={gRef}>
           {/* Use a path element so that we can place a marker at the midpoint */}
           {links.map((lk) => (
