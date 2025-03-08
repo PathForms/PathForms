@@ -10,35 +10,33 @@ const translation: Record<Direction, string> = {
   left: "b-",
 };
 interface PathBarProps {
-  store: () => void;
   demonstratePath: (index: number) => void;
-  concatenate: () => void;
+  concatenate: (index1: number, index2: number) => void;
   invert: (index: number) => void;
-  reset: () => void;
+
   clear: () => void;
+
   nodePath: string[][];
   edgePath: string[][];
   movePath: string[][];
 }
 
 const Pathbar: React.FC<PathBarProps> = ({
-  store,
   demonstratePath,
   concatenate,
   invert,
-  reset,
+
   clear,
+
   nodePath,
   edgePath,
   movePath,
 }) => {
-  const [paths, setPaths] = useState<string[][]>();
-
   return (
     <div
       style={{
         position: "fixed",
-        top: 5,
+        top: 60,
         left: 10,
         color: "rgb(13, 255, 0)",
         zIndex: 10,
@@ -139,13 +137,12 @@ const Pathbar: React.FC<PathBarProps> = ({
         }}
       >
         {[
-          { label: "Reset Current Path", action: reset },
-          { label: "Store Current Path", action: store },
           { label: "Show Path 1", action: () => demonstratePath(0) },
           { label: "Show Path 2", action: () => demonstratePath(1) },
           { label: "Invert Path 1", action: () => invert(0) },
           { label: "Invert Path 2", action: () => invert(1) },
-          { label: "Concatenate Stored Paths", action: concatenate },
+          { label: "Concatenate Path 1", action: () => concatenate(0, 1) },
+          { label: "Concatenate Path 2", action: () => concatenate(1, 0) },
           { label: "Clear Stored Data", action: clear },
         ].map((btn, i) => (
           <button

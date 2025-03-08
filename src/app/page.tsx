@@ -1,11 +1,13 @@
 import React from "react";
 
-import Interface from "./_components/Interface";
+import Modesbutton from "./_components/Modesbutton";
 
 const Home = () => {
   return (
-    <div className="cayley">
-      <Interface />
+    <div className="title">
+      <h1>PathForms</h1>
+      <p>Nielson Transform</p>
+      <Modesbutton />
     </div>
   );
 };

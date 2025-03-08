@@ -1,0 +1,85 @@
+.cayley {
+  display: block; /* Fix inline display issue */
+  margin: auto; /* Ensure it's centered horizontally */
+}
+
+.cayleyContainer {
+  display: flex;
+  justify-content: center; /* Centers the SVG */
+  margin: auto;
+}
+
+button:active {
+  background-color: rgb(140, 140, 140);
+  color: black;
+}
+
+/* Container styling */
+.container {
+  min-height: 100vh;
+}
+
+/* Light theme styles */
+.container.light {
+  background-color: #00000000;
+  color: #3c3c3c;
+}
+
+/* Dark theme styles */
+.container.dark {
+  background-color: #00000000;
+  color: #4d4d4d;
+}
+
+/* Header styling */
+.header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.header.light {
+  background-color: #ffffff00;
+  color: #1eff00c1;
+}
+
+.header.dark {
+  background-color: #00000000;
+  color: #fff;
+}
+
+/* Settings button styling */
+.settings-button {
+  position: absolute;
+  right: 20px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+/* Settings modal styling */
+.settings-modal {
+  position: fixed;
+  top: 70px;
+  right: 20px;
+  width: 250px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  z-index: 1100;
+}
+
+.settings-modal.light {
+  background-color: #f9f9f9;
+}
+
+.settings-modal.dark {
+  background-color: #444;
+}
+
+.buttonbar-wrapper {
+  margin-top: 70px;
+}

@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from "react";
 
 interface VertexProps {
@@ -9,11 +10,6 @@ interface VertexProps {
   isActive?: boolean;
 }
 
-/**
- * Vertex:
- * A circle at (x, y). Different fill colors indicate hover,
- * highlight, or shine states.
- */
 const Vertex: React.FC<VertexProps> = ({
   id,
   x,
