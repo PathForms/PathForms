@@ -93,9 +93,13 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
     clusterLayout(root);
 
     const allNodes: LayoutNode[] = root.descendants().map((d) => {
-      const angle = d.x - Math.PI / 4;
-      const rX = d.y * (1 + 0.2 * d.depth);
-      const rY = d.y * (1 + 0.1 * d.depth);
+      const angle = (d.x ?? 0) - Math.PI / 4;
+      // Apply different scaling to x and y to create an ellipse shape
+      const rX = (d.y ?? 0) * (1 + 0.2 * d.depth); // X scaling factor
+      const rY = (d.y ?? 0) * (1 + 0.1 * d.depth); // Y scaling factor
+      const xPos = rX * Math.cos(angle); // Apply rX to the x position
+      const yPos = rY * Math.sin(angle); // Apply rY to the y position
+
       return {
         id: d.data.name,
         x: rX * Math.cos(angle),
@@ -116,8 +120,11 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
           };
         };
 
-        const parentPos = getPosition(d.parent);
-        const childPos = getPosition(d);
+        //resolve for minor error
+        const parentPos = getPosition(
+          d.parent as d3.HierarchyPointNode<TreeNode>
+        );
+        const childPos = getPosition(d as d3.HierarchyPointNode<TreeNode>);
         allLinks.push({
           id: `${d.parent.data.name}->${d.data.name}`,
           source: d.parent.data.name,
@@ -163,20 +170,6 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
         height="100%"
         style={{ border: "none", display: "block" }}
       >
-        <defs>
-          <marker
-            id="arrowhead"
-            markerUnits="strokeWidth"
-            markerWidth="5"
-            markerHeight="5"
-            refX="2.5"
-            refY="2.5"
-            orient="auto"
-          >
-            <polygon points="0 0, 5 2.5, 0 5" fill="currentColor" />
-          </marker>
-        </defs>
-
         <g ref={gRef}>
           {/* Use a path element so that we can place a marker at the midpoint */}
           {links.map((lk) => (

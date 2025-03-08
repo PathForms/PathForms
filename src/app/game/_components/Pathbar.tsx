@@ -10,11 +10,10 @@ const translation: Record<Direction, string> = {
   left: "b-",
 };
 interface PathBarProps {
-  store: () => void;
   demonstratePath: (index: number) => void;
   concatenate: (index1: number, index2: number) => void;
   invert: (index: number) => void;
-  reset: () => void;
+
   clear: () => void;
 
   nodePath: string[][];
@@ -23,11 +22,10 @@ interface PathBarProps {
 }
 
 const Pathbar: React.FC<PathBarProps> = ({
-  store,
   demonstratePath,
   concatenate,
   invert,
-  reset,
+
   clear,
 
   nodePath,
@@ -139,8 +137,6 @@ const Pathbar: React.FC<PathBarProps> = ({
         }}
       >
         {[
-          { label: "Reset Current Path", action: reset },
-          { label: "Store Current Path", action: store },
           { label: "Show Path 1", action: () => demonstratePath(0) },
           { label: "Show Path 2", action: () => demonstratePath(1) },
           { label: "Invert Path 1", action: () => invert(0) },
