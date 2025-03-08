@@ -97,8 +97,6 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
       // Apply different scaling to x and y to create an ellipse shape
       const rX = (d.y ?? 0) * (1 + 0.2 * d.depth); // X scaling factor
       const rY = (d.y ?? 0) * (1 + 0.1 * d.depth); // Y scaling factor
-      const xPos = rX * Math.cos(angle); // Apply rX to the x position
-      const yPos = rY * Math.sin(angle); // Apply rY to the y position
 
       return {
         id: d.data.name,
