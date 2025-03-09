@@ -6,7 +6,7 @@ const Home = () => {
   return (
     <div className="title">
       <h1>PathForms</h1>
-      <p>Nielson Transform</p>
+      <p>Nielsen Transform</p>
       <Modesbutton />
     </div>
   );
