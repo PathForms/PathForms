@@ -20,6 +20,7 @@ const oppositeMoves: Record<Direction, Direction> = {
 
 const Interface = () => {
   // State for storing historical paths
+  const [pathIndex, setPathIndex] = useState<number[]>([]); // index of paths to show on the tree;
   const [nodePaths, setNodePaths] = useState<string[][]>([]);
   const [edgePaths, setEdgePaths] = useState<string[][]>([]);
   const [moveRecords, setMoveRecords] = useState<Direction[][]>([]);
@@ -31,9 +32,9 @@ const Interface = () => {
 
   // Settings state: edge thickness, vertex size, theme and settings panel visibility
   const [edgeThickness, setEdgeThickness] = useState<number>(2);
-
   const [theme, setTheme] = useState<"dark" | "light">("light");
   const [showSettings, setShowSettings] = useState<boolean>(false);
+
   //
   //
   //
@@ -116,13 +117,6 @@ const Interface = () => {
   //   console.log("Move Records:", moveRecords);
   // }, [moveRecords]);
 
-  // Demonstrate a specific stored path on the Cayley tree
-  const demonstratePath = (index: number) => {
-    setNodes([...nodePaths[index]]);
-    setEdges([...edgePaths[index]]);
-    setMoves([...moveRecords[index]]);
-  };
-
   // Concatenate two stored paths (for example, the first two paths)
   const concatenate = (index1: number, index2: number) => {
     // check for valid
@@ -199,10 +193,12 @@ const Interface = () => {
     const updatedEdgePath = [...edgePaths];
     updatedNodePath[index1] = newNodes;
     updatedEdgePath[index1] = newEdges;
+    //since it's still the same number of paths showing, no need to change index;
     setNodePaths(updatedNodePath);
     setEdgePaths(updatedEdgePath);
-    setNodes(newNodes);
-    setEdges(newEdges);
+
+    // setNodes(newNodes);
+    // setEdges(newEdges);
   };
 
   // // Reset the current (unsaved) path
@@ -220,6 +216,7 @@ const Interface = () => {
     setEdgePaths([]);
     setNodePaths([]);
     setMoveRecords([]);
+    setPathIndex([]);
   };
 
   // Invert a stored path at a given index
@@ -256,8 +253,8 @@ const Interface = () => {
         const edgeId = `${x},${y}->${nextNodeRaw[0]},${nextNodeRaw[1]}`;
         invertedEdges.push(edgeId);
       }
-      setNodes(invertedNodes);
-      setEdges(invertedEdges);
+      // setNodes(invertedNodes);
+      // setEdges(invertedEdges);
       setMoves(invertedMoves);
       setNodePaths((prev) => {
         if (prev.length === 0) return prev;
@@ -410,12 +407,13 @@ const Interface = () => {
     });
 
     // Now update the state with all the paths
+
     setNodePaths(newNodePaths);
     setEdgePaths(newEdgePaths);
-
+    setPathIndex((prevIndexes) => [...prevIndexes, 0, 1]);
     // Show the first path initially
-    setNodes(newNodePaths[0]);
-    setEdges(newEdgePaths[0]);
+    // setNodes(newNodePaths[0]);
+    // setEdges(newEdgePaths[0]);
   };
 
   //
@@ -447,6 +445,35 @@ const Interface = () => {
     setTheme(selectedTheme);
   };
 
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  /////////// Pathlist Functions /////////////
+  // Demonstrate paths on Cayley Tree
+  // Improve for Pathlist
+  //interaction with handle click: when click, an index is pushed into demonstratePath
+  const demonstratePath = (index: number) => {
+    // setNodes([...nodePaths[index]]);
+    // setEdges([...edgePaths[index]]);
+    // setMoves([...moveRecords[index]]);
+    setPathIndex(
+      (prevIndexes) =>
+        prevIndexes.includes(index)
+          ? prevIndexes.filter((i) => i !== index) // Remove if exists
+          : [...prevIndexes, index] // Add if not present
+    );
+  };
+
   return (
     <div className={`${styles.container} ${theme}`}>
       <Headbar
@@ -457,15 +484,18 @@ const Interface = () => {
         handleEdgeThicknessChange={handleEdgeThicknessChange}
         handleThemeChange={handleThemeChange}
       />
-
-      {/* Main components */}
       <ButtonBar generate={GeneratePath} />
-      {/* Pass edgeThickness and vertexSize to CayleyTree for styling adjustments */}
-      <CayleyTree path={nodes} edgePath={edges} edgeThickness={edgeThickness} />
+      <CayleyTree
+        pathIndex={pathIndex}
+        nodePaths={nodePaths}
+        edgePaths={edgePaths}
+        edgeThickness={edgeThickness}
+      />
       <Pathlist
         nodePaths={nodePaths}
         edgePaths={edgePaths}
         movePaths={moveRecords}
+        demonstratePath={demonstratePath}
       />
       <Pathbar
         nodePaths={nodePaths}

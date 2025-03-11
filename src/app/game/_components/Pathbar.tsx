@@ -57,8 +57,6 @@ const Pathbar: React.FC<PathBarProps> = ({
         }}
       >
         {[
-          { label: "Show Path 1", action: () => demonstratePath(0) },
-          { label: "Show Path 2", action: () => demonstratePath(1) },
           { label: "Invert Path 1", action: () => invert(0) },
           { label: "Invert Path 2", action: () => invert(1) },
           { label: "Concatenate Path 1", action: () => concatenate(0, 1) },
