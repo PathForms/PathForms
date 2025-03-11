@@ -5,6 +5,7 @@ import ButtonBar from "./ButtonBar";
 import CayleyTree from "./CayleyTree";
 import Pathbar from "./Pathbar";
 import Headbar from "./Headbar";
+import Pathlist from "./Pathlist";
 import styles from "./components.module.css";
 
 type Direction = "up" | "down" | "left" | "right";
@@ -461,10 +462,15 @@ const Interface = () => {
       <ButtonBar generate={GeneratePath} />
       {/* Pass edgeThickness and vertexSize to CayleyTree for styling adjustments */}
       <CayleyTree path={nodes} edgePath={edges} edgeThickness={edgeThickness} />
+      <Pathlist
+        nodePaths={nodePaths}
+        edgePaths={edgePaths}
+        movePaths={moveRecords}
+      />
       <Pathbar
-        nodePath={nodePaths}
-        edgePath={edgePaths}
-        movePath={moveRecords}
+        nodePaths={nodePaths}
+        edgePaths={edgePaths}
+        movePaths={moveRecords}
         clear={clear}
         demonstratePath={demonstratePath}
         concatenate={concatenate}

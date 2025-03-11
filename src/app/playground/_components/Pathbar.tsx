@@ -16,9 +16,9 @@ interface PathBarProps {
   invert: (index: number) => void;
   reset: () => void;
   clear: () => void;
-  nodePath: string[][];
-  edgePath: string[][];
-  movePath: string[][];
+  nodePaths: string[][];
+  edgePaths: string[][];
+  movePaths: string[][];
 }
 
 const Pathbar: React.FC<PathBarProps> = ({
@@ -28,12 +28,10 @@ const Pathbar: React.FC<PathBarProps> = ({
   invert,
   reset,
   clear,
-  nodePath,
-  edgePath,
-  movePath,
+  nodePaths,
+  edgePaths,
+  movePaths,
 }) => {
-  const [paths, setPaths] = useState<string[][]>();
-
   return (
     <div
       style={{
@@ -50,86 +48,6 @@ const Pathbar: React.FC<PathBarProps> = ({
         overflow: "auto",
       }}
     >
-      <h2 style={{ margin: "0 0 8px 0", fontSize: "18px" }}>Node Path</h2>
-
-      <div style={{ overflowX: "auto", maxWidth: "100%" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          {/* <thead>
-            <tr>
-              {movePath[0] && movePath[0].length > 0 ? (
-                [...Array(movePath[0].length)].map((_, index) => (
-                  <th
-                    key={index}
-                    style={{
-                      padding: "4px",
-                      borderBottom: "1px solid rgb(13, 255, 0)",
-                    }}
-                  >
-                    Node {index + 1}
-                  </th>
-                ))
-              ) : (
-                <th>No Nodes</th>
-              )}
-            </tr>
-          </thead> */}
-          <tbody>
-            {movePath.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={movePath[0]?.length || 1}
-                  style={{
-                    textAlign: "left",
-
-                    minWidth: "5px",
-                    maxWidth: "5px",
-                    width: "5px",
-                  }}
-                >
-                  No Data
-                </td>
-              </tr>
-            ) : (
-              movePath.map((path, rowIndex) => (
-                <tr key={rowIndex}>
-                  {path.length === 0 ? (
-                    <td
-                      colSpan={movePath[0]?.length || 1}
-                      style={{
-                        textAlign: "left",
-                        minWidth: "5px",
-                        maxWidth: "5px",
-                        width: "5px",
-                      }}
-                    >
-                      No Data
-                    </td>
-                  ) : (
-                    path.map((node, colIndex) => (
-                      <td
-                        key={colIndex}
-                        style={{
-                          padding: "2px",
-                          textAlign: "left",
-                          minWidth: "5px",
-                          maxWidth: "5px",
-                          width: "5px",
-                          overflow: "hidden",
-                          whiteSpace: "nowrap",
-                          textOverflow: "ellipsis", // Truncate long text
-                        }}
-                      >
-                        {translation[node as keyof typeof translation]}
-                      </td>
-                    ))
-                  )}
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
       <div
         style={{
           display: "flex",
