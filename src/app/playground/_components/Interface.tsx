@@ -280,6 +280,7 @@ const Interface = () => {
       {/* Pass edgeThickness and vertexSize to CayleyTree for styling adjustments */}
       <CayleyTree path={nodes} edgePath={edges} edgeThickness={edgeThickness} />
       <Pathlist
+        demonstratePath={demonstratePath}
         nodePaths={nodePaths}
         edgePaths={edgePaths}
         movePaths={moveRecords}

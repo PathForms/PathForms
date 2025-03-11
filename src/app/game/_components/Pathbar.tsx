@@ -13,7 +13,6 @@ interface PathBarProps {
   demonstratePath: (index: number) => void;
   concatenate: (index1: number, index2: number) => void;
   invert: (index: number) => void;
-
   clear: () => void;
 
   nodePaths: string[][];
@@ -25,9 +24,7 @@ const Pathbar: React.FC<PathBarProps> = ({
   demonstratePath,
   concatenate,
   invert,
-
   clear,
-
   nodePaths,
   edgePaths,
   movePaths,
