@@ -96,7 +96,7 @@ const Pathlist: React.FC<PathlistProps> = ({
               }}
             >
               {/* use {} to denote sections */}
-              {`Vec ${rowIndex + 1}: `}
+              {`Word ${rowIndex + 1}: `}
               {path.length === 0
                 ? "No Data"
                 : path
