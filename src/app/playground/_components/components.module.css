@@ -9,10 +9,10 @@
   margin: auto;
 }
 
-button:active {
+/* button:active {
   background-color: rgb(13, 255, 0);
   color: black;
-}
+} */
 
 /* Container styling */
 .container {

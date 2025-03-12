@@ -64,14 +64,16 @@ interface LayoutLink {
 }
 
 interface CayleyTreeProps {
-  path: string[];
-  edgePath: string[];
+  pathIndex: number[];
+  nodePaths: string[][];
+  edgePaths: string[][];
   edgeThickness: number;
 }
 
 const CayleyTree: React.FC<CayleyTreeProps> = ({
-  path,
-  edgePath,
+  pathIndex,
+  nodePaths,
+  edgePaths,
   edgeThickness,
 }) => {
   const [nodes, setNodes] = useState<LayoutNode[]>([]);
@@ -97,8 +99,6 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
       // Apply different scaling to x and y to create an ellipse shape
       const rX = (d.y ?? 0) * (1 + 0.2 * d.depth); // X scaling factor
       const rY = (d.y ?? 0) * (1 + 0.1 * d.depth); // Y scaling factor
-      const xPos = rX * Math.cos(angle); // Apply rX to the x position
-      const yPos = rY * Math.sin(angle); // Apply rY to the y position
 
       return {
         id: d.data.name,
@@ -181,7 +181,10 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
               sourceY={lk.sourceY}
               targetX={lk.targetX}
               targetY={lk.targetY}
-              isActive={edgePath.includes(lk.id)}
+              isActive={
+                pathIndex.length > 0 &&
+                pathIndex.some((index) => edgePaths[index]?.includes(lk.id))
+              }
               edgeThickness={edgeThickness}
             />
           ))}
@@ -192,7 +195,10 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
               id={nd.id}
               x={nd.x}
               y={nd.y}
-              isActive={path.includes(nd.id)}
+              isActive={
+                pathIndex.length > 0 &&
+                pathIndex.some((index) => nodePaths[index]?.includes(nd.id))
+              }
             />
           ))}
         </g>
