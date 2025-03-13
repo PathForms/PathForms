@@ -19,16 +19,22 @@ const oppositeMoves: Record<Direction, Direction> = {
 };
 
 const Interface = () => {
-  // State for storing historical paths
-  const [pathIndex, setPathIndex] = useState<number[]>([]); // index of paths to show on the tree;
+  // State for storing historical paths & cayley graph rendering
+  const [pathIndex, setPathIndex] = useState<number[]>([]); // index of paths to show on the Cayley graph;
   const [nodePaths, setNodePaths] = useState<string[][]>([]);
   const [edgePaths, setEdgePaths] = useState<string[][]>([]);
   const [moveRecords, setMoveRecords] = useState<Direction[][]>([]);
 
-  // State for the current path showing on the screen (nodes, moves, and edges)
-  const [nodes, setNodes] = useState<string[]>(["0,0"]);
-  const [moves, setMoves] = useState<Direction[]>([]);
-  const [edges, setEdges] = useState<string[]>([]);
+  // State for action modes
+  // normal (default)
+  // insert
+  // concatenate
+  const [operationMode, setOperationMode] = useState<string>("normal");
+
+  // // State for the current path showing on the screen (nodes, moves, and edges)
+  // const [nodes, setNodes] = useState<string[]>(["0,0"]);
+  // const [moves, setMoves] = useState<Direction[]>([]);
+  // const [edges, setEdges] = useState<string[]>([]);
 
   // Settings state: edge thickness, vertex size, theme and settings panel visibility
   const [edgeThickness, setEdgeThickness] = useState<number>(2);
@@ -105,7 +111,24 @@ const Interface = () => {
   //
   //
   //
-  ////////////// functions forPathBar ///////////////////////
+  ////////////// functions for PathBar ///////////////////////
+  //
+  //mode setters
+  const setInvert = () => {
+    if (operationMode == "invert") {
+      setOperationMode("normal");
+    } else {
+      setOperationMode("invert");
+    }
+  };
+
+  const setConcat = () => {
+    if (operationMode == "concat") {
+      setOperationMode("normal");
+    } else {
+      setOperationMode("concat");
+    }
+  };
   // Store the current path into history
   // const storePath = () => {
   //   setNodePaths((prev) => [...prev, nodes]);
@@ -210,9 +233,9 @@ const Interface = () => {
 
   // Clear all stored paths and current data
   const clear = () => {
-    setNodes(["0,0"]);
-    setEdges([]);
-    setMoves([]);
+    // setNodes(["0,0"]);
+    // setEdges([]);
+    // setMoves([]);
     setEdgePaths([]);
     setNodePaths([]);
     setMoveRecords([]);
@@ -255,7 +278,14 @@ const Interface = () => {
       }
       // setNodes(invertedNodes);
       // setEdges(invertedEdges);
-      setMoves(invertedMoves);
+      setMoveRecords((prev) => {
+        if (prev.length === 0) return prev;
+        return [
+          ...prev.slice(0, index),
+          invertedMoves,
+          ...prev.slice(index + 1),
+        ];
+      });
       setNodePaths((prev) => {
         if (prev.length === 0) return prev;
         return [
@@ -305,9 +335,9 @@ const Interface = () => {
     //
     //reset current states
 
-    setNodes(["0,0"]);
-    setEdges([]);
-    setMoves([]);
+    // setNodes(["0,0"]);
+    // setEdges([]);
+    // setMoves([]);
     setEdgePaths([]);
     setNodePaths([]);
     setMoveRecords([]);
@@ -492,12 +522,18 @@ const Interface = () => {
         edgeThickness={edgeThickness}
       />
       <Pathlist
+        mode={operationMode}
         nodePaths={nodePaths}
         edgePaths={edgePaths}
         movePaths={moveRecords}
         demonstratePath={demonstratePath}
+        concatenate={concatenate}
+        invert={invertPath}
       />
       <Pathbar
+        mode={operationMode}
+        setInvert={setInvert}
+        setConcat={setConcat}
         nodePaths={nodePaths}
         edgePaths={edgePaths}
         movePaths={moveRecords}

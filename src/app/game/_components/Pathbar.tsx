@@ -10,6 +10,9 @@ const translation: Record<Direction, string> = {
   left: "b-",
 };
 interface PathBarProps {
+  mode: string;
+  setInvert: () => void;
+  setConcat: () => void;
   demonstratePath: (index: number) => void;
   concatenate: (index1: number, index2: number) => void;
   invert: (index: number) => void;
@@ -20,7 +23,39 @@ interface PathBarProps {
   movePaths: string[][];
 }
 
+const getButtonStyles = (mode: string) => {
+  switch (mode) {
+    case "invert":
+      return {
+        backgroundColor: "rgb(13, 255, 0)",
+        color: "black",
+        borderColor: "rgb(13, 255, 0)",
+      };
+    case "concat":
+      return {
+        backgroundColor: "transparent",
+        color: "rgb(255, 165, 0)",
+        borderColor: "rgb(255, 165, 0)",
+      };
+    case "highlight":
+      return {
+        backgroundColor: "yellow",
+        color: "black",
+        borderColor: "gold",
+      };
+    default:
+      return {
+        backgroundColor: "transparent",
+        color: "rgb(13, 255, 0)",
+        borderColor: "rgb(13, 255, 0)",
+      };
+  }
+};
+
 const Pathbar: React.FC<PathBarProps> = ({
+  mode,
+  setInvert,
+  setConcat,
   demonstratePath,
   concatenate,
   invert,
@@ -54,10 +89,8 @@ const Pathbar: React.FC<PathBarProps> = ({
         }}
       >
         {[
-          { label: "Invert Path 1", action: () => invert(0) },
-          { label: "Invert Path 2", action: () => invert(1) },
-          { label: "Concatenate Path 1", action: () => concatenate(0, 1) },
-          { label: "Concatenate Path 2", action: () => concatenate(1, 0) },
+          { label: "Invert Mode", action: () => setInvert() },
+          { label: "Concatenate Mode", action: () => setConcat() },
           { label: "Clear Stored Data", action: clear },
         ].map((btn, i) => (
           <button
@@ -65,18 +98,21 @@ const Pathbar: React.FC<PathBarProps> = ({
             onClick={btn.action}
             style={{
               height: "35px",
-              width: "100%", // Responsive width
-              backgroundColor: "transparent",
-              border: "2px solid",
-              borderColor: "rgb(13, 255, 0)",
-              color: "rgb(13, 255, 0)",
+              width: "100%",
               fontSize: "14px",
               cursor: "pointer",
               borderRadius: "4px",
-              transition: "0.3s",
+              transition: "0.3s ease-in-out",
+              ...getButtonStyles(mode), // Dynamically applies styles based on mode
             }}
           >
-            {btn.label}
+            {mode === "invert"
+              ? "Invert"
+              : mode === "concat"
+              ? "Concat"
+              : mode === "highlight"
+              ? "Highlight"
+              : btn.label}
           </button>
         ))}
       </div>

@@ -45,7 +45,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({ generate }) => {
         }}
         onClick={handleClick}
       >
-        Generate Paths
+        Generate Words
       </button>
     </div>
   );

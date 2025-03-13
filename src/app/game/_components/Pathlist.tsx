@@ -5,27 +5,48 @@ import styles from "./components.module.css";
 type Direction = "up" | "down" | "left" | "right";
 const translation: Record<Direction, string> = {
   up: "a",
-  down: "a\u207B\u00B9", // a^(-1)
+  down: "a\u207B\u00B9", // a^-1^
   right: "b",
   left: "b\u207B\u00B9",
 };
 
 interface PathlistProps {
+  mode: string;
   nodePaths: string[][];
   edgePaths: string[][];
   movePaths: string[][];
   demonstratePath: (index: number) => void;
+  concatenate: (index1: number, index2: number) => void;
+  invert: (index: number) => void;
 }
 
 const Pathlist: React.FC<PathlistProps> = ({
+  mode,
   nodePaths,
   edgePaths,
   movePaths,
   demonstratePath,
+  concatenate,
+  invert,
 }) => {
+  const [concatIndexes, setConcatIndexes] = useState<number[]>([]);
+
+  useEffect(() => {
+    if (concatIndexes.length === 2) {
+      concatenate(concatIndexes[0], concatIndexes[1]);
+      setConcatIndexes([]); // Clear after concatenation
+    }
+  }, [concatIndexes]); // Runs whenever `concatIndexes` changes
+
   const handleClick = (index: number) => {
+    if (mode === "invert") {
+      invert(index);
+    } else if (mode === "concat") {
+      setConcatIndexes((prev) => [...prev, index]);
+    }
     demonstratePath(index);
   };
+
   return (
     <div
       style={{
@@ -41,7 +62,7 @@ const Pathlist: React.FC<PathlistProps> = ({
         overflow: "hidden", // Hide the scrollbar
       }}
     >
-      <h2 style={{ margin: "0 0 8px 0", fontSize: "18px" }}>Node Path</h2>
+      <h2 style={{ margin: "0 0 8px 0", fontSize: "18px" }}>Word Vector</h2>
       <div
         style={{
           display: "flex",
