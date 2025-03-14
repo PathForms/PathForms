@@ -451,6 +451,49 @@ const Interface = () => {
   //   // setEdges(newEdgePaths[0]);
   // };
 
+  // helper functions for weighted generation
+  // Helper function to get a random index based on weighted probabilities
+  const weightedRandomChoice = (weights: number[]): number => {
+    const totalWeight = weights.reduce((acc, weight) => acc + weight, 0);
+    let randomValue = Math.random() * totalWeight;
+
+    for (let i = 0; i < weights.length; i++) {
+      randomValue -= weights[i];
+      if (randomValue <= 0) {
+        return i;
+      }
+    }
+    return weights.length - 1; // Fallback
+  };
+
+  // Inversion function with weighted random selection
+  const weightedInversion = () => {
+    // Calculate weights based on path lengths
+    const weights = moveRecordsRef.current.map((path) => path.length);
+
+    // Select a path based on weighted random choice
+    const selectedIndex = weightedRandomChoice(weights);
+    let currentMoves = [...moveRecordsRef.current[selectedIndex]];
+
+    // Invert the selected path
+    for (let i = currentMoves.length - 1; i >= 0; i--) {
+      let oppositeMove = oppositeMoves[currentMoves[i]];
+      moveRecordsRef.current[selectedIndex][currentMoves.length - 1 - i] =
+        oppositeMove;
+    }
+  };
+  const generateRandomPathPair = (n: number): [number, number] => {
+    let index1 = Math.floor(Math.random() * n);
+    let index2 = Math.floor(Math.random() * n);
+
+    // Ensure that index1 and index2 are different
+    while (index1 === index2) {
+      index2 = Math.floor(Math.random() * n);
+    }
+
+    return [index1, index2];
+  };
+
   const GeneratePath = (n: number) => {
     //
     //we need two paths, both start with a and b;
@@ -490,25 +533,16 @@ const Interface = () => {
       }
     }
 
-    while (moveRecordsRef.current.some((path) => path.length < 1)) {
+    while (moveRecordsRef.current.some((path) => path.length < 2)) {
       const operation = Math.random() < 0.5 ? 0 : 1;
-      //operation
+
       if (operation === 0) {
-        //invert one of them
-        const index = Math.floor(Math.random() * n);
-        let currentMoves = [...moveRecordsRef.current[index]];
-        for (let i = currentMoves.length - 1; i >= 0; i--) {
-          let oppositeMove = oppositeMoves[currentMoves[i]];
-          moveRecordsRef.current[index][currentMoves.length - 1 - i] =
-            oppositeMove;
-        }
+        // Inversion with weighted random choice
+        weightedInversion();
       } else if (operation === 1) {
-        //concatenate
-        let index1 = Math.floor(Math.random() * n);
-        let index2 = Math.floor(Math.random() * n);
-        while (index2 == index1) {
-          index2 = Math.floor(Math.random() * n);
-        }
+        // Concatenate as usual (could also be enhanced with weights if desired)
+        const [index1, index2] = generateRandomPathPair(n);
+
         const path1Moves = [...moveRecordsRef.current[index1]];
         const path2Moves = [...moveRecordsRef.current[index2]];
         let newMoves: Direction[] = [];
@@ -528,7 +562,6 @@ const Interface = () => {
 
         newMoves = path1Moves;
         newMoves.push(...path2Moves);
-        //right?
         moveRecordsRef.current[index1] = newMoves;
       }
     }

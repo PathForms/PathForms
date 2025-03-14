@@ -100,7 +100,7 @@ const Pathbar: React.FC<PathBarProps> = ({
             fontSize: "14px",
             cursor: "pointer",
             borderRadius: "4px",
-            transition: "0.3s ease-in-out",
+            transition: "0.1s ease-in-out",
             ...InvertStyles(mode), // Dynamically applies styles based on mode
           }}
         >
@@ -114,7 +114,7 @@ const Pathbar: React.FC<PathBarProps> = ({
             fontSize: "14px",
             cursor: "pointer",
             borderRadius: "4px",
-            transition: "0.3s ease-in-out",
+            transition: "0.1s ease-in-out",
             ...ConcatStyles(mode), // Dynamically applies styles based on mode
           }}
         >
@@ -128,7 +128,7 @@ const Pathbar: React.FC<PathBarProps> = ({
             fontSize: "14px",
             cursor: "pointer",
             borderRadius: "4px",
-            transition: "0.3s ease-in-out",
+            transition: "0.1s ease-in-out",
             backgroundColor: "transparent",
             color: "rgb(13, 255, 0)",
             borderColor: "rgb(13, 255, 0)",

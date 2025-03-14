@@ -124,7 +124,7 @@ const Pathlist: React.FC<PathlistProps> = ({
               {/* use {} to denote sections */}
               {`Word ${rowIndex + 1}: `}
               {path.length === 0
-                ? "No Data"
+                ? "1"
                 : path
                     .map(
                       (node) => translation[node as keyof typeof translation]
