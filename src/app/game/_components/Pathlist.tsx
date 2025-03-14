@@ -31,6 +31,7 @@ const Pathlist: React.FC<PathlistProps> = ({
 }) => {
   const [concatIndexes, setConcatIndexes] = useState<number[]>([]);
 
+  //Effect to handle concat
   useEffect(() => {
     if (concatIndexes.length === 2) {
       concatenate(concatIndexes[0], concatIndexes[1]);
@@ -41,8 +42,10 @@ const Pathlist: React.FC<PathlistProps> = ({
   const handleClick = (index: number) => {
     if (mode === "invert") {
       invert(index);
+      return;
     } else if (mode === "concat") {
       setConcatIndexes((prev) => [...prev, index]);
+      return;
     }
     demonstratePath(index);
   };
@@ -96,11 +99,13 @@ const Pathlist: React.FC<PathlistProps> = ({
                 // Cast event.target to HTMLElement
                 const target = event.target as HTMLElement;
 
-                // Toggle color between yellow and green
-                target.style.color =
-                  target.style.color === "rgb(0, 255, 21)"
-                    ? "rgb(255, 255, 0)"
-                    : "rgb(0, 255, 21)";
+                if (mode == "normal") {
+                  // Toggle color between yellow and green
+                  target.style.color =
+                    target.style.color === "rgb(0, 255, 21)"
+                      ? "rgb(255, 255, 0)"
+                      : "rgb(0, 255, 21)";
+                }
               }}
               key={rowIndex}
               style={{

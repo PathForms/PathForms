@@ -23,7 +23,7 @@ interface PathBarProps {
   movePaths: string[][];
 }
 
-const getButtonStyles = (mode: string) => {
+const InvertStyles = (mode: string) => {
   switch (mode) {
     case "invert":
       return {
@@ -31,17 +31,21 @@ const getButtonStyles = (mode: string) => {
         color: "black",
         borderColor: "rgb(13, 255, 0)",
       };
-    case "concat":
+    default:
       return {
         backgroundColor: "transparent",
-        color: "rgb(255, 165, 0)",
-        borderColor: "rgb(255, 165, 0)",
+        color: "rgb(13, 255, 0)",
+        borderColor: "rgb(13, 255, 0)",
       };
-    case "highlight":
+  }
+};
+const ConcatStyles = (mode: string) => {
+  switch (mode) {
+    case "concat":
       return {
-        backgroundColor: "yellow",
+        backgroundColor: "rgb(13, 255, 0)",
         color: "black",
-        borderColor: "gold",
+        borderColor: "rgb(13, 255, 0)",
       };
     default:
       return {
@@ -88,33 +92,50 @@ const Pathbar: React.FC<PathBarProps> = ({
           marginTop: "10px",
         }}
       >
-        {[
-          { label: "Invert Mode", action: () => setInvert() },
-          { label: "Concatenate Mode", action: () => setConcat() },
-          { label: "Clear Stored Data", action: clear },
-        ].map((btn, i) => (
-          <button
-            key={i}
-            onClick={btn.action}
-            style={{
-              height: "35px",
-              width: "100%",
-              fontSize: "14px",
-              cursor: "pointer",
-              borderRadius: "4px",
-              transition: "0.3s ease-in-out",
-              ...getButtonStyles(mode), // Dynamically applies styles based on mode
-            }}
-          >
-            {mode === "invert"
-              ? "Invert"
-              : mode === "concat"
-              ? "Concat"
-              : mode === "highlight"
-              ? "Highlight"
-              : btn.label}
-          </button>
-        ))}
+        <button
+          onClick={() => setInvert()}
+          style={{
+            height: "35px",
+            width: "100%",
+            fontSize: "14px",
+            cursor: "pointer",
+            borderRadius: "4px",
+            transition: "0.3s ease-in-out",
+            ...InvertStyles(mode), // Dynamically applies styles based on mode
+          }}
+        >
+          Invert Mode
+        </button>
+        <button
+          onClick={() => setConcat()}
+          style={{
+            height: "35px",
+            width: "100%",
+            fontSize: "14px",
+            cursor: "pointer",
+            borderRadius: "4px",
+            transition: "0.3s ease-in-out",
+            ...ConcatStyles(mode), // Dynamically applies styles based on mode
+          }}
+        >
+          Concatenate Mode
+        </button>
+        <button
+          onClick={() => clear()}
+          style={{
+            height: "35px",
+            width: "100%",
+            fontSize: "14px",
+            cursor: "pointer",
+            borderRadius: "4px",
+            transition: "0.3s ease-in-out",
+            backgroundColor: "transparent",
+            color: "rgb(13, 255, 0)",
+            borderColor: "rgb(13, 255, 0)",
+          }}
+        >
+          Clear Stored Data
+        </button>
       </div>
     </div>
   );

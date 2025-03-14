@@ -1,18 +1,42 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "./components.module.css";
 
 type Direction = "up" | "down" | "left" | "right";
 
 interface ButtonBarProps {
-  generate: () => void;
+  generate: (size: number) => void;
 }
 
 const ButtonBar: React.FC<ButtonBarProps> = ({ generate }) => {
   // onclick function
+  // const handleClick = () => {
+  //   // You can add additional logic here if needed
+  //   generate();
+  // };
+
+  //input config
+  const [inputSize, setInputSize] = useState<string>("");
+
+  // Function to handle input change
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setInputSize(event.target.value);
+  };
+
+  // Function to handle the submit (not being used here, but left for context)
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+  };
+
+  // Function to be called when the button is clicked
   const handleClick = () => {
-    // You can add additional logic here if needed
-    generate();
+    // Convert inputValue to a number and pass it to generate
+    const inputNumber = Number(inputSize); // Make sure to convert the input to a number
+    if (!isNaN(inputNumber)) {
+      generate(inputNumber); // Pass the number to the generate function
+    } else {
+      alert("Please enter a valid number"); // Handle invalid number input
+    }
   };
 
   return (
@@ -30,6 +54,13 @@ const ButtonBar: React.FC<ButtonBarProps> = ({ generate }) => {
         gap: "8px",
       }}
     >
+      <input
+        size={12}
+        type="text"
+        value={inputSize}
+        onChange={handleChange}
+        placeholder="Number of Words"
+      />
       <button
         style={{
           width: "200px",
