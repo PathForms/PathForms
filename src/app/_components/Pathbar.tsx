@@ -87,7 +87,7 @@ const Pathbar: React.FC<PathBarProps> = ({
       <div
         style={{
           display: "flex",
-          flexDirection: "column",
+          flexDirection: "row",
           gap: "6px",
           marginTop: "10px",
         }}

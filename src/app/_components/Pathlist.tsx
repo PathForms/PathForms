@@ -38,6 +38,10 @@ const Pathlist: React.FC<PathlistProps> = ({
       setConcatIndexes([]); // Clear after concatenation
     }
   }, [concatIndexes]); // Runs whenever `concatIndexes` changes
+  useEffect(() => {
+    setConcatIndexes([]);
+  }, [mode]); //reset concat indexes whenever mode change
+  //
 
   const handleClick = (index: number) => {
     if (mode === "invert") {
@@ -56,7 +60,7 @@ const Pathlist: React.FC<PathlistProps> = ({
         position: "fixed",
         top: 5,
         left: 10,
-        color: "rgb(13, 255, 0)",
+        color: "rgb(230, 255, 138)",
         zIndex: 10,
         width: "auto",
         backgroundColor: "rgba(47, 47, 47, 0.5)", // Optional subtle background for visibility
@@ -94,7 +98,7 @@ const Pathlist: React.FC<PathlistProps> = ({
             <p
               className={styles["textbox"]}
               onClick={(event) => {
-                handleClick(rowIndex); // Your existing function
+                handleClick(rowIndex); //handle click
 
                 // Cast event.target to HTMLElement
                 const target = event.target as HTMLElement;
@@ -102,9 +106,9 @@ const Pathlist: React.FC<PathlistProps> = ({
                 if (mode == "normal") {
                   // Toggle color between yellow and green
                   target.style.color =
-                    target.style.color === "rgb(0, 255, 21)"
+                    target.style.color === "rgb(64, 73, 65)"
                       ? "rgb(255, 255, 0)"
-                      : "rgb(0, 255, 21)";
+                      : "rgb(64, 73, 65)";
                 }
               }}
               key={rowIndex}
@@ -122,7 +126,7 @@ const Pathlist: React.FC<PathlistProps> = ({
               }}
             >
               {/* use {} to denote sections */}
-              {`Word ${rowIndex + 1}: `}
+              {`[W${rowIndex + 1}]: `}
               {path.length === 0
                 ? "1"
                 : path

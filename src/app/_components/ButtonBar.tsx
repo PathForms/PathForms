@@ -31,11 +31,14 @@ const ButtonBar: React.FC<ButtonBarProps> = ({ generate }) => {
   // Function to be called when the button is clicked
   const handleClick = () => {
     // Convert inputValue to a number and pass it to generate
-    const inputNumber = Number(inputSize); // Make sure to convert the input to a number
+    let inputNumber = 2; // Make sure to convert the input to a number
+    if (inputSize != "") {
+      inputNumber = Number(inputSize);
+    }
     if (!isNaN(inputNumber)) {
       generate(inputNumber); // Pass the number to the generate function
     } else {
-      alert("Please enter a valid number"); // Handle invalid number input
+      generate(2); // Handle invalid number input
     }
   };
 
@@ -43,8 +46,8 @@ const ButtonBar: React.FC<ButtonBarProps> = ({ generate }) => {
     <div
       style={{
         position: "absolute",
-        bottom: 20,
-        left: "50%",
+        bottom: 65,
+        left: "14%",
         transform: "translateX(-50%)",
         backgroundColor: "rgba(0, 0, 0, 0.5)",
         padding: "10px",

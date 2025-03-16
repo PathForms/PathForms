@@ -6,6 +6,7 @@ import CayleyTree from "./CayleyTree";
 import Pathbar from "./Pathbar";
 import Headbar from "./Headbar";
 import Pathlist from "./Pathlist";
+import Pathterminal from "./Pathterminal";
 import styles from "./components.module.css";
 
 type Direction = "up" | "down" | "left" | "right";
@@ -37,7 +38,7 @@ const Interface = () => {
   // const [edges, setEdges] = useState<string[]>([]);
 
   // Settings state: edge thickness, vertex size, theme and settings panel visibility
-  const [edgeThickness, setEdgeThickness] = useState<number>(1);
+  const [edgeThickness, setEdgeThickness] = useState<number>(0.7);
   const [theme, setTheme] = useState<"dark" | "light">("light");
   const [showSettings, setShowSettings] = useState<boolean>(false);
 
@@ -240,6 +241,7 @@ const Interface = () => {
     setNodePaths([]);
     setMoveRecords([]);
     setPathIndex([]);
+    setOperationMode("normal");
   };
 
   // Invert a stored path at a given index
@@ -518,6 +520,7 @@ const Interface = () => {
     setEdgePaths([]);
     setNodePaths([]);
     setMoveRecords([]);
+    setOperationMode("normal");
 
     // Reset refs
     moveRecordsRef.current = [["up"], ["right"]];
@@ -525,6 +528,9 @@ const Interface = () => {
     edgePathsRef.current = [];
     //generate additional
     //might need debug
+    if (n == 1) {
+      n = 2;
+    }
     if (n >= 2) {
       let k = n - 3;
       while (k >= 0) {
@@ -541,8 +547,10 @@ const Interface = () => {
         weightedInversion();
       } else if (operation === 1) {
         // Concatenate as usual (could also be enhanced with weights if desired)
-        const [index1, index2] = generateRandomPathPair(n);
-
+        let [index1, index2] = generateRandomPathPair(n);
+        while (moveRecordsRef.current[index1].length >= 4) {
+          [index1, index2] = generateRandomPathPair(n);
+        }
         const path1Moves = [...moveRecordsRef.current[index1]];
         const path2Moves = [...moveRecordsRef.current[index2]];
         let newMoves: Direction[] = [];
@@ -682,6 +690,20 @@ const Interface = () => {
     );
   };
 
+  // define props for specific components
+  const TerminalProps = {
+    pathIndex,
+    nodePaths,
+    edgePaths,
+    moveRecords,
+    operationMode,
+
+    setPathIndex,
+    setNodePaths,
+    setEdgePaths,
+    setMoveRecords,
+    setOperationMode,
+  };
   return (
     <div className={`${styles.container} ${theme}`}>
       <Headbar
@@ -692,13 +714,31 @@ const Interface = () => {
         handleEdgeThicknessChange={handleEdgeThicknessChange}
         handleThemeChange={handleThemeChange}
       />
+
       <ButtonBar generate={GeneratePath} />
+      <Pathterminal
+        pathIndex={pathIndex}
+        nodePaths={nodePaths}
+        edgePaths={edgePaths}
+        moveRecords={moveRecords}
+        operationMode={operationMode}
+        setEdgePaths={setEdgePaths}
+        setNodePaths={setNodePaths}
+        setMoveRecords={setMoveRecords}
+        setPathIndex={setPathIndex}
+        setOperationMode={setOperationMode}
+        generate={GeneratePath}
+        demonstratePath={demonstratePath}
+        concatenate={concatenate}
+        invert={invertPath}
+      />
       <CayleyTree
         pathIndex={pathIndex}
         nodePaths={nodePaths}
         edgePaths={edgePaths}
         edgeThickness={edgeThickness}
       />
+
       <Pathlist
         mode={operationMode}
         nodePaths={nodePaths}
@@ -708,6 +748,7 @@ const Interface = () => {
         concatenate={concatenate}
         invert={invertPath}
       />
+
       <Pathbar
         mode={operationMode}
         setInvert={setInvert}

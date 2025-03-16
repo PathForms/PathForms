@@ -108,3 +108,10 @@
   color: yellow; /* Change text color on hover */
   cursor: pointer; /* Change cursor to pointer to indicate clickable */
 }
+
+/* terminal container */
+
+.terminal-container {
+  display: flex;
+  right: 20px;
+}

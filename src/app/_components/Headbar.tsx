@@ -23,16 +23,41 @@ const Headbar: React.FC<HeadbarProps> = ({
 
   handleThemeChange,
 }) => {
-  const router = useRouter();
+  const colors = [
+    "rgb(255, 50, 91)",
+    "rgb(0, 255, 106)",
+    "rgb(246, 255, 0)",
+    "rgb(255, 166, 0)",
+    "rgb(255, 0, 255)",
+    "rgb(255, 94, 0)",
+    "rgb(255, 204, 160)",
+    "rgb(152, 0, 137)",
+    "rgb(255, 137, 239)",
+  ];
+  const text = "PathForms!";
 
-  const goToPlayground = () => {
-    router.push("/");
-  };
+  const heading = (
+    <h1 style={{ cursor: "pointer" }}>
+      <a
+        href="https://mineyev.web.illinois.edu/PathForms/"
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{ textDecoration: "none", display: "inline-block" }}
+      >
+        {text.split("").map((char, index) => (
+          <span key={index} style={{ color: colors[index % colors.length] }}>
+            {char}
+          </span>
+        ))}
+      </a>
+    </h1>
+  );
+
   return (
     <div className={`${styles.header} ${styles[theme]}`}>
       {" "}
       {/* Use CSS module styling for dynamic class */}
-      <h1>PathForms</h1>
+      <div>{heading}</div>
       <button className={styles["settings-button"]} onClick={toggleSettings}>
         Settings
       </button>
@@ -59,7 +84,6 @@ const Headbar: React.FC<HeadbarProps> = ({
           <button onClick={toggleSettings}>Close</button>
         </div>
       )}
-      <button onClick={goToPlayground}>Back to Home</button>
     </div>
   );
 };
