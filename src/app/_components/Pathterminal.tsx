@@ -269,7 +269,7 @@ const Pathterminal: React.FC<PathterminalProps> = ({
           term.writeln("> Invert mode.");
           term.write("> ");
         } else if (command === "m") {
-          term.writeln("> You are in concat mode. ");
+          term.writeln("> You are in Concatenate mode. ");
           term.write("> ");
         } else {
           // Implement concatenation logic here
