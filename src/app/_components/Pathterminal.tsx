@@ -43,12 +43,11 @@ const Pathterminal: React.FC<PathterminalProps> = ({
 }) => {
   const terminalRef = useRef<HTMLDivElement>(null);
   const terminalInstanceRef = useRef<Terminal | null>(null);
-  //current mode that our conversation is in, triggered by specific inputs;
+  const commandHandlerRef = useRef<any>(null);
+  const currentModeRef = useRef<string>("default");
 
-  //check every enter: which mode, and then which command
-  const [convMode, setConvMode] = useState<string>("default");
-  //temp data stored for conversation.
-  const [tempData, setTempData] = useState({}); // use a dictionary to store the data, with keys and inputs;
+  // Terminal initialization - runs only once
+  // In order to make sure that future re-render does not effec the terminal istory
   useEffect(() => {
     if (terminalRef.current && !terminalInstanceRef.current) {
       // Create the terminal only if it doesn't exist yet
@@ -60,6 +59,7 @@ const Pathterminal: React.FC<PathterminalProps> = ({
 
       terminalInstanceRef.current = term;
       term.open(terminalRef.current);
+
       // Introduction
       term.writeln("Welcome to PathForms!");
       term.writeln(
@@ -71,110 +71,10 @@ const Pathterminal: React.FC<PathterminalProps> = ({
       term.writeln(
         "You are expected to perform Nielsen's transformation to bring this subgroup to Nielsen reduced form. "
       );
+      term.writeln("> h: help ");
 
       //line heading
       term.write("> ");
-
-      // To inplement:
-      //
-      // Interactions:
-      // g
-      // inv wx
-      // concat wx wy
-      // i
-      // c
-      //
-      // Data Demo
-      //
-      // action records (auto)
-      // wx : check nodesPath - demo paths
-      //
-      //
-      // Game interface
-      // help
-
-      // user input data, STATE SPACE MACHINE
-      let command = "";
-      // data: user keyboard behaviros
-      term.onData((data) => {
-        // Enter, deal with current command
-        if (data === "\r") {
-          term.writeln(""); // New line
-          if (convMode == "default") {
-            // default mode, waiting for first-level command
-            if (command == "g") {
-              //go to generate mode
-              command = "";
-              term.write("> Generate word vector with size: ");
-              setConvMode("generate");
-            } else if (command == "i") {
-              setConvMode("invert");
-              setOperationMode("invert");
-              command = "";
-              term.writeln("> Invert mode.");
-              term.write("> ");
-            } else if (command == "c") {
-              setConvMode("concat");
-              setOperationMode("concat");
-              command = "";
-              term.writeln("> Concatenate mode.");
-              term.write("> ");
-            } else if (command == "mode") {
-              command = "";
-              term.writeln("> You are in default mode. ");
-              term.write("> ");
-            }
-          } else if (convMode == "generate") {
-            //generate mode, expecting vector size
-            //check number
-            const numValue = parseInt(command, 10);
-            if (!isNaN(numValue)) {
-              generate(numValue);
-              command = "";
-              term.write("> ");
-            } else {
-              //check for other operations
-              if (command == "mode") {
-                command = "";
-                term.writeln("> You are in generate mode. ");
-                term.write("> ");
-              } else if (command == "q") {
-                setConvMode("default");
-                setOperationMode("normal");
-                command = "";
-                term.writeln("> default  mode.");
-                term.write("> ");
-              } else {
-                // command is not a valid number
-                command = "";
-                term.writeln("> Not valid integer.");
-                term.write("> ");
-              }
-            }
-          } else if (convMode == "invert") {
-            if (command.startsWith("w")) {
-              const index: number = parseInt(command.substring(1), 10);
-              if (!isNaN(index)) {
-                invert(index - 1); //invert the correct path
-              } else {
-                command = "";
-                term.writeln("> Not valid path.");
-                term.write("> ");
-              }
-            }
-          }
-        } else if (data === "\u007F") {
-          // Handle backspace
-          if (command.length > 0) {
-            command = command.slice(0, -1);
-            term.write("\b \b"); // Move cursor back, erase character
-          }
-        } else {
-          // Collect command
-          command += data;
-          term.write(data);
-        }
-      });
     }
 
     // Cleanup function
@@ -184,22 +84,251 @@ const Pathterminal: React.FC<PathterminalProps> = ({
         terminalInstanceRef.current = null;
       }
     };
-  }, [
-    terminalRef,
-    terminalInstanceRef,
-    convMode,
-    setConvMode,
-    // setOperationMode,
-    // generate,
-    // invert,
-  ]);
+  }, [terminalRef]); // Only depend on terminalRef to initialize once
 
+  // Update command handler whenever relevant props change
   useEffect(() => {
-    if (convMode === "generate") {
-      terminalInstanceRef.current?.writeln("Generate word vector with size: ");
-      terminalInstanceRef.current?.write("> ");
-    }
-  }, [convMode]);
+    commandHandlerRef.current = (command: string) => {
+      const term = terminalInstanceRef.current;
+      if (!term) return;
+
+      const currentMode = currentModeRef.current;
+
+      if (currentMode === "default") {
+        // default mode, waiting for first-level command
+        if (command === "g") {
+          //go to generate mode
+          currentModeRef.current = "generate";
+          term.writeln("> Generate word vector with size: ");
+          term.write("> ");
+        } else if (command.startsWith("w")) {
+          const index: number = parseInt(command.substring(1), 10);
+          if (!isNaN(index)) {
+            demonstratePath(index - 1); //invert the correct path
+            term.write("> ");
+          } else {
+            term.writeln("> Not valid path.");
+            term.write("> ");
+          }
+        } else if (command === "i") {
+          currentModeRef.current = "invert";
+          setOperationMode("invert");
+          term.writeln("> Invert mode.");
+          term.write("> ");
+        } else if (command === "c") {
+          currentModeRef.current = "concat";
+          setOperationMode("concat");
+          term.writeln("> Concatenate mode.");
+          term.write("> ");
+        } else if (command === "m") {
+          term.writeln("> You are in default mode. ");
+          term.write("> ");
+        } else if (command === "q") {
+          currentModeRef.current = "default";
+          setOperationMode("normal");
+          term.writeln("> Default mode.");
+          term.write("> ");
+        } else if (command === "h") {
+          term.writeln("> g: go to generate mode; ");
+          term.writeln("> q: go to Default mode; ");
+          term.writeln("> i: go to Invert mode; ");
+          term.writeln("> c: go to Concatenate mode; ");
+          term.writeln("> m: check current mode");
+          term.writeln("> h: help ");
+          term.writeln(
+            "Check terminal FSM diagram \u001B]8;;https://pathforms.vercel.app/fsm\u0007here\u001B]8;;\u0007"
+          );
+          term.write("> ");
+        } else {
+          term.write("> ");
+        }
+      } else if (currentMode === "generate") {
+        //generate mode, expecting vector size
+        //check number
+        const numValue = parseInt(command, 10);
+        if (!isNaN(numValue)) {
+          generate(numValue);
+          term.write("> ");
+        } else {
+          //check for other operations
+          if (command === "m") {
+            term.writeln("> You are in generate mode. ");
+            term.write("> ");
+          } else if (command === "h") {
+            term.writeln("> g: go to generate mode; ");
+            term.writeln("> q: go to Default mode; ");
+            term.writeln("> i: go to Invert mode; ");
+            term.writeln("> c: go to Concatenate mode; ");
+            term.writeln("> m: check current mode");
+            term.writeln("> h: help ");
+            term.write("> ");
+          } else if (command === "q") {
+            currentModeRef.current = "default";
+            setOperationMode("normal");
+            term.writeln("> Default mode.");
+            term.write("> ");
+          } else if (command === "i") {
+            currentModeRef.current = "invert";
+            setOperationMode("invert");
+            term.writeln("> invert mode.");
+            term.write("> ");
+          } else if (command === "c") {
+            currentModeRef.current = "concat";
+            setOperationMode("concat");
+            term.writeln("> Concatenate mode.");
+            term.write("> ");
+          } else {
+            // command is not a valid number
+            term.writeln("> Not valid integer.");
+            term.write("> ");
+          }
+        }
+      } else if (currentMode === "invert") {
+        if (command.startsWith("w")) {
+          const index: number = parseInt(command.substring(1), 10);
+          if (!isNaN(index)) {
+            invert(index - 1); //invert the correct path
+            term.write("> ");
+          } else {
+            term.writeln("> Not valid path.");
+            term.write("> ");
+          }
+        } else if (command === "h") {
+          term.writeln("> g: go to generate mode; ");
+          term.writeln("> q: go to Default mode; ");
+          term.writeln("> i: go to Invert mode; ");
+          term.writeln("> c: go to Concatenate mode; ");
+          term.writeln("> m: check current mode");
+          term.writeln("> h: help ");
+          term.write("> ");
+        } else if (command === "g") {
+          //go to generate mode
+          currentModeRef.current = "generate";
+          term.writeln("> Generate word vector with size: ");
+          term.write("> ");
+        } else if (command === "q") {
+          currentModeRef.current = "default";
+          setOperationMode("normal");
+          term.writeln("> Default mode.");
+          term.write("> ");
+        } else if (command === "i") {
+          currentModeRef.current = "invert";
+          setOperationMode("invert");
+          term.writeln("> Invert mode.");
+          term.write("> ");
+        } else if (command === "c") {
+          currentModeRef.current = "concat";
+          setOperationMode("concat");
+          term.writeln("> Concatenate mode.");
+          term.write("> ");
+        } else if (command === "m") {
+          term.writeln("> You are in invert mode. ");
+          term.write("> ");
+        } else {
+          term.write("> ");
+        }
+      } else if (currentMode === "concat") {
+        // Implement concat mode handling
+        if (command.startsWith("w")) {
+          const p: string[] = command.split(" ");
+          const index1 = parseInt(p[0].substring(1), 10);
+          const index2 = parseInt(p[1].substring(1), 10);
+          if (!isNaN(index1) && !isNaN(index2)) {
+            concatenate(index1 - 1, index2 - 1);
+            term.write("> ");
+          } else {
+            term.writeln("> Not valid paths.");
+            term.write("> ");
+          }
+        } else if (command === "q") {
+          currentModeRef.current = "default";
+          setOperationMode("normal");
+          term.writeln("> Default mode.");
+          term.write("> ");
+        } else if (command === "h") {
+          term.writeln("> g: go to generate mode; ");
+          term.writeln("> q: go to Default mode; ");
+          term.writeln("> i: go to Invert mode; ");
+          term.writeln("> c: go to Concatenate mode; ");
+          term.writeln("> m: check current mode");
+          term.writeln("> h: help ");
+          term.write("> ");
+        } else if (command === "g") {
+          //go to generate mode
+          currentModeRef.current = "generate";
+          term.writeln("> Generate word vector with size: ");
+          term.write("> ");
+        } else if (command === "c") {
+          currentModeRef.current = "concat";
+          setOperationMode("concat");
+          term.writeln("> Concatenate mode.");
+          term.write("> ");
+        } else if (command === "i") {
+          currentModeRef.current = "invert";
+          setOperationMode("invert");
+          term.writeln("> Invert mode.");
+          term.write("> ");
+        } else if (command === "m") {
+          term.writeln("> You are in concat mode. ");
+          term.write("> ");
+        } else {
+          // Implement concatenation logic here
+          term.write("> ");
+        }
+      }
+    };
+  }, [
+    generate,
+    invert,
+    concatenate,
+    demonstratePath,
+    setOperationMode,
+    moveRecords,
+    nodePaths,
+    edgePaths,
+  ]); // Include all dependencies that the handlers use
+
+  // Set up the data listener only once but use the latest command handler
+  useEffect(() => {
+    const term = terminalInstanceRef.current;
+    if (!term) return;
+
+    let command = "";
+
+    const dataHandler = (data: string) => {
+      // Enter, deal with current command
+      if (data === "\r") {
+        term.writeln(""); // New line
+        if (commandHandlerRef.current) {
+          commandHandlerRef.current(command);
+        }
+        command = ""; // Reset command after processing
+      } else if (data === "\u007F") {
+        // Handle backspace
+        if (command.length > 0) {
+          command = command.slice(0, -1);
+          term.write("\b \b"); // Move cursor back, erase character
+        }
+      } else {
+        // Collect command
+        command += data;
+        term.write(data);
+      }
+    };
+
+    term.onData(dataHandler);
+
+    // No cleanup needed for this listener as it's bound to the terminal lifecycle
+  }, [terminalInstanceRef]); // Only depend on the terminal instance
+
+  // // Effect to handle mode-specific UI updates
+  // useEffect(() => {
+  //   const term = terminalInstanceRef.current;
+  //   if (!term) return;
+
+  //   // This can handle any UI updates needed when operationMode changes
+  //   // For example, displaying different prompts based on mode
+  // }, [operationMode]);
 
   return (
     <div
