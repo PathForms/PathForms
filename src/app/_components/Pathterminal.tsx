@@ -122,6 +122,7 @@ const Pathterminal: React.FC<PathterminalProps> = ({
           term.write("> ");
         } else if (command === "m") {
           term.writeln("> You are in default mode. ");
+          term.writeln("> To show/hide path: wn (n: word index) ");
           term.write("> ");
         } else if (command === "q") {
           currentModeRef.current = "default";
@@ -133,10 +134,10 @@ const Pathterminal: React.FC<PathterminalProps> = ({
           term.writeln("> q: go to Default mode; ");
           term.writeln("> i: go to Invert mode; ");
           term.writeln("> c: go to Concatenate mode; ");
-          term.writeln("> m: check current mode");
+          term.writeln("> m: check current mode & operations");
           term.writeln("> h: help ");
           term.writeln(
-            "Check terminal FSM diagram \u001B]8;;https://pathforms.vercel.app/fsm\u0007here\u001B]8;;\u0007"
+            "> Check terminal FSM diagram \u001B]8;;https://pathforms.vercel.app/fsm\u0007here\u001B]8;;\u0007"
           );
           term.write("> ");
         } else {
@@ -153,14 +154,19 @@ const Pathterminal: React.FC<PathterminalProps> = ({
           //check for other operations
           if (command === "m") {
             term.writeln("> You are in generate mode. ");
+            term.writeln("> To show/hide path: n (n: word size) ");
             term.write("> ");
           } else if (command === "h") {
             term.writeln("> g: go to generate mode; ");
             term.writeln("> q: go to Default mode; ");
             term.writeln("> i: go to Invert mode; ");
             term.writeln("> c: go to Concatenate mode; ");
-            term.writeln("> m: check current mode");
+            term.writeln("> m: check current mode & operations");
             term.writeln("> h: help ");
+            term.writeln(
+              "> Check terminal FSM diagram \u001B]8;;https://pathforms.vercel.app/fsm\u0007here\u001B]8;;\u0007"
+            );
+
             term.write("> ");
           } else if (command === "q") {
             currentModeRef.current = "default";
@@ -198,8 +204,11 @@ const Pathterminal: React.FC<PathterminalProps> = ({
           term.writeln("> q: go to Default mode; ");
           term.writeln("> i: go to Invert mode; ");
           term.writeln("> c: go to Concatenate mode; ");
-          term.writeln("> m: check current mode");
+          term.writeln("> m: check current mode & operations");
           term.writeln("> h: help ");
+          term.writeln(
+            "> Check terminal FSM diagram \u001B]8;;https://pathforms.vercel.app/fsm\u0007here\u001B]8;;\u0007"
+          );
           term.write("> ");
         } else if (command === "g") {
           //go to generate mode
@@ -223,6 +232,7 @@ const Pathterminal: React.FC<PathterminalProps> = ({
           term.write("> ");
         } else if (command === "m") {
           term.writeln("> You are in invert mode. ");
+          term.writeln("> To invert path: wn (n: word index) ");
           term.write("> ");
         } else {
           term.write("> ");
@@ -250,8 +260,11 @@ const Pathterminal: React.FC<PathterminalProps> = ({
           term.writeln("> q: go to Default mode; ");
           term.writeln("> i: go to Invert mode; ");
           term.writeln("> c: go to Concatenate mode; ");
-          term.writeln("> m: check current mode");
+          term.writeln("> m: check current mode & operations");
           term.writeln("> h: help ");
+          term.writeln(
+            "> Check terminal FSM diagram \u001B]8;;https://pathforms.vercel.app/fsm\u0007here\u001B]8;;\u0007"
+          );
           term.write("> ");
         } else if (command === "g") {
           //go to generate mode
@@ -270,6 +283,10 @@ const Pathterminal: React.FC<PathterminalProps> = ({
           term.write("> ");
         } else if (command === "m") {
           term.writeln("> You are in Concatenate mode. ");
+          term.writeln(
+            "> To concatenate paths: wn wm (n: word index 1; m: word index 2. ) "
+          );
+
           term.write("> ");
         } else {
           // Implement concatenation logic here
