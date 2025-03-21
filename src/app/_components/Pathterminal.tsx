@@ -55,6 +55,13 @@ const Pathterminal: React.FC<PathterminalProps> = ({
         cursorBlink: true,
         rows: 15,
         cols: 90,
+
+        theme: {
+          background: "rgba(29, 29, 29, 0.49)", // Dark background color
+          foreground: "#rgba(255, 255, 255, 0.81)", // Optional: change text color too
+        },
+
+        fontFamily: '"Cascadia Mono", monospace',
       });
 
       terminalInstanceRef.current = term;
@@ -63,7 +70,7 @@ const Pathterminal: React.FC<PathterminalProps> = ({
       // Introduction
       term.writeln("Welcome to PathForms!");
       term.writeln(
-        "This game aims to introduce Nielsen transformation in combinatorial group theory."
+        "This game aims to introduce Nielsen transform in combinatorial group theory."
       );
       term.writeln(
         "The game provides a subgroup of a rank-2 free group with generators a, b (the Word Vector)."
