@@ -15,6 +15,7 @@ interface PathlistProps {
   nodePaths: string[][];
   edgePaths: string[][];
   movePaths: string[][];
+  pathIndex: number[];
   demonstratePath: (index: number) => void;
   concatenate: (index1: number, index2: number) => void;
   invert: (index: number) => void;
@@ -25,6 +26,7 @@ const Pathlist: React.FC<PathlistProps> = ({
   nodePaths,
   edgePaths,
   movePaths,
+  pathIndex,
   demonstratePath,
   concatenate,
   invert,
@@ -94,48 +96,39 @@ const Pathlist: React.FC<PathlistProps> = ({
             No Data
           </p>
         ) : (
-          movePaths.map((path, rowIndex) => (
-            <p
-              className={styles["textbox"]}
-              onClick={(event) => {
-                handleClick(rowIndex); //handle click
+          movePaths.map((path, rowIndex) => {
+            const isActive = pathIndex.includes(rowIndex);
+            const textColor = isActive ? "rgb(255, 255, 0)" : "rgb(64, 73, 65)";
 
-                // Cast event.target to HTMLElement
-                const target = event.target as HTMLElement;
-
-                if (mode == "normal") {
-                  // Toggle color between yellow and green
-                  target.style.color =
-                    target.style.color === "rgb(64, 73, 65)"
-                      ? "rgb(255, 255, 0)"
-                      : "rgb(64, 73, 65)";
-                }
-              }}
-              key={rowIndex}
-              style={{
-                color: "rgb(255, 255, 0)", // Initial color (Yellow)
-                textAlign: "left",
-                minWidth: "100px",
-                maxWidth: "33vw", // 33% of the screen width
-                width: "auto",
-                whiteSpace: "nowrap", // Prevent wrapping
-                overflowX: "auto", // Allow horizontal scrolling
-                padding: "2px",
-                margin: "0", // Remove default margin to reduce vertical space
-                scrollbarWidth: "none", // Firefox: hides scrollbar
-              }}
-            >
-              {/* use {} to denote sections */}
-              {`[W${rowIndex + 1}]: `}
-              {path.length === 0
-                ? "1"
-                : path
-                    .map(
-                      (node) => translation[node as keyof typeof translation]
-                    )
-                    .join(" ")}
-            </p>
-          ))
+            return (
+              <p
+                className={styles["textbox"]}
+                onClick={() => handleClick(rowIndex)}
+                key={rowIndex}
+                style={{
+                  color: textColor,
+                  textAlign: "left",
+                  minWidth: "100px",
+                  maxWidth: "33vw",
+                  width: "auto",
+                  whiteSpace: "nowrap",
+                  overflowX: "auto",
+                  padding: "2px",
+                  margin: "0",
+                  scrollbarWidth: "none",
+                }}
+              >
+                {`[W${rowIndex + 1}]: `}
+                {path.length === 0
+                  ? "1"
+                  : path
+                      .map(
+                        (node) => translation[node as keyof typeof translation]
+                      )
+                      .join(" ")}
+              </p>
+            );
+          })
         )}
       </div>
     </div>

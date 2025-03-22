@@ -103,20 +103,15 @@ const Pathterminal: React.FC<PathterminalProps> = ({
 
       if (currentMode === "default") {
         // default mode, waiting for first-level command
-        if (command === "g") {
+        const index: number = parseInt(command, 10);
+        if (!isNaN(index)) {
+          demonstratePath(index - 1); //invert the correct path
+          term.write("> ");
+        } else if (command === "g") {
           //go to generate mode
           currentModeRef.current = "generate";
           term.writeln("> Generate word vector with size: ");
           term.write("> ");
-        } else if (command.startsWith("w")) {
-          const index: number = parseInt(command.substring(1), 10);
-          if (!isNaN(index)) {
-            demonstratePath(index - 1); //invert the correct path
-            term.write("> ");
-          } else {
-            term.writeln("> Not valid path.");
-            term.write("> ");
-          }
         } else if (command === "i") {
           currentModeRef.current = "invert";
           setOperationMode("invert");
@@ -129,7 +124,7 @@ const Pathterminal: React.FC<PathterminalProps> = ({
           term.write("> ");
         } else if (command === "m") {
           term.writeln("> You are in default mode. ");
-          term.writeln("> To show/hide path: wn (n: word index) ");
+          term.writeln("> To show/hide path: n (n: word index) ");
           term.write("> ");
         } else if (command === "q") {
           currentModeRef.current = "default";
@@ -148,6 +143,7 @@ const Pathterminal: React.FC<PathterminalProps> = ({
           );
           term.write("> ");
         } else {
+          term.writeln("> Invalid.");
           term.write("> ");
         }
       } else if (currentMode === "generate") {
@@ -161,7 +157,7 @@ const Pathterminal: React.FC<PathterminalProps> = ({
           //check for other operations
           if (command === "m") {
             term.writeln("> You are in generate mode. ");
-            term.writeln("> To show/hide path: n (n: word size) ");
+            term.writeln("> To generate new word vector: n (n: word size) ");
             term.write("> ");
           } else if (command === "h") {
             term.writeln("> g: go to generate mode; ");
@@ -192,20 +188,15 @@ const Pathterminal: React.FC<PathterminalProps> = ({
             term.write("> ");
           } else {
             // command is not a valid number
-            term.writeln("> Not valid integer.");
+            term.writeln("> Invalid.");
             term.write("> ");
           }
         }
       } else if (currentMode === "invert") {
-        if (command.startsWith("w")) {
-          const index: number = parseInt(command.substring(1), 10);
-          if (!isNaN(index)) {
-            invert(index - 1); //invert the correct path
-            term.write("> ");
-          } else {
-            term.writeln("> Not valid path.");
-            term.write("> ");
-          }
+        const index: number = parseInt(command, 10);
+        if (!isNaN(index)) {
+          invert(index - 1); //invert the correct path
+          term.write("> ");
         } else if (command === "h") {
           term.writeln("> g: go to generate mode; ");
           term.writeln("> q: go to Default mode; ");
@@ -239,24 +230,20 @@ const Pathterminal: React.FC<PathterminalProps> = ({
           term.write("> ");
         } else if (command === "m") {
           term.writeln("> You are in invert mode. ");
-          term.writeln("> To invert path: wn (n: word index) ");
-          term.write("> ");
+          term.writeln("> To invert path: n (n: integer, word index) ");
         } else {
+          term.writeln("> Invalid.");
           term.write("> ");
         }
       } else if (currentMode === "concat") {
         // Implement concat mode handling
-        if (command.startsWith("w")) {
-          const p: string[] = command.split(" ");
-          const index1 = parseInt(p[0].substring(1), 10);
-          const index2 = parseInt(p[1].substring(1), 10);
-          if (!isNaN(index1) && !isNaN(index2)) {
-            concatenate(index1 - 1, index2 - 1);
-            term.write("> ");
-          } else {
-            term.writeln("> Not valid paths.");
-            term.write("> ");
-          }
+
+        const p: string[] = command.split(" ");
+        const index1 = parseInt(p[0], 10);
+        const index2 = parseInt(p[1], 10);
+        if (!isNaN(index1) && !isNaN(index2)) {
+          concatenate(index1 - 1, index2 - 1);
+          term.write("> ");
         } else if (command === "q") {
           currentModeRef.current = "default";
           setOperationMode("normal");
@@ -291,12 +278,10 @@ const Pathterminal: React.FC<PathterminalProps> = ({
         } else if (command === "m") {
           term.writeln("> You are in Concatenate mode. ");
           term.writeln(
-            "> To concatenate paths: wn wm (n: word index 1; m: word index 2. ) "
+            "> To concatenate paths: n m (n: integer, word index 1; m: integer, word index 2. ) "
           );
-
-          term.write("> ");
         } else {
-          // Implement concatenation logic here
+          term.writeln("> Invalid.");
           term.write("> ");
         }
       }
@@ -363,10 +348,10 @@ const Pathterminal: React.FC<PathterminalProps> = ({
         bottom: "0",
         zIndex: 0,
         width: "60%",
-        height: "300px",
+        height: "290px",
       }}
     >
-      <div ref={terminalRef} style={{ width: "100%", height: "100%" }} />
+      <div ref={terminalRef} style={{ width: "110%", height: "100%" }} />
     </div>
   );
 };

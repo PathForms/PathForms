@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useEffect } from "react";
 import styles from "./components.module.css"; // Ensure that this is the correct path for your CSS module
 import { useRouter } from "next/navigation";
 interface HeadbarProps {
@@ -35,6 +36,16 @@ const Headbar: React.FC<HeadbarProps> = ({
     "rgb(255, 137, 239)",
   ];
   const text = "PathForms!";
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === "light") {
+      root.style.setProperty("--background", "#ffffff");
+      root.style.setProperty("--foreground", "#171717");
+    } else {
+      root.style.setProperty("--background", "#0a0a0a");
+      root.style.setProperty("--foreground", "#ededed");
+    }
+  }, [theme]);
 
   const heading = (
     <h1 style={{ cursor: "pointer" }}>
@@ -67,8 +78,9 @@ const Headbar: React.FC<HeadbarProps> = ({
             <label>Edge Thickness:</label>
             <input
               type="range"
-              min="1"
+              min="0.7"
               max="10"
+              step="0.1"
               value={edgeThickness}
               onChange={handleEdgeThicknessChange}
             />
