@@ -39,7 +39,7 @@ const Interface = () => {
 
   // Settings state: edge thickness, vertex size, theme and settings panel visibility
   const [edgeThickness, setEdgeThickness] = useState<number>(0.7);
-  const [theme, setTheme] = useState<"dark" | "light">("light");
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [showSettings, setShowSettings] = useState<boolean>(false);
 
   //
@@ -690,20 +690,6 @@ const Interface = () => {
     );
   };
 
-  // define props for specific components
-  const TerminalProps = {
-    pathIndex,
-    nodePaths,
-    edgePaths,
-    moveRecords,
-    operationMode,
-
-    setPathIndex,
-    setNodePaths,
-    setEdgePaths,
-    setMoveRecords,
-    setOperationMode,
-  };
   return (
     <div className={`${styles.container} ${theme}`}>
       <Headbar
@@ -744,6 +730,7 @@ const Interface = () => {
         nodePaths={nodePaths}
         edgePaths={edgePaths}
         movePaths={moveRecords}
+        pathIndex={pathIndex}
         demonstratePath={demonstratePath}
         concatenate={concatenate}
         invert={invertPath}
