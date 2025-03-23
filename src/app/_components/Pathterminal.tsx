@@ -61,7 +61,11 @@ const Pathterminal: React.FC<PathterminalProps> = ({
           foreground: "#rgba(255, 255, 255, 0.81)", // Optional: change text color too
         },
 
-        fontFamily: '"Cascadia Mono", monospace',
+        fontFamily: '"Ubuntu", monospace',
+        //'"SF Mono", Menlo, monospace'
+        // '"Cascadia Mono", monospace',
+        //'"Menlo monospace",monospace'
+        //'"Ubuntu", sans-serif',
       });
 
       terminalInstanceRef.current = term;
