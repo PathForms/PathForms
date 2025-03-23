@@ -111,6 +111,16 @@ const Pathterminal: React.FC<PathterminalProps> = ({
         if (!isNaN(index)) {
           demonstratePath(index - 1); //invert the correct path
           term.write("> ");
+        } else if (command === "a") {
+          if (pathIndex.length != 0) {
+            setPathIndex([]);
+            term.write("> ");
+          } else {
+            setPathIndex(
+              Array.from({ length: nodePaths.length }, (_, index) => index)
+            );
+            term.write("> ");
+          }
         } else if (command === "g") {
           //go to generate mode
           currentModeRef.current = "generate";
@@ -129,6 +139,7 @@ const Pathterminal: React.FC<PathterminalProps> = ({
         } else if (command === "m") {
           term.writeln("> You are in default mode. ");
           term.writeln("> To show/hide path: n (n: word index) ");
+          term.writeln("> To show/hide all path: a ");
           term.write("> ");
         } else if (command === "q") {
           currentModeRef.current = "default";
