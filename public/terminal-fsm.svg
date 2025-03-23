@@ -17,28 +17,25 @@
 	<polygon fill="lightblue" stroke-width="1" points="172.549,466.465 169.695,457.473 163.215,465.09"/>
 	<text fill="lightblue" x="68.5" y="312.5" font-family="Times New Roman" font-size="20">q</text>
 	<path stroke="lightblue" stroke-width="1" fill="none" d="M 465.503,294.004 A 22.5,22.5 0 1 1 491.646,298.025"/>
-	<text fill="lightblue" x="479.5" y="245.5" font-family="Times New Roman" font-size="20">wx</text>
+	<text fill="lightblue" x="483.5" y="245.5" font-family="Times New Roman" font-size="20">x</text>
 	<polygon fill="lightblue" stroke-width="1" points="491.646,298.025 500.829,295.863 493.727,288.824"/>
 	<path stroke="lightblue" stroke-width="1" fill="none" d="M 691.197,535.828 A 22.5,22.5 0 1 1 676.923,558.095"/>
-	<text fill="lightblue" x="724.5" y="588.5" font-family="Times New Roman" font-size="20">wx wy</text>
+	<text fill="lightblue" x="724.5" y="588.5" font-family="Times New Roman" font-size="20">x y</text>
 	<polygon fill="lightblue" stroke-width="1" points="676.923,558.095 675.177,567.366 684.491,563.728"/>
 	<polygon stroke="lightblue" stroke-width="1" points="174.5,462.5 175.287,463.287"/>
 	<polygon fill="lightblue" stroke-width="1" points="175.287,463.287 173.165,454.094 166.094,461.165"/>
 	<path stroke="lightblue" stroke-width="1" fill="none" d="M 172.817,502.724 A 22.5,22.5 0 1 1 167.63,476.787"/>
 	<text fill="lightblue" x="112.5" y="506.5" font-family="Times New Roman" font-size="20">h</text>
 	<polygon fill="lightblue" stroke-width="1" points="167.63,476.787 162.449,468.902 158.272,477.988"/>
-	<polygon stroke="lightblue" stroke-width="1" points="153.182,134.273 192.818,454.727"/>
-	<polygon fill="lightblue" stroke-width="1" points="192.818,454.727 196.798,446.174 186.873,447.401"/>
-	<text fill="lightblue" x="179.5" y="299.5" font-family="Times New Roman" font-size="20">x(int)</text>
 	<path stroke="lightblue" stroke-width="1" fill="none" d="M 631.522,533.631 A 1562.232,1562.232 0 0 1 225.615,491.731"/>
 	<polygon fill="lightblue" stroke-width="1" points="631.522,533.631 623.384,528.858 623.666,538.854"/>
 	<text fill="lightblue" x="420.5" y="547.5" font-family="Times New Roman" font-size="20">c</text>
-	<path stroke="lightblue" stroke-width="1" fill="none" d="M 214.92,460.83 A 394.672,394.672 0 0 1 444.825,326.857"/>
-	<polygon fill="lightblue" stroke-width="1" points="444.825,326.857 436.046,323.403 437.874,333.235"/>
-	<text fill="lightblue" x="307.5" y="364.5" font-family="Times New Roman" font-size="20">i</text>
-	<path stroke="lightblue" stroke-width="1" fill="none" d="M 455.399,345.625 A 425.149,425.149 0 0 1 226.037,479.283"/>
-	<polygon fill="lightblue" stroke-width="1" points="226.037,479.283 234.903,482.504 232.818,472.724"/>
-	<text fill="lightblue" x="356.5" y="451.5" font-family="Times New Roman" font-size="20">q</text>
+	<path stroke="lightblue" stroke-width="1" fill="none" d="M 205.745,455.983 A 225.076,225.076 0 0 1 445.132,316.485"/>
+	<polygon fill="lightblue" stroke-width="1" points="445.132,316.485 437.88,310.451 436.53,320.359"/>
+	<text fill="lightblue" x="290.5" y="336.5" font-family="Times New Roman" font-size="20">i</text>
+	<path stroke="lightblue" stroke-width="1" fill="none" d="M 458.802,348.052 A 312.801,312.801 0 0 1 226.47,483.44"/>
+	<polygon fill="lightblue" stroke-width="1" points="226.47,483.44 234.858,487.756 234.026,477.791"/>
+	<text fill="lightblue" x="362.5" y="462.5" font-family="Times New Roman" font-size="20">q</text>
 	<polygon stroke="lightblue" stroke-width="1" points="631.659,529.42 226.341,487.58"/>
 	<polygon fill="lightblue" stroke-width="1" points="226.341,487.58 233.786,493.375 234.813,483.428"/>
 	<text fill="lightblue" x="425.5" y="498.5" font-family="Times New Roman" font-size="20">q</text>
@@ -48,19 +45,37 @@
 	<path stroke="lightblue" stroke-width="1" fill="none" d="M 634.006,520.498 A 1136.886,1136.886 0 0 1 166.186,129.43"/>
 	<polygon fill="lightblue" stroke-width="1" points="634.006,520.498 628.778,512.646 624.657,521.757"/>
 	<text fill="lightblue" x="359.5" y="377.5" font-family="Times New Roman" font-size="20">c</text>
-	<path stroke="lightblue" stroke-width="1" fill="none" d="M 637.379,514.668 A 613.778,613.778 0 0 1 489.427,348.519"/>
-	<polygon fill="lightblue" stroke-width="1" points="637.379,514.668 634.133,505.81 627.994,513.704"/>
-	<text fill="lightblue" x="541.5" y="458.5" font-family="Times New Roman" font-size="20">c</text>
-	<path stroke="lightblue" stroke-width="1" fill="none" d="M 501.221,336.118 A 348.738,348.738 0 0 1 651.059,504.385"/>
-	<polygon fill="lightblue" stroke-width="1" points="501.221,336.118 505.726,344.406 510.646,335.7"/>
-	<text fill="lightblue" x="595.5" y="399.5" font-family="Times New Roman" font-size="20">i</text>
-	<path stroke="lightblue" stroke-width="1" fill="none" d="M 179.443,106.198 A 359.286,359.286 0 0 1 461.569,295.44"/>
-	<polygon fill="lightblue" stroke-width="1" points="179.443,106.198 186.913,111.96 187.896,102.009"/>
-	<text fill="lightblue" x="349.5" y="156.5" font-family="Times New Roman" font-size="20">g</text>
-	<path stroke="lightblue" stroke-width="1" fill="none" d="M 179.397,102.084 A 460.916,460.916 0 0 1 658.577,502.648"/>
-	<polygon fill="lightblue" stroke-width="1" points="179.397,102.084 187.628,106.693 187.148,96.705"/>
-	<text fill="lightblue" x="502.5" y="199.5" font-family="Times New Roman" font-size="20">g</text>
+	<polygon stroke="lightblue" stroke-width="1" points="494.451,344.905 641.549,510.095"/>
+	<polygon fill="lightblue" stroke-width="1" points="641.549,510.095 639.963,500.796 632.495,507.446"/>
+	<text fill="lightblue" x="573.5" y="418.5" font-family="Times New Roman" font-size="20">c</text>
+	<path stroke="lightblue" stroke-width="1" fill="none" d="M 504.422,324.134 A 183.906,183.906 0 0 1 663.332,502.589"/>
+	<polygon fill="lightblue" stroke-width="1" points="504.422,324.134 511.67,330.174 513.027,320.266"/>
+	<text fill="lightblue" x="622.5" y="375.5" font-family="Times New Roman" font-size="20">i</text>
+	<path stroke="lightblue" stroke-width="1" fill="none" d="M 179.057,109.601 A 446.593,446.593 0 0 1 458.567,297.087"/>
+	<polygon fill="lightblue" stroke-width="1" points="179.057,109.601 185.875,116.121 187.906,106.33"/>
+	<text fill="lightblue" x="342.5" y="167.5" font-family="Times New Roman" font-size="20">g</text>
+	<path stroke="lightblue" stroke-width="1" fill="none" d="M 177.234,93.083 A 369.387,369.387 0 0 1 667.818,503.181"/>
+	<polygon fill="lightblue" stroke-width="1" points="177.234,93.083 186.463,95.038 183.035,85.644"/>
+	<text fill="lightblue" x="545.5" y="147.5" font-family="Times New Roman" font-size="20">g</text>
 	<path stroke="lightblue" stroke-width="1" fill="none" d="M 190.779,513.83 A 22.5,22.5 0 1 1 169.74,497.8"/>
-	<text fill="lightblue" x="126.5" y="559.5" font-family="Times New Roman" font-size="20">wx</text>
+	<text fill="lightblue" x="140.5" y="559.5" font-family="Times New Roman" font-size="20">x</text>
 	<polygon fill="lightblue" stroke-width="1" points="169.74,497.8 160.641,495.309 163.514,504.888"/>
+	<path stroke="lightblue" stroke-width="1" fill="none" d="M 120.363,97.866 A 22.5,22.5 0 1 1 137.042,77.338"/>
+	<text fill="lightblue" x="81.5" y="53.5" font-family="Times New Roman" font-size="20">x</text>
+	<polygon fill="lightblue" stroke-width="1" points="137.042,77.338 139.816,68.321 130.152,70.893"/>
+	<path stroke="lightblue" stroke-width="1" fill="none" d="M 128.48,83.26 A 22.5,22.5 0 1 1 153.573,74.896"/>
+	<text fill="lightblue" x="115.5" y="31.5" font-family="Times New Roman" font-size="20">a</text>
+	<polygon fill="lightblue" stroke-width="1" points="153.573,74.896 160.754,68.778 151.22,65.76"/>
+	<path stroke="lightblue" stroke-width="1" fill="none" d="M 209.725,511.297 A 22.5,22.5 0 1 1 183.275,511.297"/>
+	<text fill="lightblue" x="188.5" y="573.5" font-family="Times New Roman" font-size="20">m</text>
+	<polygon fill="lightblue" stroke-width="1" points="183.275,511.297 174.527,514.83 182.618,520.708"/>
+	<path stroke="lightblue" stroke-width="1" fill="none" d="M 141.375,75.743 A 22.5,22.5 0 1 1 167.384,80.559"/>
+	<text fill="lightblue" x="160.5" y="27.5" font-family="Times New Roman" font-size="20">m</text>
+	<polygon fill="lightblue" stroke-width="1" points="167.384,80.559 176.628,78.678 169.743,71.425"/>
+	<path stroke="lightblue" stroke-width="1" fill="none" d="M 478.783,292.926 A 22.5,22.5 0 1 1 500.579,307.91"/>
+	<text fill="lightblue" x="517.5" y="257.5" font-family="Times New Roman" font-size="20">m</text>
+	<polygon fill="lightblue" stroke-width="1" points="500.579,307.91 509.789,309.955 506.453,300.528"/>
+	<path stroke="lightblue" stroke-width="1" fill="none" d="M 689.694,522.595 A 22.5,22.5 0 1 1 686.511,548.854"/>
+	<text fill="lightblue" x="735.5" y="547.5" font-family="Times New Roman" font-size="20">m</text>
+	<polygon fill="lightblue" stroke-width="1" points="686.511,548.854 688.966,557.963 695.775,550.638"/>
 </svg>
