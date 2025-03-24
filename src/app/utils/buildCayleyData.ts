@@ -1,4 +1,3 @@
-
 export interface TreeNode {
   name: string;
   edgeColor?: string;
@@ -10,9 +9,9 @@ export interface TreeNode {
  * (a,a^-) share color1, (b,b^-) share color2.
  */
 interface DirSpec {
-  label: string;    // e.g. "a" or "a^-"
+  label: string; // e.g. "a" or "a^-"
   opposite: string; // e.g. a^- is opposite a
-  color: string;    // pairs share the same color
+  color: string; // pairs share the same color
 }
 
 /**
@@ -22,10 +21,10 @@ interface DirSpec {
  */
 function getDirList(): DirSpec[] {
   return [
-    { label: "a",   opposite: "a^-", color: "#1f77b4" },
-    { label: "b",   opposite: "b^-", color: "#ff7f0e" },
-    { label: "a^-", opposite: "a",   color: "#1f77b4" },
-    { label: "b^-", opposite: "b",   color: "#ff7f0e" },
+    { label: "a", opposite: "a^-", color: "#1f77b4" },
+    { label: "b", opposite: "b^-", color: "#ff7f0e" },
+    { label: "a^-", opposite: "a", color: "#1f77b4" },
+    { label: "b^-", opposite: "b", color: "#ff7f0e" },
   ];
 }
 
@@ -66,21 +65,36 @@ export function buildCayleyTreeData(
     // a^- => down => dy=+1
     // b => right => dx=+1
     // b^- => left => dx=-1
-    let dx=0, dy=0;
-    if (dir.label==="a")   { dx=0;  dy=-1; }
-    if (dir.label==="a^-") { dx=0;  dy=+1; }
-    if (dir.label==="b")   { dx=+1; dy=0;  }
-    if (dir.label==="b^-") { dx=-1; dy=0;  }
+    let dx = 0,
+      dy = 0;
+    if (dir.label === "a") {
+      dx = 0;
+      dy = -1;
+    }
+    if (dir.label === "a^-") {
+      dx = 0;
+      dy = +1;
+    }
+    if (dir.label === "b") {
+      dx = +1;
+      dy = 0;
+    }
+    if (dir.label === "b^-") {
+      dx = -1;
+      dy = 0;
+    }
 
-    const nx = x + dx*step;
-    const ny = y + dy*step;
+    const nx = x + dx * step;
+    const ny = y + dy * step;
 
     // build child
     const child = buildCayleyTreeData(
-      nx, ny,
-      depth+1, maxDepth,
+      nx,
+      ny,
+      depth + 1,
+      maxDepth,
       dir.label,
-      step*0.5
+      step * 0.5
     );
     // store color => child's edge color
     child.edgeColor = dir.color;

@@ -9,10 +9,10 @@
   margin: auto;
 }
 
-button:active {
+/* :global(button:active) {
   background-color: rgb(140, 140, 140);
   color: black;
-}
+} */
 
 /* Container styling */
 .container {
@@ -82,4 +82,36 @@ button:active {
 
 .buttonbar-wrapper {
   margin-top: 70px;
+}
+
+/* pathlist */
+/* Define the base styles for each <p> */
+.textbox {
+  border: 2px transparent solid;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  color: rgb(255, 255, 0); /* Default text color */
+  text-align: left;
+  min-width: 100px;
+  max-width: 33vw; /* 33% of the screen width */
+  width: auto;
+  white-space: nowrap; /* Prevent wrapping */
+  overflow-x: auto; /* Allow horizontal scrolling */
+  padding: 2px;
+  margin: 0; /* Remove default margin to reduce vertical space */
+  scrollbar-width: none; /* Firefox: hides scrollbar */
+}
+
+/* Define the hover effect */
+.textbox:hover {
+  border: 1px solid rgb(74, 74, 74); /* Border color on hover */
+  color: yellow; /* Change text color on hover */
+  cursor: pointer; /* Change cursor to pointer to indicate clickable */
+}
+
+/* terminal container */
+
+.terminal-container {
+  display: flex;
+  right: 20px;
 }

@@ -1,13 +1,12 @@
+"use client";
 import React from "react";
 
-import Modesbutton from "./_components/Modesbutton";
+import Interface from "./_components/Interface";
 
 const Home = () => {
   return (
-    <div className="title">
-      <h1>PathForms</h1>
-      <p>Nielsen Transform</p>
-      <Modesbutton />
+    <div className="cayley">
+      <Interface />
     </div>
   );
 };

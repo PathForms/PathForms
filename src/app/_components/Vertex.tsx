@@ -18,9 +18,9 @@ const Vertex: React.FC<VertexProps> = ({
   isActive,
 }) => {
   //color logic
-  let fillColor = "rgba(0, 159, 251, 0.25)";
+  let fillColor = "rgba(244, 252, 0, 0.14)";
   if (isActive) {
-    fillColor = "rgba(255, 255, 255, 0.85)";
+    fillColor = "rgb(255, 255, 255)";
   }
 
   return (

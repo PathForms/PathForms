@@ -25,17 +25,17 @@ const Edge: React.FC<EdgeProps> = ({
   const [x, y] = source.split(",").map(Number);
   const [x2, y2] = target.split(",").map(Number);
 
-  let strokeColor = "rgba(255, 30, 0, 0.2)";
+  let strokeColor = "rgba(255, 34, 5, 0.2)";
   if ((x === x2 && y <= y2) || (x === x2 && y >= y2)) {
-    strokeColor = "rgba(74, 237, 243, 0.2)";
+    strokeColor = "rgba(0, 94, 255, 0.23)";
   }
 
   let thickness = edgeThickness ?? 1;
   if (isActive) {
-    strokeColor = "rgba(251, 0, 0, 1)";
+    strokeColor = "rgb(251, 0, 71)";
     thickness += 2;
     if ((x == x2 && y <= y2) || (x == x2 && y >= y2)) {
-      strokeColor = "rgba(0, 247, 255, 1)";
+      strokeColor = "rgb(0, 140, 255)";
     }
   }
 

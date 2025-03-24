@@ -64,14 +64,16 @@ interface LayoutLink {
 }
 
 interface CayleyTreeProps {
-  path: string[];
-  edgePath: string[];
+  pathIndex: number[];
+  nodePaths: string[][];
+  edgePaths: string[][];
   edgeThickness: number;
 }
 
 const CayleyTree: React.FC<CayleyTreeProps> = ({
-  path,
-  edgePath,
+  pathIndex,
+  nodePaths,
+  edgePaths,
   edgeThickness,
 }) => {
   const [nodes, setNodes] = useState<LayoutNode[]>([]);
@@ -118,7 +120,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
           };
         };
 
-        //resolve for minor error
+        //resolve for minor error; vercel deploy
         const parentPos = getPosition(
           d.parent as d3.HierarchyPointNode<TreeNode>
         );
@@ -179,7 +181,10 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
               sourceY={lk.sourceY}
               targetX={lk.targetX}
               targetY={lk.targetY}
-              isActive={edgePath.includes(lk.id)}
+              isActive={
+                pathIndex.length > 0 &&
+                pathIndex.some((index) => edgePaths[index]?.includes(lk.id))
+              }
               edgeThickness={edgeThickness}
             />
           ))}
@@ -190,7 +195,10 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
               id={nd.id}
               x={nd.x}
               y={nd.y}
-              isActive={path.includes(nd.id)}
+              isActive={
+                pathIndex.length > 0 &&
+                pathIndex.some((index) => nodePaths[index]?.includes(nd.id))
+              }
             />
           ))}
         </g>
