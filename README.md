@@ -32,3 +32,6 @@ run in local browser:
 ```bash
 pnpm dev
 ```
+
+server deploy:
+chmod -R o+rx /srv/data/PathForms/www/out
