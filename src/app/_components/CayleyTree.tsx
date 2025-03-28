@@ -120,7 +120,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
           };
         };
 
-        //resolve for minor error
+        //resolve for minor error; vercel deploy
         const parentPos = getPosition(
           d.parent as d3.HierarchyPointNode<TreeNode>
         );
