@@ -6,9 +6,10 @@ type Direction = "up" | "down" | "left" | "right";
 
 interface ButtonBarProps {
   generate: (size: number) => void;
+  setGen: () => void;
 }
 
-const ButtonBar: React.FC<ButtonBarProps> = ({ generate }) => {
+const ButtonBar: React.FC<ButtonBarProps> = ({ generate, setGen }) => {
   // onclick function
   // const handleClick = () => {
   //   // You can add additional logic here if needed

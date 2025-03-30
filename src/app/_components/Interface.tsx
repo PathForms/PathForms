@@ -130,6 +130,13 @@ const Interface = () => {
       setOperationMode("concat");
     }
   };
+  const setGen = () => {
+    if (operationMode == "gen") {
+      setOperationMode("normal");
+    } else {
+      setOperationMode("gen");
+    }
+  };
   // Store the current path into history
   // const storePath = () => {
   //   setNodePaths((prev) => [...prev, nodes]);
@@ -701,7 +708,7 @@ const Interface = () => {
         handleThemeChange={handleThemeChange}
       />
 
-      <ButtonBar generate={GeneratePath} />
+      <ButtonBar generate={GeneratePath} setGen={setGen} />
       <Pathterminal
         pathIndex={pathIndex}
         nodePaths={nodePaths}

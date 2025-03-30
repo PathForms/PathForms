@@ -42,19 +42,24 @@ const Pathterminal: React.FC<PathterminalProps> = ({
   concatenate,
   invert,
 }) => {
+  //states for terminal records
   const terminalRef = useRef<HTMLDivElement>(null);
   const terminalInstanceRef = useRef<Terminal | null>(null);
   const commandHandlerRef = useRef<any>(null);
   const currentModeRef = useRef<string>("default");
 
+  //states for terminal rendering
+  const [minimized, setMinimized] = useState(false);
   // Terminal initialization - runs only once
   // In order to make sure that future re-render does not effec the terminal istory
+
   useEffect(() => {
     if (terminalRef.current && !terminalInstanceRef.current) {
       // Create the terminal only if it doesn't exist yet
       const term = new Terminal({
+        windowsMode: true, // Improves compatibility on Windows
         cursorBlink: true,
-        rows: 15,
+        rows: 17,
         cols: 90,
 
         theme: {
@@ -75,13 +80,13 @@ const Pathterminal: React.FC<PathterminalProps> = ({
       // Introduction
       term.writeln("Welcome to PathForms!");
       term.writeln(
-        "This game aims to introduce Nielsen transform in combinatorial group theory."
+        "This game aims to visualize Nielsen transform in combinatorial group theory."
       );
       term.writeln(
-        "The game provides a subgroup of a rank-2 free group with generators a, b (the Word Vector)."
+        "The game provides a list of words from a subgroup of a rank-2 free group with generators a, b (the Word Vector)."
       );
       term.writeln(
-        "You are expected to perform Nielsen's transformation to bring this subgroup to Nielsen reduced form. "
+        "You are expected to perform Nielsen's transformation to bring this list of words to Nielsen reduced form. "
       );
       term.writeln("> h: help ");
 
@@ -105,6 +110,7 @@ const Pathterminal: React.FC<PathterminalProps> = ({
       if (!term) return;
 
       const currentMode = currentModeRef.current;
+      //reset terminal
 
       if (currentMode === "default") {
         // default mode, waiting for first-level command
@@ -124,6 +130,7 @@ const Pathterminal: React.FC<PathterminalProps> = ({
           }
         } else if (command === "g") {
           //go to generate mode
+          setOperationMode("gen");
           currentModeRef.current = "generate";
           term.writeln("> Generate word vector with size: ");
           term.write("> ");
@@ -157,6 +164,9 @@ const Pathterminal: React.FC<PathterminalProps> = ({
           term.writeln(
             "> Check terminal FSM diagram \u001B]8;;https://pathforms.vercel.app/fsm\u0007here\u001B]8;;\u0007"
           );
+          term.writeln(
+            "> Check game description \u001B]8;;https://mineyev.web.illinois.edu/PathForms/\u0007here\u001B]8;;\u0007"
+          );
           term.write("> ");
         } else {
           term.writeln("> Invalid.");
@@ -165,6 +175,7 @@ const Pathterminal: React.FC<PathterminalProps> = ({
       } else if (currentMode === "generate") {
         //generate mode, expecting vector size
         //check number
+
         const numValue = parseInt(command, 10);
         if (!isNaN(numValue)) {
           generate(numValue);
@@ -184,6 +195,9 @@ const Pathterminal: React.FC<PathterminalProps> = ({
             term.writeln("> h: help ");
             term.writeln(
               "> Check terminal FSM diagram \u001B]8;;https://pathforms.vercel.app/fsm\u0007here\u001B]8;;\u0007"
+            );
+            term.writeln(
+              "> Check game description \u001B]8;;https://mineyev.web.illinois.edu/PathForms/\u0007here\u001B]8;;\u0007"
             );
 
             term.write("> ");
@@ -223,10 +237,14 @@ const Pathterminal: React.FC<PathterminalProps> = ({
           term.writeln(
             "> Check terminal FSM diagram \u001B]8;;https://pathforms.vercel.app/fsm\u0007here\u001B]8;;\u0007"
           );
+          term.writeln(
+            "> Check game description \u001B]8;;https://mineyev.web.illinois.edu/PathForms/\u0007here\u001B]8;;\u0007"
+          );
           term.write("> ");
         } else if (command === "g") {
           //go to generate mode
           currentModeRef.current = "generate";
+          setOperationMode("gen");
           term.writeln("> Generate word vector with size: ");
           term.write("> ");
         } else if (command === "q") {
@@ -275,10 +293,14 @@ const Pathterminal: React.FC<PathterminalProps> = ({
           term.writeln(
             "> Check terminal FSM diagram \u001B]8;;https://pathforms.vercel.app/fsm\u0007here\u001B]8;;\u0007"
           );
+          term.writeln(
+            "> Check game description \u001B]8;;https://mineyev.web.illinois.edu/PathForms/\u0007here\u001B]8;;\u0007"
+          );
           term.write("> ");
         } else if (command === "g") {
           //go to generate mode
           currentModeRef.current = "generate";
+          setOperationMode("gen");
           term.writeln("> Generate word vector with size: ");
           term.write("> ");
         } else if (command === "c") {
@@ -321,6 +343,24 @@ const Pathterminal: React.FC<PathterminalProps> = ({
     let command = "";
 
     const dataHandler = (data: string) => {
+      if (data === "\x12") {
+        term.clear();
+        term.writeln("Welcome to PathForms!");
+        term.writeln(
+          "This game aims to visualize Nielsen transform in combinatorial group theory."
+        );
+        term.writeln(
+          "The game provides a list of words from a subgroup of a rank-2 free group with generators a, b (the Word Vector)."
+        );
+        term.writeln(
+          "You are expected to perform Nielsen's transformation to bring this list of words to Nielsen reduced form. "
+        );
+        term.writeln("> h: help ");
+        //line heading
+        term.write("> ");
+        currentModeRef.current = "default";
+        setOperationMode("normal");
+      }
       // Enter, deal with current command
       if (data === "\r") {
         term.writeln(""); // New line
@@ -346,28 +386,33 @@ const Pathterminal: React.FC<PathterminalProps> = ({
     // No cleanup needed for this listener as it's bound to the terminal lifecycle
   }, [terminalInstanceRef]); // Only depend on the terminal instance
 
-  // // Effect to handle mode-specific UI updates
-  // useEffect(() => {
-  //   const term = terminalInstanceRef.current;
-  //   if (!term) return;
-
-  //   // This can handle any UI updates needed when operationMode changes
-  //   // For example, displaying different prompts based on mode
-  // }, [operationMode]);
+  // Handle key press to reset the terminal
 
   return (
-    <div
-      className={styles["terminal-container"]}
-      style={{
-        position: "fixed",
-        right: "0px",
-        bottom: "0",
-        zIndex: 0,
-        width: "60%",
-        height: "290px",
-      }}
-    >
-      <div ref={terminalRef} style={{ width: "110%", height: "100%" }} />
+    <div className={styles["terminal-container"]}>
+      <button
+        className={styles["terminal-button"]}
+        style={{
+          right: minimized ? "0" : "auto", // Right when minimized, auto (left) when not
+          left: minimized ? "auto" : "-14px", // Auto (left) when minimized, left when not
+        }}
+        onClick={() => {
+          setMinimized(!minimized);
+        }}
+      >
+        {minimized ? "+" : "-"}
+      </button>
+
+      <div
+        ref={terminalRef}
+        style={{
+          width: minimized ? "0%" : "100%",
+          height: "100%",
+          bottom: "0px",
+          overflow: "auto",
+          scrollbarWidth: "none",
+        }}
+      />
     </div>
   );
 };
