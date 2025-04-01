@@ -716,6 +716,7 @@ const Interface = () => {
         edgeThickness={edgeThickness}
         handleEdgeThicknessChange={handleEdgeThicknessChange}
         handleThemeChange={handleThemeChange}
+        shape={shape}
         handleshape={handleshape}
       />
 

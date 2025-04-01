@@ -11,6 +11,7 @@ interface HeadbarProps {
   edgeThickness: number;
   handleEdgeThicknessChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleThemeChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  shape: string;
   handleshape: () => void;
 }
 
@@ -18,6 +19,7 @@ interface HeadbarProps {
 
 const Headbar: React.FC<HeadbarProps> = ({
   theme,
+  shape,
   toggleSettings,
   showSettings,
   edgeThickness,
@@ -74,7 +76,6 @@ const Headbar: React.FC<HeadbarProps> = ({
       <button className={styles["settings-button"]} onClick={toggleSettings}>
         Settings
       </button>
-      <button onClick={() => handleshape()}>shape</button>
       {showSettings && (
         <div className={`${styles["settings-modal"]} ${styles[theme]}`}>
           <div>
@@ -96,6 +97,15 @@ const Headbar: React.FC<HeadbarProps> = ({
               <option value="dark">Dark</option>
             </select>
           </div>
+          <div>
+            {/* <button onClick={() => handleshape()}>shape</button> */}
+            <label>Shape:</label>
+            <select value={shape} onChange={handleshape}>
+              <option value="circle">circle</option>
+              <option value="rect">rectangle</option>
+            </select>
+          </div>
+
           <button onClick={toggleSettings}>Close</button>
         </div>
       )}
