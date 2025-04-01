@@ -32,6 +32,8 @@ const Interface = () => {
   // concatenate
   const [operationMode, setOperationMode] = useState<string>("normal");
 
+  //States for Cayley graph visualization;
+  const [shape, setShape] = useState<string>("circle");
   // // State for the current path showing on the screen (nodes, moves, and edges)
   // const [nodes, setNodes] = useState<string[]>(["0,0"]);
   // const [moves, setMoves] = useState<Direction[]>([]);
@@ -128,6 +130,13 @@ const Interface = () => {
       setOperationMode("normal");
     } else {
       setOperationMode("concat");
+    }
+  };
+  const setGen = () => {
+    if (operationMode == "gen") {
+      setOperationMode("normal");
+    } else {
+      setOperationMode("gen");
     }
   };
   // Store the current path into history
@@ -690,6 +699,14 @@ const Interface = () => {
     );
   };
 
+  ///////////////// CayleyGraph shape config ///////////////////
+  const handleshape = () => {
+    if (shape == "circle") {
+      setShape("rect");
+    } else {
+      setShape("circle");
+    }
+  };
   return (
     <div className={`${styles.container} ${theme}`}>
       <Headbar
@@ -699,9 +716,10 @@ const Interface = () => {
         edgeThickness={edgeThickness}
         handleEdgeThicknessChange={handleEdgeThicknessChange}
         handleThemeChange={handleThemeChange}
+        handleshape={handleshape}
       />
 
-      <ButtonBar generate={GeneratePath} />
+      <ButtonBar generate={GeneratePath} setGen={setGen} />
       <Pathterminal
         pathIndex={pathIndex}
         nodePaths={nodePaths}
@@ -723,6 +741,7 @@ const Interface = () => {
         nodePaths={nodePaths}
         edgePaths={edgePaths}
         edgeThickness={edgeThickness}
+        shape={shape}
       />
 
       <Pathlist
