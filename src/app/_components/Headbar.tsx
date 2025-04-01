@@ -11,6 +11,7 @@ interface HeadbarProps {
   edgeThickness: number;
   handleEdgeThicknessChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleThemeChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  handleshape: () => void;
 }
 
 //function for return
@@ -23,6 +24,7 @@ const Headbar: React.FC<HeadbarProps> = ({
   handleEdgeThicknessChange,
 
   handleThemeChange,
+  handleshape,
 }) => {
   const colors = [
     "rgb(255, 50, 91)",
@@ -72,6 +74,7 @@ const Headbar: React.FC<HeadbarProps> = ({
       <button className={styles["settings-button"]} onClick={toggleSettings}>
         Settings
       </button>
+      <button onClick={() => handleshape()}>shape</button>
       {showSettings && (
         <div className={`${styles["settings-modal"]} ${styles[theme]}`}>
           <div>
