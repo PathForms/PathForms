@@ -143,7 +143,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
       const allNodes: LayoutNode[] = root.descendants().map((d) => {
         // Extract coordinates from the name field of the node
         const [x_, y_] = d.data.name.split(",").map(Number) || [0, 0];
-        const node = { id: d.data.name, x: x_, y: y_ };
+        const node = { id: d.data.name, x: 2.5 * x_, y: 2.5 * y_ };
         console.log("Rect Node:", node);
         return node;
       });
@@ -163,10 +163,10 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
             id: `${d.parent.data.name}->${d.data.name}`,
             source: d.parent.data.name,
             target: d.data.name,
-            sourceX: parentX,
-            sourceY: parentY,
-            targetX: childX,
-            targetY: childY,
+            sourceX: 2.5 * parentX,
+            sourceY: 2.5 * parentY,
+            targetX: 2.5 * childX,
+            targetY: 2.5 * childY,
           });
         }
       });
