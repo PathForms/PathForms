@@ -8,6 +8,7 @@ import Headbar from "./Headbar";
 import Pathlist from "./Pathlist";
 import Pathterminal from "./Pathterminal";
 import styles from "./components.module.css";
+import CheckNielsen from "./CheckNielsen";
 
 type Direction = "up" | "down" | "left" | "right";
 
@@ -735,7 +736,7 @@ const Interface = () => {
         concatenate={concatenate}
         invert={invertPath}
       />
-
+      <CheckNielsen movePaths={moveRecords} />
       <Pathbar
         mode={operationMode}
         setInvert={setInvert}
@@ -748,6 +749,8 @@ const Interface = () => {
         concatenate={concatenate}
         invert={invertPath}
       />
+
+  
     </div>
   );
 };
