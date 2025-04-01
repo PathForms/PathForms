@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   output: "export",
-  basePath: '/PathForms',
+  // basePath: '/PathForms',
   trailingSlash: true, // recommended for static hosting
 };
 
