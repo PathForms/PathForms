@@ -65,6 +65,10 @@ const Pathterminal: React.FC<PathterminalProps> = ({
   //anything inside backup will never be used to render the page!
   //when entering guide mode, backup is updated to be current game;
   //when existing guide mode, backup is updated to be null;
+
+  // gameMode is a different dimension of settings apart from the operation modes;
+  // The high level game setting should appear to be different in the game mode;
+  const [gameMode, setGameMode] = useState<string>("actual");
   const [backup, setBackup] = useState<any>(null); // Store the game state when entering guide mode
   let currentStepRef = useRef(0); // Keep track of the current step across renders
 
@@ -95,16 +99,15 @@ const Pathterminal: React.FC<PathterminalProps> = ({
       // Introduction
       term.writeln("Welcome to PathForms!");
       term.writeln(
-        "This game aims to visualize Nielsen transform in combinatorial group theory."
+        "This game aims to visualize Nielsen transformations in combinatorial group theory."
       );
       term.writeln(
-        "The game provides a list of words from a subgroup of a rank-2 free group with generators a, b (the Word Vector)."
+        "The game provides a list of words from a free group with generators a, b (the Word List)."
       );
       term.writeln(
-        "You are expected to perform Nielsen's transformation to bring this list of words to Nielsen reduced form. "
+        "You are expected to perform Nielsen's transformations to bring this list of words to Nielsen reduced form. "
       );
-      term.writeln("> h: help ");
-
+      term.writeln("> To start a tutorial: enter 'guide' in the terminal");
       //line heading
       term.write("> ");
     }
@@ -119,19 +122,105 @@ const Pathterminal: React.FC<PathterminalProps> = ({
   }, [terminalRef]); // Only depend on terminalRef to initialize once
 
   // Update command handler whenever relevant props change
+
+  // useEffect(() => {
+  //   const term = terminalInstanceRef.current;
+  //   if (!term) return;
+  //   term.writeln("\x1b[2K\r"); // Clear the line
+  //   term.write(`\x1b[1;34m-- ${operationMode.toUpperCase()} --\x1b[0m`);
+  //   term.scrollToBottom();
+  // }, [operationMode]);
+
   useEffect(() => {
     commandHandlerRef.current = (command: string) => {
       const term = terminalInstanceRef.current;
       if (!term) return;
 
       const currentMode = currentModeRef.current;
+      //no matter which game mode, should be able to switch
       //reset terminal
 
-      //no matter in what mode;
+      if (command === "guide") {
+        term.clear();
+        //before going into guide mode, keep everything a copy and reset everything;
+        //set backkup for exit re-rendering;
+        setBackup({
+          pathIndex,
+          nodePaths,
+          edgePaths,
+          moveRecords,
+          operationMode,
+        });
+        //reset;
+        setPathIndex([]);
+        setNodePaths([["0,0"]]);
+        setEdgePaths([]);
+        setMoveRecords([]);
+        setOperationMode("normal");
+        //set game mode
+        currentModeRef.current = "guide";
+        setGameMode("guide");
+        //write in the terminal;
+        // Initial step call if we are just entering guide mode
+        term.writeln(
+          "> In this guide, we will lead you through how to play this game and the math behind it. "
+        );
+        term.writeln(
+          "> To start the game, you need to generate a list of words. "
+        );
+        term.writeln(
+          "> Enter 'g' to go to generate mode or use the buttons we provided. "
+        );
+        term.writeln("Enter 'ok' to go to next step. ");
+        // term.write("> ");
+      }
+
+      //general operation logic (ok in any mode)
+      //should include:
+      //h, q, i, c, m, g;
+
+      if (command === "g") {
+        //go to generate mode
+        setOperationMode("gen");
+        currentModeRef.current = "generate";
+        term.writeln("> Generate word vector with size: ");
+      } else if (command === "i") {
+        currentModeRef.current = "invert";
+        setOperationMode("invert");
+        term.writeln("> Invert mode.");
+      } else if (command === "c") {
+        currentModeRef.current = "concat";
+        setOperationMode("concat");
+        term.writeln("> Concatenate mode.");
+      } else if (command === "m") {
+        term.writeln("> You are in default mode. ");
+        term.writeln("> To show/hide path: n (n: word index) ");
+        term.writeln("> To show/hide all path: a ");
+      } else if (command === "q") {
+        currentModeRef.current = "default";
+        setOperationMode("normal");
+        term.writeln("> Default mode.");
+      } else if (command === "h") {
+        term.writeln("> g: go to generate mode; ");
+        term.writeln("> q: go to Default mode; ");
+        term.writeln("> i: go to Invert mode; ");
+        term.writeln("> c: go to Concatenate mode; ");
+        term.writeln("> m: check current mode & operations");
+        term.writeln("> h: help ");
+        term.writeln(
+          "> Check terminal FSM diagram \u001B]8;;https://pathforms.vercel.app/fsm\u0007here\u001B]8;;\u0007"
+        );
+        term.writeln(
+          "> Check game description \u001B]8;;https://mineyev.web.illinois.edu/PathForms/\u0007here\u001B]8;;\u0007"
+        );
+      }
 
       //guide mode logic;
-
-      if (currentMode === "guide") {
+      // these are specific for gameMode;
+      // The operations should be global, right?
+      if (gameMode === "guide") {
+        //switch gamemode, maybe we should remove the current mode thing, and use gameMode to re-render instead;
+        //because guide is actually not an ooperation mode, it is a gameMode;
         // Function for guide mode
         const guideSteps = () => {
           switch (currentStepRef.current) {
@@ -141,42 +230,43 @@ const Pathterminal: React.FC<PathterminalProps> = ({
             //   break;
             case 1:
               term.writeln(
-                "The first operation you have is invert (Nielsen Transform T1)."
+                "> The first operation you have is invert (Nielsen Transform T1)."
               );
               term.writeln(
-                "To use the terminal, enter i to go to invert mode and then enter the word index to invert. "
+                "\x1b[33m> To use the terminal, enter i to go to invert mode and then enter the word index to invert. \x1b[0m"
               );
               term.writeln(
-                "To use the buttons, click on the Invert Mode and then click on the target word in word list"
+                "\x1b[33m> To use the buttons, click on the Invert Mode and then click on the target word in word list\x1b[0m"
               );
-              term.writeln("Enter ok when you are done. ");
+
+              term.writeln("> Enter ok when you are done. ");
               term.write("> ");
               break;
             case 2:
               term.writeln(
-                "The second operation you have is concatenate (Nielsen Transform T2)."
+                "> The second operation you have is concatenate (Nielsen Transform T2)."
               );
               term.writeln(
-                "To use the terminal, enter c to go to invert mode and then enter the word indexes to concatenate. "
+                "> To use the terminal, enter c to go to invert mode and then enter the word indexes to concatenate. "
               );
               term.writeln(
-                "Word 1 will be replaced by the combination of the word 1  + word 2"
+                "> Word 1 will be replaced by the combination of the word 1  + word 2"
               );
               term.writeln(
-                "To use the buttons, click on the Concatenate Mode and then click on two words in order. "
+                "> To use the buttons, click on the Concatenate Mode and then click on two words in order. "
               );
               term.writeln(
-                "Word first clicked will be replaced by the combination of the word 1  + word 2"
+                "> Word first clicked will be replaced by the combination of the word 1  + word 2"
               );
-              term.writeln("Enter ok when you are done. ");
+              term.writeln("> Enter ok when you are done. ");
               term.write("> ");
               break;
             case 3:
-              term.writeln("Guide complete!");
+              term.writeln("> Guide complete!");
               term.write("> ");
               break;
             default:
-              term.writeln("Invalid step.");
+              term.writeln("> Invalid step.");
               term.write("> ");
           }
         };
@@ -191,9 +281,11 @@ const Pathterminal: React.FC<PathterminalProps> = ({
           setOperationMode(backup.operationMode);
 
           // Reset the currentModeRef correctly
+          //this might be a mistake; notice for bug;
           currentModeRef.current = "default";
-          console.log(`Current mode after exiting: ${currentModeRef.current}`);
 
+          setGameMode("real"); //this should trick re-rendering;
+          console.log(`Current mode after exiting: ${currentModeRef.current}`);
           term.write("> ");
         }
 
@@ -210,44 +302,20 @@ const Pathterminal: React.FC<PathterminalProps> = ({
         }
       }
 
+      // Everything below should be in real mode;
+      // Or, let's just add a if statement for specific "quit option".
       if (currentMode === "default") {
+        // check gameMode, if guide, then allow quit
         // default mode, waiting for first-level command
         const index: number = parseInt(command, 10);
         if (!isNaN(index)) {
           demonstratePath(index - 1); //invert the correct path
           term.write("> ");
-        } else if (command === "guide") {
-          //before going into guide mode, keep everything a copy and reset everything;
-          //set backkup for exit re-rendering;
-          setBackup({
-            pathIndex,
-            nodePaths,
-            edgePaths,
-            moveRecords,
-            operationMode,
-          });
-          //reset;
-          setPathIndex([]);
-          setNodePaths([["0,0"]]);
-          setEdgePaths([]);
-          setMoveRecords([]);
-          setOperationMode("normal");
-          //set game mode
-          currentModeRef.current = "guide";
-          //write in the terminal;
-          // Initial step call if we are just entering guide mode
-          term.writeln(
-            "In this guide, we will lead you through how to play this game and the math behind it. "
-          );
-          term.writeln(
-            "To start the game, you need to generate a list of words. "
-          );
-          term.writeln(
-            "Enter g to go to generate mode or use the buttons we provided. "
-          );
-          term.writeln("Enter ok when you are done. ");
+        } else if (command === "m") {
+          term.writeln("> You are in default mode. ");
+          term.writeln("> To show/hide path: n (n: word index) ");
+          term.writeln("> To show/hide all path: a ");
           term.write("> ");
-          term.clear();
         } else if (command === "a") {
           if (pathIndex.length != 0) {
             setPathIndex([]);
@@ -256,50 +324,9 @@ const Pathterminal: React.FC<PathterminalProps> = ({
             setPathIndex(
               Array.from({ length: nodePaths.length }, (_, index) => index)
             );
-            term.write("> ");
+            term.writeln("> ");
           }
-        } else if (command === "g") {
-          //go to generate mode
-          setOperationMode("gen");
-          currentModeRef.current = "generate";
-          term.writeln("> Generate word vector with size: ");
-          term.write("> ");
-        } else if (command === "i") {
-          currentModeRef.current = "invert";
-          setOperationMode("invert");
-          term.writeln("> Invert mode.");
-          term.write("> ");
-        } else if (command === "c") {
-          currentModeRef.current = "concat";
-          setOperationMode("concat");
-          term.writeln("> Concatenate mode.");
-          term.write("> ");
-        } else if (command === "m") {
-          term.writeln("> You are in default mode. ");
-          term.writeln("> To show/hide path: n (n: word index) ");
-          term.writeln("> To show/hide all path: a ");
-          term.write("> ");
-        } else if (command === "q") {
-          currentModeRef.current = "default";
-          setOperationMode("normal");
-          term.writeln("> Default mode.");
-          term.write("> ");
-        } else if (command === "h") {
-          term.writeln("> g: go to generate mode; ");
-          term.writeln("> q: go to Default mode; ");
-          term.writeln("> i: go to Invert mode; ");
-          term.writeln("> c: go to Concatenate mode; ");
-          term.writeln("> m: check current mode & operations");
-          term.writeln("> h: help ");
-          term.writeln(
-            "> Check terminal FSM diagram \u001B]8;;https://pathforms.vercel.app/fsm\u0007here\u001B]8;;\u0007"
-          );
-          term.writeln(
-            "> Check game description \u001B]8;;https://mineyev.web.illinois.edu/PathForms/\u0007here\u001B]8;;\u0007"
-          );
-          term.write("> ");
         } else {
-          term.writeln("> Invalid.");
           term.write("> ");
         }
       } else if (currentMode === "generate") {
@@ -316,59 +343,8 @@ const Pathterminal: React.FC<PathterminalProps> = ({
             term.writeln("> You are in generate mode. ");
             term.writeln("> To generate new word vector: n (n: word size) ");
             term.write("> ");
-          } else if (command === "h") {
-            term.writeln("> g: go to generate mode; ");
-            term.writeln("> q: go to Default mode; ");
-            term.writeln("> i: go to Invert mode; ");
-            term.writeln("> c: go to Concatenate mode; ");
-            term.writeln("> m: check current mode & operations");
-            term.writeln("> h: help ");
-            term.writeln(
-              "> Check terminal FSM diagram \u001B]8;;https://pathforms.vercel.app/fsm\u0007here\u001B]8;;\u0007"
-            );
-            term.writeln(
-              "> Check game description \u001B]8;;https://mineyev.web.illinois.edu/PathForms/\u0007here\u001B]8;;\u0007"
-            );
-
-            term.write("> ");
-          } else if (command === "guide") {
-            //before going into guide mode, keep everything a copy and reset everything;
-            //set backkup for exit re-rendering;
-            setBackup({
-              pathIndex,
-              nodePaths,
-              edgePaths,
-              moveRecords,
-              operationMode,
-            });
-            //reset;
-            setPathIndex([]);
-            setNodePaths([["0,0"]]);
-            setEdgePaths([]);
-            setMoveRecords([]);
-            setOperationMode("normal");
-            //set game mode
-            currentModeRef.current = "guide";
-            term.write("> ");
-          } else if (command === "q") {
-            currentModeRef.current = "default";
-            setOperationMode("normal");
-            term.writeln("> Default mode.");
-            term.write("> ");
-          } else if (command === "i") {
-            currentModeRef.current = "invert";
-            setOperationMode("invert");
-            term.writeln("> invert mode.");
-            term.write("> ");
-          } else if (command === "c") {
-            currentModeRef.current = "concat";
-            setOperationMode("concat");
-            term.writeln("> Concatenate mode.");
-            term.write("> ");
           } else {
-            // command is not a valid number
-            term.writeln("> Invalid.");
-            term.write("> ");
+            term.writeln("> ");
           }
         }
       } else if (currentMode === "invert") {
@@ -376,66 +352,11 @@ const Pathterminal: React.FC<PathterminalProps> = ({
         if (!isNaN(index)) {
           invert(index - 1); //invert the correct path
           term.write("> ");
-        } else if (command === "guide") {
-          //before going into guide mode, keep everything a copy and reset everything;
-          //set backkup for exit re-rendering;
-          setBackup({
-            pathIndex,
-            nodePaths,
-            edgePaths,
-            moveRecords,
-            operationMode,
-          });
-          //reset;
-          setPathIndex([]);
-          setNodePaths([["0,0"]]);
-          setEdgePaths([]);
-          setMoveRecords([]);
-          setOperationMode("normal");
-          //set game mode
-          currentModeRef.current = "guide";
-          term.write("> ");
-        } else if (command === "h") {
-          term.writeln("> g: go to generate mode; ");
-          term.writeln("> q: go to Default mode; ");
-          term.writeln("> i: go to Invert mode; ");
-          term.writeln("> c: go to Concatenate mode; ");
-          term.writeln("> m: check current mode & operations");
-          term.writeln("> h: help ");
-          term.writeln(
-            "> Check terminal FSM diagram \u001B]8;;https://pathforms.vercel.app/fsm\u0007here\u001B]8;;\u0007"
-          );
-          term.writeln(
-            "> Check game description \u001B]8;;https://mineyev.web.illinois.edu/PathForms/\u0007here\u001B]8;;\u0007"
-          );
-          term.write("> ");
-        } else if (command === "g") {
-          //go to generate mode
-          currentModeRef.current = "generate";
-          setOperationMode("gen");
-          term.writeln("> Generate word vector with size: ");
-          term.write("> ");
-        } else if (command === "q") {
-          currentModeRef.current = "default";
-          setOperationMode("normal");
-          term.writeln("> Default mode.");
-          term.write("> ");
-        } else if (command === "i") {
-          currentModeRef.current = "invert";
-          setOperationMode("invert");
-          term.writeln("> Invert mode.");
-          term.write("> ");
-        } else if (command === "c") {
-          currentModeRef.current = "concat";
-          setOperationMode("concat");
-          term.writeln("> Concatenate mode.");
-          term.write("> ");
         } else if (command === "m") {
           term.writeln("> You are in invert mode. ");
           term.writeln("> To invert path: n (n: integer, word index) ");
         } else {
-          term.writeln("> Invalid.");
-          term.write("> ");
+          term.writeln("> ");
         }
       } else if (currentMode === "concat") {
         // Implement concat mode handling
@@ -446,69 +367,18 @@ const Pathterminal: React.FC<PathterminalProps> = ({
         if (!isNaN(index1) && !isNaN(index2)) {
           concatenate(index1 - 1, index2 - 1);
           term.write("> ");
-        } else if (command === "guide") {
-          //before going into guide mode, keep everything a copy and reset everything;
-          //set backkup for exit re-rendering;
-          setBackup({
-            pathIndex,
-            nodePaths,
-            edgePaths,
-            moveRecords,
-            operationMode,
-          });
-          //reset;
-          setPathIndex([]);
-          setNodePaths([["0,0"]]);
-          setEdgePaths([]);
-          setMoveRecords([]);
-          setOperationMode("normal");
-          //set game mode
-          currentModeRef.current = "guide";
-          term.write("> ");
-        } else if (command === "q") {
-          currentModeRef.current = "default";
-          setOperationMode("normal");
-          term.writeln("> Default mode.");
-          term.write("> ");
-        } else if (command === "h") {
-          term.writeln("> g: go to generate mode; ");
-          term.writeln("> q: go to Default mode; ");
-          term.writeln("> i: go to Invert mode; ");
-          term.writeln("> c: go to Concatenate mode; ");
-          term.writeln("> m: check current mode & operations");
-          term.writeln("> h: help ");
-          term.writeln(
-            "> Check terminal FSM diagram \u001B]8;;https://pathforms.vercel.app/fsm\u0007here\u001B]8;;\u0007"
-          );
-          term.writeln(
-            "> Check game description \u001B]8;;https://mineyev.web.illinois.edu/PathForms/\u0007here\u001B]8;;\u0007"
-          );
-          term.write("> ");
-        } else if (command === "g") {
-          //go to generate mode
-          currentModeRef.current = "generate";
-          setOperationMode("gen");
-          term.writeln("> Generate word vector with size: ");
-          term.write("> ");
-        } else if (command === "c") {
-          currentModeRef.current = "concat";
-          setOperationMode("concat");
-          term.writeln("> Concatenate mode.");
-          term.write("> ");
-        } else if (command === "i") {
-          currentModeRef.current = "invert";
-          setOperationMode("invert");
-          term.writeln("> Invert mode.");
-          term.write("> ");
         } else if (command === "m") {
           term.writeln("> You are in Concatenate mode. ");
           term.writeln(
             "> To concatenate paths: n m (n: integer, word index 1; m: integer, word index 2. ) "
           );
         } else {
-          term.writeln("> Invalid.");
-          term.write("> ");
+          term.writeln("> ");
         }
+        // else {
+        //   term.writeln("> Invalid.");
+        //   term.write("> ");
+        // }
       }
     };
   }, [
@@ -520,6 +390,7 @@ const Pathterminal: React.FC<PathterminalProps> = ({
     moveRecords,
     nodePaths,
     edgePaths,
+    gameMode,
   ]); // Include all dependencies that the handlers use
 
   // Set up the data listener only once but use the latest command handler
@@ -532,17 +403,19 @@ const Pathterminal: React.FC<PathterminalProps> = ({
     const dataHandler = (data: string) => {
       if (data === "\x12") {
         term.clear();
+
+        // Introduction
         term.writeln("Welcome to PathForms!");
         term.writeln(
-          "This game aims to visualize Nielsen transform in combinatorial group theory."
+          "This game aims to visualize Nielsen transformations in combinatorial group theory."
         );
         term.writeln(
-          "The game provides a list of words from a subgroup of a rank-2 free group with generators a, b (the Word Vector)."
+          "The game provides a list of words from a free group with generators a, b (the Word List)."
         );
         term.writeln(
-          "You are expected to perform Nielsen's transformation to bring this list of words to Nielsen reduced form. "
+          "You are expected to perform Nielsen's transformations to bring this list of words to Nielsen reduced form. "
         );
-        term.writeln("> h: help ");
+        term.writeln("> To start a tutorial: enter 'guide' in the terminal");
         //line heading
         term.write("> ");
         currentModeRef.current = "default";
@@ -568,9 +441,10 @@ const Pathterminal: React.FC<PathterminalProps> = ({
         term.write(data);
       }
     };
-
+    // Attach the data handler to onData
     term.onData(dataHandler);
 
+    // Attach another onData to show the operation mode at the bottom
     // No cleanup needed for this listener as it's bound to the terminal lifecycle
   }, [terminalInstanceRef]); // Only depend on the terminal instance
 
