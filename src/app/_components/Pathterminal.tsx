@@ -75,14 +75,17 @@ const Pathterminal: React.FC<PathterminalProps> = ({
       // Introduction
       term.writeln("Welcome to PathForms!");
       term.writeln(
-        "This game aims to introduce Nielsen transform in combinatorial group theory."
+        "This game aims to introduce Nielsen transformations in combinatorial group theory."
       );
       term.writeln(
-        "The game provides a subgroup of a rank-2 free group with generators a, b (the Word Vector)."
+        "This is level one of the game. This level provides a list of words and your job is to bring this list to a and b"
       );
       term.writeln(
-        "You are expected to perform Nielsen's transformation to bring this subgroup to Nielsen reduced form. "
+        "For more information about the game and the math behind it click on the title. "
       );
+      term.writeln(
+        "For level 2 of the game please click this <nextllevel>"
+      )
       term.writeln("> h: help ");
 
       //line heading
