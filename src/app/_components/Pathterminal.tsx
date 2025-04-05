@@ -140,6 +140,7 @@ const Pathterminal: React.FC<PathterminalProps> = ({
       //no matter which game mode, should be able to switch
       //reset terminal
 
+      //guide mode command;
       if (command === "guide") {
         term.clear();
         //before going into guide mode, keep everything a copy and reset everything;
@@ -162,16 +163,17 @@ const Pathterminal: React.FC<PathterminalProps> = ({
         setGameMode("guide");
         //write in the terminal;
         // Initial step call if we are just entering guide mode
+
         term.writeln(
-          "> In this guide, we will lead you through how to play this game and the math behind it. "
+          "> In this short guide, we will lead you through operations for this game. "
         );
         term.writeln(
-          "> To start the game, you need to generate a list of words. "
+          "> You need to generate a list of words to start playing. "
         );
         term.writeln(
-          "> Enter 'g' to go to generate mode or use the buttons we provided. "
+          "\x1b[33m> Enter 'g' to go to generate mode or use the buttons we provided. \x1b[0m"
         );
-        term.writeln("Enter 'ok' to go to next step. ");
+        term.writeln("> Enter 'ok' to go to next step. ");
         // term.write("> ");
       }
 
@@ -207,6 +209,7 @@ const Pathterminal: React.FC<PathterminalProps> = ({
         term.writeln("> c: go to Concatenate mode; ");
         term.writeln("> m: check current mode & operations");
         term.writeln("> h: help ");
+        term.writeln("> guide: short guidence game");
         term.writeln(
           "> Check terminal FSM diagram \u001B]8;;https://pathforms.vercel.app/fsm\u0007here\u001B]8;;\u0007"
         );
@@ -219,6 +222,7 @@ const Pathterminal: React.FC<PathterminalProps> = ({
       // these are specific for gameMode;
       // The operations should be global, right?
       if (gameMode === "guide") {
+        // currentStepRef.current = 0;
         //switch gamemode, maybe we should remove the current mode thing, and use gameMode to re-render instead;
         //because guide is actually not an ooperation mode, it is a gameMode;
         // Function for guide mode
@@ -230,7 +234,7 @@ const Pathterminal: React.FC<PathterminalProps> = ({
             //   break;
             case 1:
               term.writeln(
-                "> The first operation you have is invert (Nielsen Transform T1)."
+                "> The first thing you can do is inverting a word (Nielsen Transform T1)."
               );
               term.writeln(
                 "\x1b[33m> To use the terminal, enter i to go to invert mode and then enter the word index to invert. \x1b[0m"
@@ -244,10 +248,10 @@ const Pathterminal: React.FC<PathterminalProps> = ({
               break;
             case 2:
               term.writeln(
-                "> The second operation you have is concatenate (Nielsen Transform T2)."
+                "> The second thing you can do is concatenating two words (Nielsen Transform T2)."
               );
               term.writeln(
-                "> To use the terminal, enter c to go to invert mode and then enter the word indexes to concatenate. "
+                "> To use the terminal, enter c to go to concatenate mode and then enter the word indexes to concatenate. "
               );
               term.writeln(
                 "> Word 1 will be replaced by the combination of the word 1  + word 2"
@@ -262,7 +266,11 @@ const Pathterminal: React.FC<PathterminalProps> = ({
               term.write("> ");
               break;
             case 3:
-              term.writeln("> Guide complete!");
+              term.writeln("> You are good to go! ");
+              term.writeln("> You can always enter h if you need any help. ");
+              term.writeln(
+                "> Enter quit to exit guide mode, and enjoy the game! "
+              );
               term.write("> ");
               break;
             default:
@@ -273,6 +281,7 @@ const Pathterminal: React.FC<PathterminalProps> = ({
 
         // Handle quitting the guide mode
         if (command === "quit") {
+          currentStepRef.current = 0;
           // Reset other states to backup values
           setPathIndex(backup.pathIndex);
           setNodePaths(backup.nodePaths);
@@ -286,19 +295,23 @@ const Pathterminal: React.FC<PathterminalProps> = ({
 
           setGameMode("real"); //this should trick re-rendering;
           console.log(`Current mode after exiting: ${currentModeRef.current}`);
+          term.clear();
           term.write("> ");
         }
 
         // Handle moving to the next step
         else if (command === "ok") {
           // If it's not the last step, go to the next step
-          if (currentStepRef.current < 3) {
+          if (currentStepRef.current <= 3) {
             currentStepRef.current++; // Increment the step
             guideSteps(); // Show the next step
           } else {
-            term.writeln("Guide complete!\n"); // If finished, show "Guide complete"
+            term.writeln("Guide completed!\n"); // If finished, show "Guide complete"
+            // currentStepRef.current = 0;
             term.write("> ");
           }
+        } else {
+          term.write("> ");
         }
       }
 
@@ -422,6 +435,9 @@ const Pathterminal: React.FC<PathterminalProps> = ({
         setOperationMode("normal");
         return;
       }
+
+      const COLOR_COMMAND = "\x1b[36m"; // Cyan, for example
+      const COLOR_RESET = "\x1b[0m"; // Reset to default
       // Enter, deal with current command
       if (data === "\r") {
         term.writeln(""); // New line
@@ -438,7 +454,7 @@ const Pathterminal: React.FC<PathterminalProps> = ({
       } else {
         // Collect command
         command += data;
-        term.write(data);
+        term.write(COLOR_COMMAND + data + COLOR_RESET);
       }
     };
     // Attach the data handler to onData
