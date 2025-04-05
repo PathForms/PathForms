@@ -168,12 +168,12 @@ const Pathterminal: React.FC<PathterminalProps> = ({
           "> In this short guide, we will lead you through operations for this game. "
         );
         term.writeln(
-          "> You need to generate a list of words to start playing. "
+          "> First thing to do, you need to generate a list of words to start playing. "
         );
         term.writeln(
-          "\x1b[33m> Enter 'g' to go to generate mode or use the buttons we provided. \x1b[0m"
+          ">\x1b[33m Enter 'g' to go to generate mode\x1b[0m or use the buttons we provided."
         );
-        term.writeln("> Enter 'ok' to go to next step. ");
+        term.writeln("> Enter 'ok' when you are done. ");
         // term.write("> ");
       }
 
@@ -194,10 +194,6 @@ const Pathterminal: React.FC<PathterminalProps> = ({
         currentModeRef.current = "concat";
         setOperationMode("concat");
         term.writeln("> Concatenate mode.");
-      } else if (command === "m") {
-        term.writeln("> You are in default mode. ");
-        term.writeln("> To show/hide path: n (n: word index) ");
-        term.writeln("> To show/hide all path: a ");
       } else if (command === "q") {
         currentModeRef.current = "default";
         setOperationMode("normal");
@@ -218,68 +214,103 @@ const Pathterminal: React.FC<PathterminalProps> = ({
         );
       }
 
+      // Function for guide mode
+      const guideSteps = () => {
+        switch (currentStepRef.current) {
+          case 1:
+            term.writeln(
+              "> You can control the display of the generated list of words when in mode 'default'."
+            );
+            term.writeln(
+              ">\x1b[33m Enter 'q' to switch to mode 'default'. \x1b[0m"
+            );
+
+            // term.writeln(
+            //   ">\x1b[33m enter the word index to show/hide that word\x1b[0m."
+            // );
+
+            // term.writeln("> Enter ok when you are done. ");
+            term.write("> ");
+            break;
+          case 2:
+            term.writeln(
+              "> Great! Now let's start transforming the list of words! There are two things you can do."
+            );
+            term.writeln("> First, invert a specific word.");
+            term.writeln(">\x1b[33m Enter 'i' to go to invert mode\x1b[0m");
+            // term.writeln(
+            //   ">\x1b[33m To use the buttons, click on the Invert Mode and then click on the target word in word list.\x1b[0m"
+            // );
+
+            // term.writeln("> Enter ok when you are done. ");
+            term.write("> ");
+            break;
+          case 3:
+            term.writeln(
+              "> The second thing you can do is concatenating two words (Nielsen Transform T2)."
+            );
+            term.writeln(
+              ">\x1b[33m Enter 'c' to go to concatenate mode.\x1b[0m"
+            );
+            // term.writeln(
+            //   "> To use the buttons, click on the Concatenate Mode and then click on two words in word list. "
+            // );
+            // term.writeln("> First_Word ----> First_Word + Second_Word");
+            // term.writeln("> Enter ok when you are done. ");
+            term.write("> ");
+            break;
+          case 4:
+            term.writeln("> You are good to go! ");
+            term.writeln(
+              "> You can always \x1b[33menter 'h'\x1b[0m if you need any help, and \x1b[33menter 'm'\x1b[0m to check the current mode you're in with the operations you have. "
+            );
+            term.writeln(
+              "> If you're still confused about how the terminal works, you can check terminal FSM diagram \u001B]8;;https://pathforms.vercel.app/fsm\u0007here\u001B]8;;\u0007"
+            );
+            term.writeln(
+              "> Enter quit to exit guide mode, and enjoy the game! "
+            );
+            term.write("> ");
+            break;
+          default:
+            term.writeln("> Invalid step.");
+            term.write("> ");
+        }
+      };
       //guide mode logic;
       // these are specific for gameMode;
       // The operations should be global, right?
       if (gameMode === "guide") {
         // currentStepRef.current = 0;
-        //switch gamemode, maybe we should remove the current mode thing, and use gameMode to re-render instead;
-        //because guide is actually not an ooperation mode, it is a gameMode;
-        // Function for guide mode
-        const guideSteps = () => {
-          switch (currentStepRef.current) {
-            // case 0:
-            //   term.writeln("Step 1: Do this action.\n");
-            //   term.write("> ");
-            //   break;
-            case 1:
-              term.writeln(
-                "> The first thing you can do is inverting a word (Nielsen Transform T1)."
-              );
-              term.writeln(
-                "\x1b[33m> To use the terminal, enter i to go to invert mode and then enter the word index to invert. \x1b[0m"
-              );
-              term.writeln(
-                "\x1b[33m> To use the buttons, click on the Invert Mode and then click on the target word in word list\x1b[0m"
-              );
-
-              term.writeln("> Enter ok when you are done. ");
-              term.write("> ");
-              break;
-            case 2:
-              term.writeln(
-                "> The second thing you can do is concatenating two words (Nielsen Transform T2)."
-              );
-              term.writeln(
-                "> To use the terminal, enter c to go to concatenate mode and then enter the word indexes to concatenate. "
-              );
-              term.writeln(
-                "> Word 1 will be replaced by the combination of the word 1  + word 2"
-              );
-              term.writeln(
-                "> To use the buttons, click on the Concatenate Mode and then click on two words in order. "
-              );
-              term.writeln(
-                "> Word first clicked will be replaced by the combination of the word 1  + word 2"
-              );
-              term.writeln("> Enter ok when you are done. ");
-              term.write("> ");
-              break;
-            case 3:
-              term.writeln("> You are good to go! ");
-              term.writeln("> You can always enter h if you need any help. ");
-              term.writeln(
-                "> Enter quit to exit guide mode, and enjoy the game! "
-              );
-              term.write("> ");
-              break;
-            default:
-              term.writeln("> Invalid step.");
-              term.write("> ");
-          }
-        };
-
         // Handle quitting the guide mode
+
+        if (currentStepRef.current == 1) {
+          if (command === "q") {
+            term.writeln(
+              "> Enter the word index (integer) to show/hide a specific word."
+            );
+            term.writeln(
+              "> Enter \x1b[33m'a'\x1b[0m to show/hide the all words."
+            );
+            term.writeln("> Enter ok when you are done. ");
+            term.write("> ");
+          }
+        }
+        if (currentStepRef.current == 2) {
+          if (command === "i") {
+            term.writeln("> Enter the word index to invert a specific word.");
+            term.writeln("> Enter ok when you are done. ");
+            term.write("> ");
+          }
+        }
+        if (currentStepRef.current == 3) {
+          if (command === "c") {
+            term.writeln("> Enter two word indices \x1b[33m'n m'\x1b[0m.");
+            term.writeln("> n ---> n + m");
+            term.writeln("> Enter ok when you are done. ");
+            term.write("> ");
+          }
+        }
         if (command === "quit") {
           currentStepRef.current = 0;
           // Reset other states to backup values
@@ -298,11 +329,10 @@ const Pathterminal: React.FC<PathterminalProps> = ({
           term.clear();
           term.write("> ");
         }
-
         // Handle moving to the next step
         else if (command === "ok") {
           // If it's not the last step, go to the next step
-          if (currentStepRef.current <= 3) {
+          if (currentStepRef.current <= 4) {
             currentStepRef.current++; // Increment the step
             guideSteps(); // Show the next step
           } else {
@@ -318,7 +348,14 @@ const Pathterminal: React.FC<PathterminalProps> = ({
       // Everything below should be in real mode;
       // Or, let's just add a if statement for specific "quit option".
       if (currentMode === "default") {
-        // check gameMode, if guide, then allow quit
+        // guide-specific command
+        //guide-specific operation
+        if (gameMode == "guide" && currentStepRef.current == 1) {
+          if (command == "ok") {
+            currentStepRef.current++;
+            guideSteps();
+          }
+        }
         // default mode, waiting for first-level command
         const index: number = parseInt(command, 10);
         if (!isNaN(index)) {
@@ -361,6 +398,12 @@ const Pathterminal: React.FC<PathterminalProps> = ({
           }
         }
       } else if (currentMode === "invert") {
+        if (gameMode == "guide" && currentStepRef.current == 2) {
+          if (command == "ok") {
+            currentStepRef.current++;
+            guideSteps();
+          }
+        }
         const index: number = parseInt(command, 10);
         if (!isNaN(index)) {
           invert(index - 1); //invert the correct path
@@ -436,7 +479,7 @@ const Pathterminal: React.FC<PathterminalProps> = ({
         return;
       }
 
-      const COLOR_COMMAND = "\x1b[36m"; // Cyan, for example
+      const COLOR_COMMAND = "\x1b[96m"; // Cyan, for example
       const COLOR_RESET = "\x1b[0m"; // Reset to default
       // Enter, deal with current command
       if (data === "\r") {
