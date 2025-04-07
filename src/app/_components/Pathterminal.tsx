@@ -81,7 +81,9 @@ const Pathterminal: React.FC<PathterminalProps> = ({
       term.open(terminalRef.current);
 
       // Show welcome message
-      term.writeln("Welcome to PathForms!");
+      term.writeln(
+        "Welcome to \x1b[31mP\x1b[32ma\x1b[33mt\x1b[34mh\x1b[35mF\x1b[36mo\x1b[91mr\x1b[92mm\x1b[93ms\x1b[95m!\x1b[0m"
+      );
       term.writeln(
         "This game aims to visualize Nielsen transformations in combinatorial group theory."
       );
@@ -464,7 +466,9 @@ const Pathterminal: React.FC<PathterminalProps> = ({
         term.clear();
 
         // Show welcome message
-        term.writeln("Welcome to PathForms!");
+        term.writeln(
+          "Welcome to \x1b[31mP\x1b[32ma\x1b[33mt\x1b[34mh\x1b[35mF\x1b[36mo\x1b[91mr\x1b[92mm\x1b[93ms\x1b[95m!\x1b[0m"
+        );
         term.writeln(
           "This game aims to visualize Nielsen transformations in combinatorial group theory."
         );
