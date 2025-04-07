@@ -108,48 +108,161 @@ const Pathterminal: React.FC<PathterminalProps> = ({
     };
   }, []);
 
+  // start writing with > at the current line;
+  // when finished, switch to new line without printing a > at front;
+  async function typeTextln(
+    term: Terminal,
+    text: string,
+    speed = 30
+  ): Promise<void> {
+    return new Promise((resolve) => {
+      let index = 0;
+      let typing = true;
+
+      term.write("> "); // Always start with '> '
+
+      const keyListener = term.onKey((event) => {
+        const key = event.key;
+        if (key === "\r" && typing) {
+          clearInterval(intervalId);
+          term.write(text.slice(index)); // finish the rest
+          // term.writeln(""); // move to next line
+          // term.write("> "); // start new prompt
+          typing = false;
+          keyListener.dispose();
+          resolve();
+        }
+      });
+
+      const intervalId = setInterval(() => {
+        if (index < text.length) {
+          term.write(text.charAt(index));
+          index++;
+        } else {
+          clearInterval(intervalId);
+          term.writeln(""); // move to next line
+          // term.write("> "); // start new prompt
+          typing = false;
+          keyListener.dispose();
+          resolve();
+        }
+      }, speed);
+    });
+  }
+
+  //start at current line, end at current line;
+  async function typeText(
+    term: Terminal,
+    text: string,
+    speed = 30
+  ): Promise<void> {
+    return new Promise((resolve) => {
+      let index = 0;
+      let typing = true;
+
+      term.write("> "); // Always start with '> '
+
+      const keyListener = term.onKey((event) => {
+        const key = event.key;
+        if (key === "\r" && typing) {
+          clearInterval(intervalId);
+          term.write(text.slice(index)); // finish the rest
+          // term.writeln(""); // move to next line
+          // term.write("> "); // start new prompt
+          typing = false;
+          keyListener.dispose();
+          resolve();
+        }
+      });
+
+      const intervalId = setInterval(() => {
+        if (index < text.length) {
+          term.write(text.charAt(index));
+          index++;
+        } else {
+          clearInterval(intervalId);
+          // term.write("> "); // start new prompt
+          typing = false;
+          keyListener.dispose();
+          resolve();
+        }
+      }, speed);
+    });
+  }
+
   // Guide steps function
   const guideSteps = (term: Terminal) => {
     switch (currentStepRef.current) {
       case 1:
-        term.writeln(
-          "> You can control the display of the generated list of words when in mode 'default'."
-        );
-        term.writeln(
-          "> Enter \x1b[38;5;226mq\x1b[0m to switch to mode 'default'."
-        );
-        term.write("> ");
+        async function runTypingSequence() {
+          await typeTextln(
+            term,
+            "You can control the display of the generated list of words when in mode 'default'."
+          );
+          await typeTextln(
+            term,
+            "Enter \x1b[38;5;226mq\x1b[0m to switch to mode 'default'."
+          );
+          await typeText(term, ""); // Start a new line with > at the beginning
+        }
+
+        runTypingSequence(); //
         break;
+
       case 2:
-        term.writeln(
-          "> Great! Now let's start transforming the list of words! There are two things you can do."
-        );
-        term.writeln("> First, invert a specific word.");
-        term.writeln("> Enter \x1b[38;5;226mi\x1b[0m to go to invert mode.");
-        term.write("> ");
+        async function runStepTwo() {
+          await typeTextln(
+            term,
+            "Great! Now let's start transforming the list of words! There are two things you can do."
+          );
+          await typeTextln(term, "First, invert a specific word.");
+          await typeTextln(
+            term,
+            "Enter \x1b[38;5;226mi\x1b[0m to go to invert mode."
+          );
+          await typeText(term, ""); // Prompt the user for the next input
+        }
+
+        runStepTwo();
         break;
+
       case 3:
-        term.writeln(
-          "> The second thing you can do is concatenating two words (Nielsen Transform T2)."
-        );
-        term.writeln(
-          "> Enter \x1b[38;5;226mc\x1b[0m to go to concatenate mode."
-        );
-        term.write("> ");
+        async function runStepThree() {
+          await typeTextln(
+            term,
+            "The second thing you can do is concatenating two words (Nielsen Transform T2)."
+          );
+          await typeTextln(
+            term,
+            "Enter \x1b[38;5;226mc\x1b[0m to go to concatenate mode."
+          );
+          await typeText(term, "");
+        }
+
+        runStepThree();
         break;
+
       case 4:
-        term.writeln("> You are good to go! ");
-        term.writeln(
-          "> You can always enter \x1b[38;5;226mh\x1b[0m if you need any help, and enter \x1b[38;5;226mm\x1b[0m to check the current mode you're in with the operations you have."
-        );
-        term.writeln(
-          "> If you're still confused about how the terminal works, you can check terminal FSM diagram \u001B]8;;https://pathforms.vercel.app/fsm\u0007here\u001B]8;;\u0007"
-        );
-        term.writeln(
-          "> Enter \x1b[38;5;226mquit\x1b[0m to exit guide mode, and enjoy the game!"
-        );
-        term.write("> ");
+        async function runStepFour() {
+          await typeTextln(term, "You are good to go! ");
+          await typeTextln(
+            term,
+            "You can always enter \x1b[38;5;226mh\x1b[0m if you need any help, and enter \x1b[38;5;226mm\x1b[0m to check the current mode you're in with the operations you have."
+          );
+          await typeTextln(
+            term,
+            "If you're still confused about how the terminal works, you can check terminal FSM diagram \u001B]8;;https://pathforms.vercel.app/fsm\u0007here\u001B]8;;\u0007"
+          );
+          await typeTextln(
+            term,
+            "Enter \x1b[38;5;226mquit\x1b[0m to exit guide mode, and enjoy the game!"
+          );
+          await typeText(term, "");
+        }
+
+        runStepFour();
         break;
+
       default:
         term.writeln("> Invalid step.");
         term.write("> ");
