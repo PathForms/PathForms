@@ -91,7 +91,10 @@ const Pathterminal: React.FC<PathterminalProps> = ({
       term.writeln(
         "You are expected to perform Nielsen's transformations to bring this list of words to Nielsen reduced form."
       );
-      term.writeln("> To start a tutorial: enter 'guide' in the terminal");
+      term.writeln(
+        "> For new players, enter \x1b[38;5;226mguide\x1b[0m to start a tutorial. "
+      );
+      term.writeln("> Enter \x1b[38;5;226mh\x1b[0m for help.");
       term.write("> ");
     }
 
@@ -111,7 +114,7 @@ const Pathterminal: React.FC<PathterminalProps> = ({
           "> You can control the display of the generated list of words when in mode 'default'."
         );
         term.writeln(
-          ">\x1b[33m Enter 'q' to switch to mode 'default'. \x1b[0m"
+          "> Enter \x1b[38;5;226mq\x1b[0m to switch to mode 'default'."
         );
         term.write("> ");
         break;
@@ -120,25 +123,29 @@ const Pathterminal: React.FC<PathterminalProps> = ({
           "> Great! Now let's start transforming the list of words! There are two things you can do."
         );
         term.writeln("> First, invert a specific word.");
-        term.writeln(">\x1b[33m Enter 'i' to go to invert mode\x1b[0m");
+        term.writeln("> Enter \x1b[38;5;226mi\x1b[0m to go to invert mode.");
         term.write("> ");
         break;
       case 3:
         term.writeln(
           "> The second thing you can do is concatenating two words (Nielsen Transform T2)."
         );
-        term.writeln(">\x1b[33m Enter 'c' to go to concatenate mode.\x1b[0m");
+        term.writeln(
+          "> Enter \x1b[38;5;226mc\x1b[0m to go to concatenate mode."
+        );
         term.write("> ");
         break;
       case 4:
         term.writeln("> You are good to go! ");
         term.writeln(
-          "> You can always \x1b[33menter 'h'\x1b[0m if you need any help, and \x1b[33menter 'm'\x1b[0m to check the current mode you're in with the operations you have."
+          "> You can always enter \x1b[38;5;226mh\x1b[0m if you need any help, and enter \x1b[38;5;226mm\x1b[0m to check the current mode you're in with the operations you have."
         );
         term.writeln(
           "> If you're still confused about how the terminal works, you can check terminal FSM diagram \u001B]8;;https://pathforms.vercel.app/fsm\u0007here\u001B]8;;\u0007"
         );
-        term.writeln("> Enter quit to exit guide mode, and enjoy the game!");
+        term.writeln(
+          "> Enter \x1b[38;5;226mquit\x1b[0m to exit guide mode, and enjoy the game!"
+        );
         term.write("> ");
         break;
       default:
@@ -152,25 +159,31 @@ const Pathterminal: React.FC<PathterminalProps> = ({
     if (command === "q") {
       if (gameMode === "guide" && currentStepRef.current === 1) {
         term.writeln(
-          "> Enter the word index (integer) to show/hide a specific word."
+          "> Enter the \x1b[38;5;226mword index (integer)\x1b[0m to show/hide a specific word."
         );
-        term.writeln("> Enter \x1b[33m'a'\x1b[0m to show/hide the all words.");
-        term.writeln("> Enter ok when you are done.");
+        term.writeln(
+          "> Enter \x1b[38;5;226ma\x1b[0m to show/hide the all words."
+        );
+        term.writeln("> Enter \x1b[38;5;226mok\x1b[0m when you are done.");
       }
     }
 
     if (command === "i") {
       if (gameMode === "guide" && currentStepRef.current === 2) {
-        term.writeln("> Enter the word index to invert a specific word.");
-        term.writeln("> Enter ok when you are done.");
+        term.writeln(
+          "> Enter the \x1b[38;5;226mword index (integer)\x1b[0m to invert a specific word."
+        );
+        term.writeln("> Enter \x1b[38;5;226mok\x1b[0m when you are done.");
       }
     }
 
     if (command === "c") {
       if (gameMode === "guide" && currentStepRef.current === 3) {
-        term.writeln("> Enter two word indices \x1b[33m'n m'\x1b[0m.");
-        term.writeln("> n ---> n + m");
-        term.writeln("> Enter ok when you are done.");
+        term.writeln(
+          "> Enter two word indices \x1b[38;5;226mn m (integers)\x1b[0m."
+        );
+        term.writeln("> Effect: n ---> n + m");
+        term.writeln("> Enter \x1b[38;5;226mok\x1b[0m when you are done.");
       }
     }
   };
@@ -210,9 +223,9 @@ const Pathterminal: React.FC<PathterminalProps> = ({
           "> First thing to do, you need to generate a list of words to start playing."
         );
         term.writeln(
-          ">\x1b[33m Enter 'g' to go to generate mode\x1b[0m or use the buttons we provided."
+          "> Enter \x1b[38;5;226mg\x1b[0m to go to generate mode or use the buttons we provided."
         );
-        term.writeln("> Enter 'ok' when you are done.");
+        term.writeln("> Enter \x1b[38;5;226mok\x1b[0m when you are done.");
         term.write("> ");
         return;
       }
@@ -265,33 +278,6 @@ const Pathterminal: React.FC<PathterminalProps> = ({
 
       // Guide mode specific logic
       if (gameMode === "guide") {
-        // if (currentStepRef.current === 1 && command === "q") {
-        //   term.writeln(
-        //     "> Enter the word index (integer) to show/hide a specific word."
-        //   );
-        //   term.writeln(
-        //     "> Enter \x1b[33m'a'\x1b[0m to show/hide the all words."
-        //   );
-        //   term.writeln("> Enter ok when you are done.");
-        //   term.write("> ");
-        //   return;
-        // }
-
-        // if (currentStepRef.current === 2 && command === "i") {
-        //   term.writeln("> Enter the word index to invert a specific word.");
-        //   term.writeln("> Enter ok when you are done.");
-        //   term.write("> ");
-        //   return;
-        // }
-
-        // if (currentStepRef.current === 3 && command === "c") {
-        //   term.writeln("> Enter two word indices \x1b[33m'n m'\x1b[0m.");
-        //   term.writeln("> n ---> n + m");
-        //   term.writeln("> Enter ok when you are done.");
-        //   term.write("> ");
-        //   return;
-        // }
-
         if (command === "quit") {
           currentStepRef.current = 0;
           if (backup) {
@@ -476,6 +462,8 @@ const Pathterminal: React.FC<PathterminalProps> = ({
       // Handle Ctrl+R (Reset terminal)
       if (data === "\x12") {
         term.clear();
+
+        // Show welcome message
         term.writeln("Welcome to PathForms!");
         term.writeln(
           "This game aims to visualize Nielsen transformations in combinatorial group theory."
@@ -486,7 +474,10 @@ const Pathterminal: React.FC<PathterminalProps> = ({
         term.writeln(
           "You are expected to perform Nielsen's transformations to bring this list of words to Nielsen reduced form."
         );
-        term.writeln("> To start a tutorial: enter 'guide' in the terminal");
+        term.writeln(
+          "> For new players, enter \x1b[38;5;226mguide\x1b[0m to start a tutorial. "
+        );
+        term.writeln("> Enter \x1b[38;5;226mh\x1b[0m for help.");
         term.write("> ");
         currentModeRef.current = "default";
         setOperationMode("normal");
