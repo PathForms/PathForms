@@ -147,6 +147,34 @@ const Pathterminal: React.FC<PathterminalProps> = ({
     }
   };
 
+  //checkMode function: made for mode-specific behaviors of global operations;
+  const checkMode = (command: string, term: Terminal) => {
+    if (command === "q") {
+      if (gameMode === "guide" && currentStepRef.current === 1) {
+        term.writeln(
+          "> Enter the word index (integer) to show/hide a specific word."
+        );
+        term.writeln("> Enter \x1b[33m'a'\x1b[0m to show/hide the all words.");
+        term.writeln("> Enter ok when you are done.");
+      }
+    }
+
+    if (command === "i") {
+      if (gameMode === "guide" && currentStepRef.current === 2) {
+        term.writeln("> Enter the word index to invert a specific word.");
+        term.writeln("> Enter ok when you are done.");
+      }
+    }
+
+    if (command === "c") {
+      if (gameMode === "guide" && currentStepRef.current === 3) {
+        term.writeln("> Enter two word indices \x1b[33m'n m'\x1b[0m.");
+        term.writeln("> n ---> n + m");
+        term.writeln("> Enter ok when you are done.");
+      }
+    }
+  };
+
   // Set up command handler
   useEffect(() => {
     commandHandlerRef.current = (command: string) => {
@@ -200,18 +228,21 @@ const Pathterminal: React.FC<PathterminalProps> = ({
         currentModeRef.current = "invert";
         setOperationMode("invert");
         term.writeln("> Invert mode.");
+        checkMode(command, term);
         term.write("> ");
         return;
       } else if (command === "c") {
         currentModeRef.current = "concat";
         setOperationMode("concat");
         term.writeln("> Concatenate mode.");
+        checkMode(command, term);
         term.write("> ");
         return;
       } else if (command === "q") {
         currentModeRef.current = "default";
         setOperationMode("normal");
         term.writeln("> Default mode.");
+        checkMode(command, term);
         term.write("> ");
         return;
       } else if (command === "h") {
@@ -234,32 +265,32 @@ const Pathterminal: React.FC<PathterminalProps> = ({
 
       // Guide mode specific logic
       if (gameMode === "guide") {
-        if (currentStepRef.current === 1 && command === "q") {
-          term.writeln(
-            "> Enter the word index (integer) to show/hide a specific word."
-          );
-          term.writeln(
-            "> Enter \x1b[33m'a'\x1b[0m to show/hide the all words."
-          );
-          term.writeln("> Enter ok when you are done.");
-          term.write("> ");
-          return;
-        }
+        // if (currentStepRef.current === 1 && command === "q") {
+        //   term.writeln(
+        //     "> Enter the word index (integer) to show/hide a specific word."
+        //   );
+        //   term.writeln(
+        //     "> Enter \x1b[33m'a'\x1b[0m to show/hide the all words."
+        //   );
+        //   term.writeln("> Enter ok when you are done.");
+        //   term.write("> ");
+        //   return;
+        // }
 
-        if (currentStepRef.current === 2 && command === "i") {
-          term.writeln("> Enter the word index to invert a specific word.");
-          term.writeln("> Enter ok when you are done.");
-          term.write("> ");
-          return;
-        }
+        // if (currentStepRef.current === 2 && command === "i") {
+        //   term.writeln("> Enter the word index to invert a specific word.");
+        //   term.writeln("> Enter ok when you are done.");
+        //   term.write("> ");
+        //   return;
+        // }
 
-        if (currentStepRef.current === 3 && command === "c") {
-          term.writeln("> Enter two word indices \x1b[33m'n m'\x1b[0m.");
-          term.writeln("> n ---> n + m");
-          term.writeln("> Enter ok when you are done.");
-          term.write("> ");
-          return;
-        }
+        // if (currentStepRef.current === 3 && command === "c") {
+        //   term.writeln("> Enter two word indices \x1b[33m'n m'\x1b[0m.");
+        //   term.writeln("> n ---> n + m");
+        //   term.writeln("> Enter ok when you are done.");
+        //   term.write("> ");
+        //   return;
+        // }
 
         if (command === "quit") {
           currentStepRef.current = 0;
