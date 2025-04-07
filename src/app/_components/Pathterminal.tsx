@@ -82,7 +82,7 @@ const Pathterminal: React.FC<PathterminalProps> = ({
 
       // Show welcome message
       term.writeln(
-        "Welcome to \x1b[31mP\x1b[32ma\x1b[33mt\x1b[34mh\x1b[35mF\x1b[36mo\x1b[91mr\x1b[92mm\x1b[93ms\x1b[95m!\x1b[0m"
+        "Welcome to \x1b[31mP\x1b[32ma\x1b[38;5;226mt\x1b[34mh\x1b[35mF\x1b[36mo\x1b[91mr\x1b[92mm\x1b[93ms\x1b[95m!\x1b[0m"
       );
       term.writeln(
         "This game aims to visualize Nielsen transformations in combinatorial group theory."
@@ -261,13 +261,15 @@ const Pathterminal: React.FC<PathterminalProps> = ({
         term.write("> ");
         return;
       } else if (command === "h") {
-        term.writeln("> g: go to generate mode;");
-        term.writeln("> q: go to Default mode;");
-        term.writeln("> i: go to Invert mode;");
-        term.writeln("> c: go to Concatenate mode;");
-        term.writeln("> m: check current mode & operations");
-        term.writeln("> h: help");
-        term.writeln("> guide: short guidance game");
+        term.writeln("> \x1b[38;5;226mg\x1b[0m: go to generate mode;");
+        term.writeln("> \x1b[38;5;226mq\x1b[0m: go to Default mode;");
+        term.writeln("> \x1b[38;5;226mi\x1b[0m: go to Invert mode;");
+        term.writeln("> \x1b[38;5;226mc\x1b[0m: go to Concatenate mode;");
+        term.writeln(
+          "> \x1b[38;5;226mm\x1b[0m: check current mode & operations"
+        );
+        term.writeln("> \x1b[38;5;226mh\x1b[0m: help");
+        term.writeln("> \x1b[38;5;226mguide\x1b[0m: short guidance game");
         term.writeln(
           "> Check terminal FSM diagram \u001B]8;;https://pathforms.vercel.app/fsm\u0007here\u001B]8;;\u0007"
         );
@@ -330,8 +332,10 @@ const Pathterminal: React.FC<PathterminalProps> = ({
 
         if (command === "m") {
           term.writeln("> You are in default mode.");
-          term.writeln("> To show/hide path: n (n: word index)");
-          term.writeln("> To show/hide all path: a");
+          term.writeln(
+            "> To show/hide path: \x1b[38;5;226mn (word index, integer)\x1b[0m"
+          );
+          term.writeln("> To show/hide all path: \x1b[38;5;226ma\x1b[0m");
           term.write("> ");
           return;
         }
@@ -363,7 +367,9 @@ const Pathterminal: React.FC<PathterminalProps> = ({
 
         if (command === "m") {
           term.writeln("> You are in generate mode.");
-          term.writeln("> To generate new word vector: n (n: word size)");
+          term.writeln(
+            "> To generate new word vector: \x1b[38;5;226mn (size of word list)\x1b[0m"
+          );
           term.write("> ");
           return;
         }
@@ -393,7 +399,9 @@ const Pathterminal: React.FC<PathterminalProps> = ({
 
         if (command === "m") {
           term.writeln("> You are in invert mode.");
-          term.writeln("> To invert path: n (n: integer, word index)");
+          term.writeln(
+            "> To invert path: \x1b[38;5;226mn (index, integer)\x1b[0m"
+          );
           term.write("> ");
           return;
         }
@@ -426,7 +434,7 @@ const Pathterminal: React.FC<PathterminalProps> = ({
         if (command === "m") {
           term.writeln("> You are in Concatenate mode.");
           term.writeln(
-            "> To concatenate paths: n m (n: integer, word index 1; m: integer, word index 2.)"
+            "> To concatenate paths: \x1b[38;5;226mn m (index1 index2 ; integers)\x1b[0m "
           );
           term.write("> ");
           return;
@@ -467,7 +475,7 @@ const Pathterminal: React.FC<PathterminalProps> = ({
 
         // Show welcome message
         term.writeln(
-          "Welcome to \x1b[31mP\x1b[32ma\x1b[33mt\x1b[34mh\x1b[35mF\x1b[36mo\x1b[91mr\x1b[92mm\x1b[93ms\x1b[95m!\x1b[0m"
+          "Welcome to \x1b[31mP\x1b[32ma\x1b[38;5;226mt\x1b[34mh\x1b[35mF\x1b[36mo\x1b[91mr\x1b[92mm\x1b[93ms\x1b[95m!\x1b[0m"
         );
         term.writeln(
           "This game aims to visualize Nielsen transformations in combinatorial group theory."
