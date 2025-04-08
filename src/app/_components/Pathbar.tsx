@@ -93,6 +93,7 @@ const Pathbar: React.FC<PathBarProps> = ({
         }}
       >
         <button
+          id="invertBtn"
           onClick={() => setInvert()}
           style={{
             height: "35px",
@@ -107,6 +108,7 @@ const Pathbar: React.FC<PathBarProps> = ({
           Invert Mode
         </button>
         <button
+          id="concatBtn"
           onClick={() => setConcat()}
           style={{
             height: "35px",
@@ -136,6 +138,26 @@ const Pathbar: React.FC<PathBarProps> = ({
         >
           Clear Stored Data
         </button>
+        <button
+        id = "infoBtn"
+        onClick={() => {
+          localStorage.removeItem("tutorialShown");
+          location.reload(); 
+        }}
+        style={{
+          height: "35px",
+          width: "25%",
+          fontSize: "14px",
+          cursor: "pointer",
+          borderRadius: "4px",
+          transition: "0.1s ease-in-out",
+          backgroundColor: "transparent",
+          color: "rgb(245, 203, 39)",
+          borderColor: "rgb(238, 248, 43)",
+        }}
+      >
+        ?
+      </button>
       </div>
     </div>
   );

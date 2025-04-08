@@ -65,6 +65,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({ generate }) => {
         placeholder="Number of Words"
       />
       <button
+        id="generateWordsBtn"
         style={{
           width: "200px",
           height: "30px",

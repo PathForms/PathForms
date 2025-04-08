@@ -106,7 +106,18 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({ movePaths }) => {
       }}
     >
       <button
-        style={{ fontSize: "1.2rem", padding: "8px 16px" }}
+        id="checkBtn"
+        style={{
+          height: "35px",
+          width: "100%",
+          fontSize: "14px",
+          cursor: "pointer",
+          borderRadius: "4px",
+          transition: "0.1s ease-in-out",
+          backgroundColor: "transparent",
+          color: "rgb(13, 255, 0)",
+          borderColor: "rgb(13, 255, 0)",
+        }}
         onClick={handleCheck}
       >
         Check
