@@ -8,3 +8,110 @@
   justify-content: center; /* Centers the SVG */
   margin: auto;
 }
+
+/* :global(button:active) {
+  background-color: rgb(140, 140, 140);
+  color: black;
+} */
+
+/* Container styling */
+.container {
+  min-height: 100vh;
+}
+
+/* Light theme styles */
+.container.light {
+  background-color: #00000000;
+  color: #3c3c3c;
+}
+
+/* Dark theme styles */
+.container.dark {
+  background-color: #00000000;
+  color: #4d4d4d;
+}
+
+/* Header styling */
+.header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.header.light {
+  background-color: #ffffff00;
+  color: #1eff00c1;
+}
+
+.header.dark {
+  background-color: #00000000;
+  color: #fff;
+}
+
+/* Settings button styling */
+.settings-button {
+  position: absolute;
+  right: 20px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+/* Settings modal styling */
+.settings-modal {
+  position: fixed;
+  top: 70px;
+  right: 20px;
+  width: 250px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  z-index: 1100;
+}
+
+.settings-modal.light {
+  background-color: #f9f9f9;
+}
+
+.settings-modal.dark {
+  background-color: #444;
+}
+
+.buttonbar-wrapper {
+  margin-top: 70px;
+}
+
+/* pathlist */
+/* Define the base styles for each <p> */
+.textbox {
+  border: 2px transparent solid;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  color: rgb(255, 255, 0); /* Default text color */
+  text-align: left;
+  min-width: 100px;
+  max-width: 33vw; /* 33% of the screen width */
+  width: auto;
+  white-space: nowrap; /* Prevent wrapping */
+  overflow-x: auto; /* Allow horizontal scrolling */
+  padding: 2px;
+  margin: 0; /* Remove default margin to reduce vertical space */
+  scrollbar-width: none; /* Firefox: hides scrollbar */
+}
+
+/* Define the hover effect */
+.textbox:hover {
+  border: 1px solid rgb(74, 74, 74); /* Border color on hover */
+  color: yellow; /* Change text color on hover */
+  cursor: pointer; /* Change cursor to pointer to indicate clickable */
+}
+
+/* terminal container */
+
+.terminal-container {
+  display: flex;
+  right: 20px;
+}

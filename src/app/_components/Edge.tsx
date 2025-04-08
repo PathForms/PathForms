@@ -1,4 +1,4 @@
-// Edge.tsx
+"use client";
 import React from "react";
 
 interface EdgeProps {
@@ -6,38 +6,38 @@ interface EdgeProps {
   sourceY: number;
   targetX: number;
   targetY: number;
-  isHighlighted: boolean;
-  direction?: string;
-  onHover?: (hovered: boolean) => void;
+  source: string;
+  target: string;
+  isActive?: boolean;
+  edgeThickness?: number;
 }
 
 const Edge: React.FC<EdgeProps> = ({
+  source,
+  target,
   sourceX,
   sourceY,
   targetX,
   targetY,
-  isHighlighted,
-  direction,
-  onHover,
+  isActive,
+  edgeThickness,
 }) => {
+  const [x, y] = source.split(",").map(Number);
+  const [x2, y2] = target.split(",").map(Number);
 
-  let strokeColor = "#999";
-  if (direction === "up" || direction === "down") {
-    strokeColor = "pink";
-  } else if (direction === "left" || direction === "right") {
-    strokeColor = "yellow";
-  }
-  
-  if (isHighlighted) {
-    strokeColor = "orange";
+  let strokeColor = "rgba(255, 34, 5, 0.2)";
+  if ((x === x2 && y <= y2) || (x === x2 && y >= y2)) {
+    strokeColor = "rgba(0, 94, 255, 0.23)";
   }
 
-  const handleMouseEnter = () => {
-    if (onHover) onHover(true);
-  };
-  const handleMouseLeave = () => {
-    if (onHover) onHover(false);
-  };
+  let thickness = edgeThickness ?? 1;
+  if (isActive) {
+    strokeColor = "rgb(251, 0, 71)";
+    thickness += 2;
+    if ((x == x2 && y <= y2) || (x == x2 && y >= y2)) {
+      strokeColor = "rgb(0, 140, 255)";
+    }
+  }
 
   return (
     <line
@@ -46,9 +46,7 @@ const Edge: React.FC<EdgeProps> = ({
       x2={targetX}
       y2={targetY}
       stroke={strokeColor}
-      strokeWidth={2}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+      strokeWidth={thickness}
     />
   );
 };

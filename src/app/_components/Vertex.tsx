@@ -1,55 +1,34 @@
+"use client";
 import React, { useState } from "react";
 
 interface VertexProps {
+  id: string;
   x: number;
   y: number;
-  id: string;
-  onClick: (id: string) => void;
-  onHover: (id: string, isHovered: boolean) => void;
-  isHighlighted: boolean;
-  isShined: boolean;
+  isHighlighted?: boolean;
+  isShined?: boolean;
+  isActive?: boolean;
 }
 
 const Vertex: React.FC<VertexProps> = ({
+  id,
   x,
   y,
-  id,
-  onClick,
-  onHover,
-  isHighlighted,
-  isShined,
+
+  isActive,
 }) => {
-  // Use useState to manage the hover state
-  const [isHovered, setIsHovered] = useState(false);
-
-  const handleMouseEnter = () => {
-    setIsHovered(true);
-    onHover(id, true);
-  };
-
-  const handleMouseLeave = () => {
-    setIsHovered(false);
-    onHover(id, false);
-  };
-
-  // Set the fill color based on the current state
-  const fillColor = isHovered
-    ? "orange"       // When hovered, the color becomes orange
-    : isShined
-    ? "gold"         // When isShined is true, the color becomes gold
-    : isHighlighted
-    ? "#007acc"      // When isHighlighted is true, the color becomes blue
-    : "lightblue";   // Default color is light blue
+  //color logic
+  let fillColor = "rgba(244, 252, 0, 0.14)";
+  if (isActive) {
+    fillColor = "rgb(255, 255, 255)";
+  }
 
   return (
     <circle
       cx={x}
       cy={y}
-      r={3}
+      r={2}
       fill={fillColor}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      onClick={() => onClick(id)}
       style={{ cursor: "pointer", transition: "fill 0.3s" }}
     />
   );
