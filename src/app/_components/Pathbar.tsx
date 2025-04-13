@@ -104,7 +104,7 @@ const Pathbar: React.FC<PathBarProps> = ({
             ...InvertStyles(mode), // Dynamically applies styles based on mode
           }}
         >
-          Invert Mode
+          Invert Word
         </button>
         <button
           onClick={() => setConcat()}
@@ -118,7 +118,7 @@ const Pathbar: React.FC<PathBarProps> = ({
             ...ConcatStyles(mode), // Dynamically applies styles based on mode
           }}
         >
-          Concatenate Mode
+          Concatenate 2 words
         </button>
         <button
           onClick={() => clear()}

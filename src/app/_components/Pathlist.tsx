@@ -110,10 +110,12 @@ const Pathlist: React.FC<PathlistProps> = ({
         backgroundColor: "rgba(47, 47, 47, 0.5)",
         padding: "10px",
         borderRadius: "8px",
-        overflow: "hidden",
+        // overflow: "hidden", // Hide the scrollbar
+        overflow: "auto",
+        scrollbarWidth: "none",
       }}
     >
-      <h2 style={{ margin: "0 0 8px 0", fontSize: "18px" }}>Word Vector</h2>
+      <h2 style={{ margin: "0 0 8px 0", fontSize: "18px" }}>Word List</h2>
       <div
         style={{
           display: "flex",
@@ -127,9 +129,10 @@ const Pathlist: React.FC<PathlistProps> = ({
               color: "rgb(255, 255, 0)",
               textAlign: "left",
               minWidth: "100px",
-              maxWidth: "33vw",
-              whiteSpace: "nowrap",
-              overflowX: "auto",
+              maxWidth: "33vw", // 33% of the screen width
+              width: "auto",
+              whiteSpace: "nowrap", // Prevent wrapping
+              overflowX: "auto", // Allow horizontal scrolling
               padding: "2px",
               margin: "0",
             }}

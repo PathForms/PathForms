@@ -68,6 +68,7 @@ interface CayleyTreeProps {
   nodePaths: string[][];
   edgePaths: string[][];
   edgeThickness: number;
+  shape: string;
 }
 
 const CayleyTree: React.FC<CayleyTreeProps> = ({
@@ -75,6 +76,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
   nodePaths,
   edgePaths,
   edgeThickness,
+  shape,
 }) => {
   const [nodes, setNodes] = useState<LayoutNode[]>([]);
   const [links, setLinks] = useState<LayoutLink[]>([]);
@@ -87,58 +89,91 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
     const root = d3.hierarchy<TreeNode>(rootData);
     const screenW = 1024;
     const screenH = 768;
-    const outerRadius = Math.min(screenW, screenH) / 2;
+    if (shape === "circle") {
+      const outerRadius = Math.min(screenW, screenH) / 2;
+      const clusterLayout = d3
+        .cluster<TreeNode>()
+        .size([2 * Math.PI, outerRadius - 50]);
+      clusterLayout(root);
 
-    const clusterLayout = d3
-      .cluster<TreeNode>()
-      .size([2 * Math.PI, outerRadius - 50]);
-    clusterLayout(root);
-
-    const allNodes: LayoutNode[] = root.descendants().map((d) => {
-      const angle = (d.x ?? 0) - Math.PI / 4;
-      // Apply different scaling to x and y to create an ellipse shape
-      const rX = (d.y ?? 0) * (1 + 0.2 * d.depth); // X scaling factor
-      const rY = (d.y ?? 0) * (1 + 0.1 * d.depth); // Y scaling factor
-
-      return {
-        id: d.data.name,
-        x: rX * Math.cos(angle),
-        y: rY * Math.sin(angle),
-      };
-    });
-
-    const allLinks: LayoutLink[] = [];
-    root.descendants().forEach((d) => {
-      if (d.parent) {
-        const getPosition = (node: d3.HierarchyPointNode<TreeNode>) => {
-          const angle = node.x - Math.PI / 4;
-          const rX = node.y * (1 + 0.2 * node.depth);
-          const rY = node.y * (1 + 0.1 * node.depth);
-          return {
-            x: rX * Math.cos(angle),
-            y: rY * Math.sin(angle),
-          };
+      const allNodes: LayoutNode[] = root.descendants().map((d) => {
+        const angle = (d.x ?? 0) - Math.PI / 4;
+        const rX = (d.y ?? 0) * (1 + 0.2 * d.depth);
+        const rY = (d.y ?? 0) * (1 + 0.1 * d.depth);
+        return {
+          id: d.data.name,
+          x: rX * Math.cos(angle),
+          y: rY * Math.sin(angle),
         };
+      });
 
-        //resolve for minor error; vercel deploy
-        const parentPos = getPosition(
-          d.parent as d3.HierarchyPointNode<TreeNode>
-        );
-        const childPos = getPosition(d as d3.HierarchyPointNode<TreeNode>);
-        allLinks.push({
-          id: `${d.parent.data.name}->${d.data.name}`,
-          source: d.parent.data.name,
-          target: d.data.name,
-          sourceX: parentPos.x,
-          sourceY: parentPos.y,
-          targetX: childPos.x,
-          targetY: childPos.y,
-        });
-      }
-    });
-    setNodes(allNodes);
-    setLinks(allLinks);
+      const allLinks: LayoutLink[] = [];
+      root.descendants().forEach((d) => {
+        if (d.parent) {
+          const getPosition = (node: d3.HierarchyPointNode<TreeNode>) => {
+            const angle = node.x - Math.PI / 4;
+            const rX = node.y * (1 + 0.2 * node.depth);
+            const rY = node.y * (1 + 0.1 * node.depth);
+            return { x: rX * Math.cos(angle), y: rY * Math.sin(angle) };
+          };
+          const parentPos = getPosition(
+            d.parent as d3.HierarchyPointNode<TreeNode>
+          );
+          const childPos = getPosition(d as d3.HierarchyPointNode<TreeNode>);
+          allLinks.push({
+            id: `${d.parent.data.name}->${d.data.name}`,
+            source: d.parent.data.name,
+            target: d.data.name,
+            sourceX: parentPos.x,
+            sourceY: parentPos.y,
+            targetX: childPos.x,
+            targetY: childPos.y,
+          });
+        }
+      });
 
+      setNodes(allNodes);
+      setLinks(allLinks);
+    } else if (shape === "rect") {
+      const treeLayout = d3
+        .tree<TreeNode>()
+        .size([screenW - 200, screenH - 200]);
+      treeLayout(root);
+
+      const allNodes: LayoutNode[] = root.descendants().map((d) => {
+        // Extract coordinates from the name field of the node
+        const [x_, y_] = d.data.name.split(",").map(Number) || [0, 0];
+        const node = { id: d.data.name, x: 2.5 * x_, y: 2.5 * y_ };
+        console.log("Rect Node:", node);
+        return node;
+      });
+
+      const allLinks: LayoutLink[] = [];
+      root.descendants().forEach((d) => {
+        if (d.parent) {
+          // Extract coordinates for the parent node
+          const [parentX, parentY] = d.parent.data.name
+            .split(",")
+            .map(Number) || [0, 0];
+          // Extract coordinates for the child node
+          const [childX, childY] = d.data.name.split(",").map(Number) || [0, 0];
+
+          // Create the link with proper coordinates
+          allLinks.push({
+            id: `${d.parent.data.name}->${d.data.name}`,
+            source: d.parent.data.name,
+            target: d.data.name,
+            sourceX: 2.5 * parentX,
+            sourceY: 2.5 * parentY,
+            targetX: 2.5 * childX,
+            targetY: 2.5 * childY,
+          });
+        }
+      });
+
+      setNodes(allNodes);
+      setLinks(allLinks);
+    }
     const zoomBehavior = d3
       .zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.1, 10])
@@ -152,7 +187,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
       "transform",
       `translate(${screenW / 2}, ${screenH / 2})`
     );
-  }, []);
+  }, [shape]);
 
   return (
     <div

@@ -47,6 +47,7 @@ const Edge: React.FC<EdgeProps> = ({
       y2={targetY}
       stroke={strokeColor}
       strokeWidth={thickness}
+      markerEnd="url(#arrow)"
     />
   );
 };

@@ -11,18 +11,22 @@ interface HeadbarProps {
   edgeThickness: number;
   handleEdgeThicknessChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleThemeChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  shape: string;
+  handleshape: () => void;
 }
 
 //function for return
 
 const Headbar: React.FC<HeadbarProps> = ({
   theme,
+  shape,
   toggleSettings,
   showSettings,
   edgeThickness,
   handleEdgeThicknessChange,
 
   handleThemeChange,
+  handleshape,
 }) => {
   const colors = [
     "rgb(255, 50, 91)",
@@ -93,6 +97,15 @@ const Headbar: React.FC<HeadbarProps> = ({
               <option value="dark">Dark</option>
             </select>
           </div>
+          <div>
+            {/* <button onClick={() => handleshape()}>shape</button> */}
+            <label>Shape:</label>
+            <select value={shape} onChange={handleshape}>
+              <option value="circle">circle</option>
+              <option value="rect">rectangle</option>
+            </select>
+          </div>
+
           <button onClick={toggleSettings}>Close</button>
         </div>
       )}

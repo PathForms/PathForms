@@ -10,13 +10,7 @@ interface VertexProps {
   isActive?: boolean;
 }
 
-const Vertex: React.FC<VertexProps> = ({
-  id,
-  x,
-  y,
-
-  isActive,
-}) => {
+const Vertex: React.FC<VertexProps> = ({ id, x, y, isActive }) => {
   //color logic
   let fillColor = "rgba(244, 252, 0, 0.14)";
   if (isActive) {
