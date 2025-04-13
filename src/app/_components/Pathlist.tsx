@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import styles from "./components.module.css";
 
 type Direction = "up" | "down" | "left" | "right";
@@ -21,6 +21,8 @@ interface PathlistProps {
   invert: (index: number) => void;
 }
 
+const LONG_PRESS_DURATION = 500; 
+
 const Pathlist: React.FC<PathlistProps> = ({
   mode,
   nodePaths,
@@ -32,29 +34,69 @@ const Pathlist: React.FC<PathlistProps> = ({
   invert,
 }) => {
   const [concatIndexes, setConcatIndexes] = useState<number[]>([]);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const clickPrevented = useRef<boolean>(false);
 
+  const handleClick = (index: number) => {
+    if (clickPrevented.current) {
+      clickPrevented.current = false;
+      return;
+    }
+    setConcatIndexes((prev) => [...prev, index]);
+  };
   //Effect to handle concat
+  // useEffect(() => {
+  //   if (concatIndexes.length === 2) {
+  //     concatenate(concatIndexes[0], concatIndexes[1]);
+  //     setConcatIndexes([]); // Clear after concatenation
+  //   }
+  // }, [concatIndexes]); // Runs whenever `concatIndexes` changes
+  // useEffect(() => {
+  //   setConcatIndexes([]);
+  // }, [mode]); //reset concat indexes whenever mode change
+  // const handleClick = (index: number) => {
+  //   if (mode === "invert") {
+  //     invert(index);
+  //     return;
+  //   } else if (mode === "concat") {
+  //     setConcatIndexes((prev) => [...prev, index]);
+  //     return;
+  //   }
+  //   demonstratePath(index);
+  // };
+
+  // long press to handle demonstrate path
+  const handleMouseDown = (index: number) => {
+    timerRef.current = setTimeout(() => {
+      demonstratePath(index);
+      clickPrevented.current = true;
+    }, LONG_PRESS_DURATION);
+  };
+
+  const handleMouseUp = (index: number) => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  };
+
+  // double click to invert
+  const handleDoubleClick = (index: number) => {
+    invert(index);
+    clickPrevented.current = true;
+  };
+
   useEffect(() => {
     if (concatIndexes.length === 2) {
       concatenate(concatIndexes[0], concatIndexes[1]);
-      setConcatIndexes([]); // Clear after concatenation
+      setConcatIndexes([]);
     }
-  }, [concatIndexes]); // Runs whenever `concatIndexes` changes
+  }, [concatIndexes, concatenate]);
+
   useEffect(() => {
     setConcatIndexes([]);
-  }, [mode]); //reset concat indexes whenever mode change
-  //
+  }, [movePaths]);
 
-  const handleClick = (index: number) => {
-    if (mode === "invert") {
-      invert(index);
-      return;
-    } else if (mode === "concat") {
-      setConcatIndexes((prev) => [...prev, index]);
-      return;
-    }
-    demonstratePath(index);
-  };
 
   return (
     <div
@@ -65,7 +107,7 @@ const Pathlist: React.FC<PathlistProps> = ({
         color: "rgb(230, 255, 138)",
         zIndex: 10,
         width: "auto",
-        backgroundColor: "rgba(47, 47, 47, 0.5)", // Optional subtle background for visibility
+        backgroundColor: "rgba(47, 47, 47, 0.5)",
         padding: "10px",
         borderRadius: "8px",
         // overflow: "hidden", // Hide the scrollbar
@@ -78,7 +120,7 @@ const Pathlist: React.FC<PathlistProps> = ({
         style={{
           display: "flex",
           flexDirection: "column",
-          maxWidth: "33vw", // 33% of the screen width
+          maxWidth: "33vw",
         }}
       >
         {movePaths.length === 0 ? (
@@ -91,9 +133,8 @@ const Pathlist: React.FC<PathlistProps> = ({
               width: "auto",
               whiteSpace: "nowrap", // Prevent wrapping
               overflowX: "auto", // Allow horizontal scrolling
-
               padding: "2px",
-              margin: "0", // Remove default margin to reduce vertical space
+              margin: "0",
             }}
           >
             No Data
@@ -102,31 +143,33 @@ const Pathlist: React.FC<PathlistProps> = ({
           movePaths.map((path, rowIndex) => {
             const isActive = pathIndex.includes(rowIndex);
             const textColor = isActive ? "rgb(255, 255, 0)" : "rgb(64, 73, 65)";
-
             return (
               <p
-                className={styles["textbox"]}
-                onClick={() => handleClick(rowIndex)}
                 key={rowIndex}
+                className={styles["textbox"]}
                 style={{
                   color: textColor,
                   textAlign: "left",
                   minWidth: "100px",
                   maxWidth: "33vw",
-                  width: "auto",
                   whiteSpace: "nowrap",
                   overflowX: "auto",
                   padding: "2px",
                   margin: "0",
                   scrollbarWidth: "none",
                 }}
+                onMouseDown={() => handleMouseDown(rowIndex)}
+                onMouseUp={() => handleMouseUp(rowIndex)}
+                onClick={() => handleClick(rowIndex)}
+                onDoubleClick={() => handleDoubleClick(rowIndex)}
               >
                 {`[W${rowIndex + 1}]: `}
                 {path.length === 0
                   ? "1"
                   : path
                       .map(
-                        (node) => translation[node as keyof typeof translation]
+                        (node) =>
+                          translation[node as keyof typeof translation]
                       )
                       .join(" ")}
               </p>

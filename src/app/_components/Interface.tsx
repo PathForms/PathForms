@@ -8,6 +8,7 @@ import Headbar from "./Headbar";
 import Pathlist from "./Pathlist";
 import Pathterminal from "./Pathterminal";
 import styles from "./components.module.css";
+import CheckNielsen from "./CheckNielsen";
 
 type Direction = "up" | "down" | "left" | "right";
 
@@ -188,6 +189,22 @@ const Interface = () => {
     newMoves = path1Moves; // Combine path1 and path2
     newMoves.push(...path2Moves);
 
+    if (newMoves.length === 0) {
+      const updatedMoveRecords = [...moveRecords];
+      const updatedNodePaths = [...nodePaths];
+      const updatedEdgePaths = [...edgePaths];
+      const updatedPathIndex = [...pathIndex];
+  
+      updatedMoveRecords.splice(index1, 1);
+      updatedNodePaths.splice(index1, 1);
+      updatedEdgePaths.splice(index1, 1);
+      const newPathIndex = updatedPathIndex.filter((i) => i !== index1);
+  
+      setMoveRecords(updatedMoveRecords);
+      setNodePaths(updatedNodePaths);
+      setEdgePaths(updatedEdgePaths);
+      setPathIndex(newPathIndex);
+      return;}
     //moveRecord update for path demonstration
     const updatedMoveRecords = [...moveRecords];
     updatedMoveRecords[index1] = newMoves;
@@ -755,7 +772,7 @@ const Interface = () => {
         concatenate={concatenate}
         invert={invertPath}
       />
-
+      <CheckNielsen movePaths={moveRecords} />
       <Pathbar
         mode={operationMode}
         setInvert={setInvert}
@@ -768,6 +785,8 @@ const Interface = () => {
         concatenate={concatenate}
         invert={invertPath}
       />
+
+  
     </div>
   );
 };
