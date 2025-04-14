@@ -9,6 +9,8 @@ import Pathlist from "./Pathlist";
 import Pathterminal from "./Pathterminal";
 import styles from "./components.module.css";
 import CheckNielsen from "./CheckNielsen";
+import Tutorial from "./Tutorial";
+
 
 type Direction = "up" | "down" | "left" | "right";
 
@@ -44,6 +46,10 @@ const Interface = () => {
   const [edgeThickness, setEdgeThickness] = useState<number>(0.7);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [showSettings, setShowSettings] = useState<boolean>(false);
+
+  // Tutorial state
+  const [tutorialStep, setTutorialStep] = useState<number>(1);
+  const [tutorialActive, setTutorialActive] = useState<boolean>(true);
 
   //
   //
@@ -153,6 +159,7 @@ const Interface = () => {
 
   // Concatenate two stored paths (for example, the first two paths)
   const concatenate = (index1: number, index2: number) => {
+    if (tutorialStep === 4) setTutorialStep(5);
     // check for valid
     if (
       index1 < 0 ||
@@ -272,6 +279,7 @@ const Interface = () => {
 
   // Invert a stored path at a given index
   const invertPath = (index: number) => {
+    if (tutorialStep === 3) setTutorialStep(4);
     if (moveRecords[index]) {
       let currentMoves = [...moveRecords[index]];
       let invertedNodes: string[] = ["0,0"];
@@ -523,6 +531,7 @@ const Interface = () => {
   };
 
   const GeneratePath = (n: number) => {
+    if (tutorialStep === 1) setTutorialStep(2);
     //
     //we need two paths, both start with a and b;
     //generating phase:
@@ -705,6 +714,7 @@ const Interface = () => {
   // Improve for Pathlist
   //interaction with handle click: when click, an index is pushed into demonstratePath
   const demonstratePath = (index: number) => {
+    if (tutorialStep === 2) setTutorialStep(3);
     // setNodes([...nodePaths[index]]);
     // setEdges([...edgePaths[index]]);
     // setMoves([...moveRecords[index]]);
@@ -737,7 +747,11 @@ const Interface = () => {
         handleshape={handleshape}
       />
 
-      <ButtonBar generate={GeneratePath} setGen={setGen} />
+      <ButtonBar 
+        generate={GeneratePath}
+        setGen={setGen} 
+        tutorialStep={tutorialStep}
+      />
       <Pathterminal
         pathIndex={pathIndex}
         nodePaths={nodePaths}
@@ -771,6 +785,7 @@ const Interface = () => {
         demonstratePath={demonstratePath}
         concatenate={concatenate}
         invert={invertPath}
+        tutorialStep={tutorialStep}
       />
       <CheckNielsen movePaths={moveRecords} />
       <Pathbar
@@ -785,8 +800,12 @@ const Interface = () => {
         concatenate={concatenate}
         invert={invertPath}
       />
-
-  
+      <Tutorial
+        step={tutorialStep}
+        isActive={tutorialActive}
+        onNext={() => setTutorialStep((s) => s + 1)}
+        onSkip={() => {setTutorialActive(false);setTutorialStep(0);}}
+      />
     </div>
   );
 };

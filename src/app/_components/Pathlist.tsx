@@ -19,6 +19,7 @@ interface PathlistProps {
   demonstratePath: (index: number) => void;
   concatenate: (index1: number, index2: number) => void;
   invert: (index: number) => void;
+  tutorialStep?: number;
 }
 
 const LONG_PRESS_DURATION = 500; 
@@ -32,6 +33,7 @@ const Pathlist: React.FC<PathlistProps> = ({
   demonstratePath,
   concatenate,
   invert,
+  tutorialStep,
 }) => {
   const [concatIndexes, setConcatIndexes] = useState<number[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -146,7 +148,11 @@ const Pathlist: React.FC<PathlistProps> = ({
             return (
               <p
                 key={rowIndex}
-                className={styles["textbox"]}
+                className={`${styles["textbox"]} ${
+                   (tutorialStep === 2 || tutorialStep === 3)&& rowIndex === 0 ? styles.highlight 
+                   : tutorialStep === 4 && (rowIndex === 0 || rowIndex === 1) ? styles.highlight
+                   : ""
+                }`}
                 style={{
                   color: textColor,
                   textAlign: "left",

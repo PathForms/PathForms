@@ -1,15 +1,17 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import "./components.module.css";
+import styles from "./components.module.css";
 
 type Direction = "up" | "down" | "left" | "right";
 
 interface ButtonBarProps {
   generate: (size: number) => void;
   setGen: () => void;
+  tutorialStep?: number;
 }
 
-const ButtonBar: React.FC<ButtonBarProps> = ({ generate, setGen }) => {
+const ButtonBar: React.FC<ButtonBarProps> = ({ generate, setGen, tutorialStep }) => {
   // onclick function
   // const handleClick = () => {
   //   // You can add additional logic here if needed
@@ -66,6 +68,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({ generate, setGen }) => {
         placeholder="Number of Words"
       />
       <button
+        className={`${tutorialStep === 1 ? styles.highlight : ""}`}
         style={{
           width: "200px",
           height: "30px",
