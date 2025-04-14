@@ -159,6 +159,10 @@ const Interface = () => {
 
   // Concatenate two stored paths (for example, the first two paths)
   const concatenate = (index1: number, index2: number) => {
+    if (index1 === index2) {
+      console.warn("Cannot concatenate a path with itself.");
+      return;
+    }
     if (tutorialStep === 4) setTutorialStep(5);
     // check for valid
     if (
