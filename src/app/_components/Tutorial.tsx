@@ -18,7 +18,7 @@ const tutorialSteps = [
   "Click path 1, then path 2 to concatenate them.",
   "Click path 1, then path 2 again to concatenate.",
   "Click the Check button. Did it fail?",
-  "Try using invert and concatenate to reduce the paths. Then click Check again!",
+  "Try using invert and concatenate to shorten the paths. Then click Check again!",
 ];
 
 const Tutorial: React.FC<TutorialProps> = ({ step, isActive, onNext, onSkip }) => {

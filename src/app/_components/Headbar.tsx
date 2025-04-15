@@ -39,7 +39,7 @@ const Headbar: React.FC<HeadbarProps> = ({
     "rgb(152, 0, 137)",
     "rgb(255, 137, 239)",
   ];
-  const text = "PathForms!";
+  const text = "PathForms";
   useEffect(() => {
     const root = document.documentElement;
     if (theme === "light") {

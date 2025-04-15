@@ -862,7 +862,6 @@ const Interface = () => {
     }
 
     if (tutorialStep === 2) {
-      // 期望: 长按 path1(index=0) => hide
       if (index === 0 ) {
         // hide path0
         if (pathIndex.includes(0)) {
