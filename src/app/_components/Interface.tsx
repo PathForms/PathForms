@@ -662,6 +662,11 @@ const Interface = () => {
       setTutorialStep(2);
       return;
     }
+
+    if (tutorialActive && tutorialStep !== 1) {
+      alert("You cannot generate paths right now!");
+      return;
+    }
     //
     //we need two paths, both start with a and b;
     //generating phase:

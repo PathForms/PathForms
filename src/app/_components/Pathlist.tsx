@@ -150,7 +150,9 @@ const Pathlist: React.FC<PathlistProps> = ({
                 key={rowIndex}
                 className={`${styles["textbox"]} ${
                    (tutorialStep === 2 || tutorialStep === 3)&& rowIndex === 0 ? styles.highlight 
-                   : tutorialStep === 4 && (rowIndex === 0 || rowIndex === 1) ? styles.highlight
+                   : tutorialStep === 4 &&  rowIndex === 1 ? styles.highlight
+                   : tutorialStep === 5 && (rowIndex === 0 || rowIndex === 1)? styles.highlight
+                   : tutorialStep === 6 && (rowIndex === 0 || rowIndex === 1)? styles.highlight
                    : ""
                 }`}
                 style={{
