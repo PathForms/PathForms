@@ -12,11 +12,14 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStartTutorial, onSkipTu
   return (
     <div className={styles.welcomeOverlay}>
       <div className={styles.welcomeBox}>
-        <h2>Welcome to PathForms!</h2>
+        
+      <h2>TRY TO SHORTEN THE PATHS </h2>
         <p>
-          This game aims to visualize Nielsen transformations in combinatorial group theory.
-          The game provides a list of words from a free group with generators <strong>a</strong> and <strong>b</strong> (the Word List).
-          You are expected to perform Nielsen transformations to bring this list of words to Nielsen reduced form.
+          using Nielsen transformations from combinatorial group theory.
+        
+          {/* Your first task is to <strong>generate</strong> several paths and <strong>shorten the paths</strong> as much as possible.  */}
+          {/* The game provides a list of words from a free group with generators <strong>a</strong> and <strong>b</strong> (the Word List).
+          You are expected to perform Nielsen transformations to bring this list of words to Nielsen reduced form. */}
         </p>
         <div className={styles.buttonRow}>
           <button onClick={onStartTutorial}>First time? Start Tutorial</button>
