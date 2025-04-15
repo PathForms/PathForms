@@ -1,11 +1,12 @@
 "use client";
+
 import React, { useEffect, useRef, useState } from "react";
 import styles from "./components.module.css";
 
 type Direction = "up" | "down" | "left" | "right";
 const translation: Record<Direction, string> = {
   up: "a",
-  down: "a\u207B\u00B9", // a^-1^
+  down: "a\u207B\u00B9", // a^-1
   right: "b",
   left: "b\u207B\u00B9",
 };
@@ -22,7 +23,8 @@ interface PathlistProps {
   tutorialStep?: number;
 }
 
-const LONG_PRESS_DURATION = 500; 
+const CLICK_INTERVAL = 250; 
+const LONG_PRESS_DURATION = 500;
 
 const Pathlist: React.FC<PathlistProps> = ({
   mode,
@@ -35,57 +37,38 @@ const Pathlist: React.FC<PathlistProps> = ({
   invert,
   tutorialStep,
 }) => {
+
   const [concatIndexes, setConcatIndexes] = useState<number[]>([]);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const clickPrevented = useRef<boolean>(false);
+  const singleClickTimer = useRef<NodeJS.Timeout | null>(null);
 
   const handleClick = (index: number) => {
-    if (clickPrevented.current) {
-      clickPrevented.current = false;
-      return;
+    if (singleClickTimer.current) {
+      clearTimeout(singleClickTimer.current);
+      singleClickTimer.current = null;
+      invert(index);
+    } else {
+      singleClickTimer.current = setTimeout(() => {
+        singleClickTimer.current = null;
+        setConcatIndexes((prev) => [...prev, index]);
+      }, CLICK_INTERVAL);
     }
-    setConcatIndexes((prev) => [...prev, index]);
   };
-  //Effect to handle concat
-  // useEffect(() => {
-  //   if (concatIndexes.length === 2) {
-  //     concatenate(concatIndexes[0], concatIndexes[1]);
-  //     setConcatIndexes([]); // Clear after concatenation
-  //   }
-  // }, [concatIndexes]); // Runs whenever `concatIndexes` changes
-  // useEffect(() => {
-  //   setConcatIndexes([]);
-  // }, [mode]); //reset concat indexes whenever mode change
-  // const handleClick = (index: number) => {
-  //   if (mode === "invert") {
-  //     invert(index);
-  //     return;
-  //   } else if (mode === "concat") {
-  //     setConcatIndexes((prev) => [...prev, index]);
-  //     return;
-  //   }
-  //   demonstratePath(index);
-  // };
 
-  // long press to handle demonstrate path
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
   const handleMouseDown = (index: number) => {
     timerRef.current = setTimeout(() => {
       demonstratePath(index);
-      clickPrevented.current = true;
+      if (singleClickTimer.current) {
+        clearTimeout(singleClickTimer.current);
+        singleClickTimer.current = null;
+      }
     }, LONG_PRESS_DURATION);
   };
-
   const handleMouseUp = (index: number) => {
     if (timerRef.current) {
       clearTimeout(timerRef.current);
       timerRef.current = null;
     }
-  };
-
-  // double click to invert
-  const handleDoubleClick = (index: number) => {
-    invert(index);
-    clickPrevented.current = true;
   };
 
   useEffect(() => {
@@ -99,7 +82,6 @@ const Pathlist: React.FC<PathlistProps> = ({
     setConcatIndexes([]);
   }, [movePaths]);
 
-
   return (
     <div
       style={{
@@ -112,29 +94,21 @@ const Pathlist: React.FC<PathlistProps> = ({
         backgroundColor: "rgba(47, 47, 47, 0.5)",
         padding: "10px",
         borderRadius: "8px",
-        // overflow: "hidden", // Hide the scrollbar
         overflow: "auto",
         scrollbarWidth: "none",
       }}
     >
       <h2 style={{ margin: "0 0 8px 0", fontSize: "18px" }}>Word List</h2>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          maxWidth: "33vw",
-        }}
-      >
+      <div style={{ display: "flex", flexDirection: "column", maxWidth: "33vw" }}>
         {movePaths.length === 0 ? (
           <p
             style={{
               color: "rgb(255, 255, 0)",
               textAlign: "left",
               minWidth: "100px",
-              maxWidth: "33vw", // 33% of the screen width
-              width: "auto",
-              whiteSpace: "nowrap", // Prevent wrapping
-              overflowX: "auto", // Allow horizontal scrolling
+              maxWidth: "33vw",
+              whiteSpace: "nowrap",
+              overflowX: "auto",
               padding: "2px",
               margin: "0",
             }}
@@ -145,15 +119,20 @@ const Pathlist: React.FC<PathlistProps> = ({
           movePaths.map((path, rowIndex) => {
             const isActive = pathIndex.includes(rowIndex);
             const textColor = isActive ? "rgb(255, 255, 0)" : "rgb(64, 73, 65)";
+
             return (
               <p
                 key={rowIndex}
-                className={`${styles["textbox"]} ${
-                   (tutorialStep === 2 || tutorialStep === 3)&& rowIndex === 0 ? styles.highlight 
-                   : tutorialStep === 4 &&  rowIndex === 1 ? styles.highlight
-                   : tutorialStep === 5 && (rowIndex === 0 || rowIndex === 1)? styles.highlight
-                   : tutorialStep === 6 && (rowIndex === 0 || rowIndex === 1)? styles.highlight
-                   : ""
+                className={`${styles.textbox} ${
+                  (tutorialStep === 2 || tutorialStep === 3) && rowIndex === 0
+                    ? styles.highlight
+                    : tutorialStep === 4 && rowIndex === 1
+                    ? styles.highlight
+                    : tutorialStep === 5 && (rowIndex === 0 || rowIndex === 1)
+                    ? styles.highlight
+                    : tutorialStep === 6 && (rowIndex === 0 || rowIndex === 1)
+                    ? styles.highlight
+                    : ""
                 }`}
                 style={{
                   color: textColor,
@@ -169,16 +148,12 @@ const Pathlist: React.FC<PathlistProps> = ({
                 onMouseDown={() => handleMouseDown(rowIndex)}
                 onMouseUp={() => handleMouseUp(rowIndex)}
                 onClick={() => handleClick(rowIndex)}
-                onDoubleClick={() => handleDoubleClick(rowIndex)}
               >
                 {`[W${rowIndex + 1}]: `}
                 {path.length === 0
                   ? "1"
                   : path
-                      .map(
-                        (node) =>
-                          translation[node as keyof typeof translation]
-                      )
+                      .map((node) => translation[node as keyof typeof translation])
                       .join(" ")}
               </p>
             );
