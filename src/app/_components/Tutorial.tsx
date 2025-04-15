@@ -12,10 +12,13 @@ interface TutorialProps {
 
 const tutorialSteps = [
   "Click the 'Generate Words' button to generate paths.",
-  "Click a path in the Word List to show/hide it on the graph.",
-  "Double-click a path to invert it.",
-  "Click two different paths to concatenate them.",
-  "🎉 Tutorial complete! You're now ready to explore freely!",
+  "Long press a path in the Word List to hide it.",
+  "Long press again to show it back.",
+  "Double-click the second path to invert it.",
+  "Click path 1, then path 2 to concatenate them.",
+  "Click path 1, then path 2 again to concatenate.",
+  "Click the Check button. Did it fail?",
+  "Try using invert and concatenate to reduce the paths. Then click Check again!",
 ];
 
 const Tutorial: React.FC<TutorialProps> = ({ step, isActive, onNext, onSkip }) => {
@@ -24,9 +27,9 @@ const Tutorial: React.FC<TutorialProps> = ({ step, isActive, onNext, onSkip }) =
   return (
     <div className={styles.tutorialOverlay}>
       <div className={styles.tutorialBox}>
-        <p>{tutorialSteps[step - 1]}</p>
-        <div style={{ display: "flex", justifyContent: "space-between", marginTop: "10px" }}>
-          <button onClick={onNext}>Next</button>
+        <p style={{ color: "black", margin: 0 }}>{tutorialSteps[step - 1]}</p>
+        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "10px" }}>
+          {/* Auto-controlled step progression: no Next button */}
           <button onClick={onSkip}>Skip Tutorial</button>
         </div>
       </div>
