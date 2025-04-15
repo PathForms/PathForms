@@ -4,10 +4,18 @@ import {Direction, reduceMoves,concatenate, invert} from "../utils/NielsenTrans"
 
 interface CheckNielsenProps {
   movePaths: Direction[][];
+  tutorialActive?: boolean;
+  tutorialStep?: number;
+  onTutorialCheck?: (step: number) => void; 
 }
 
 
-const CheckNielsen: React.FC<CheckNielsenProps> = ({ movePaths }) => {
+const CheckNielsen: React.FC<CheckNielsenProps> = ({ 
+  movePaths,
+  tutorialActive = false,
+  tutorialStep = 0,
+  onTutorialCheck = () => {}
+}) => {
   const [result, setResult] = useState<string>("");
 
   function checkNielsenReduced(paths: Direction[][]): boolean[] {
@@ -61,31 +69,44 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({ movePaths }) => {
         }
       }
     }
-
-
     return result
   }
 
-
-
   const handleCheck = () => {
+    check();
+    if (tutorialStep === 7 && onTutorialCheck) {
+      onTutorialCheck(8);
+    }
+
+    if (tutorialStep === 8 && onTutorialCheck) {
+      const reducedConditionStatus = checkNielsenReduced(movePaths);
+      const isSuccess = reducedConditionStatus.every((cond) => cond === true);
+      if (isSuccess) {
+        alert("🎉 Congrats! You have successfully reduced the paths!");
+        onTutorialCheck(0); 
+      }
+      return;
+    }
+  }
+  function check() {
     const reducedConditionStatus = checkNielsenReduced(movePaths);
     if (reducedConditionStatus.every(condition => condition === true)) {
       setResult("Success: The word list satisfies Nielsen Reduced Form!");
     } else {
-      let resultstatements = "Failure: "
+      let resultstatements = "Failure: ";
       if (reducedConditionStatus[0] === false) {
         resultstatements += " The word list does not satisfy N0. ";
-      }  
+      }
       if (reducedConditionStatus[1] === false) {
-        resultstatements +=" The word list does not satisfy N1.";
-      }  
+        resultstatements += " The word list does not satisfy N1. ";
+      }
       if (reducedConditionStatus[2] === false) {
-        resultstatements +="The word list does not satisfy N2.";
+        resultstatements += " The word list does not satisfy N2.";
       }
       setResult(resultstatements);
     }
-  };
+  }
+
 
   return (
     <div

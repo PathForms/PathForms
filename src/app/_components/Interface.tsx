@@ -9,6 +9,11 @@ import Pathlist from "./Pathlist";
 import Pathterminal from "./Pathterminal";
 import styles from "./components.module.css";
 import CheckNielsen from "./CheckNielsen";
+import Tutorial from "./Tutorial";
+import WelcomeScreen from "./WelcomeScreen";
+import buildNodesEdgesFromMoves from "../utils/buildNodesEdgesFromMoves";
+import next from "next";
+
 
 type Direction = "up" | "down" | "left" | "right";
 
@@ -44,6 +49,14 @@ const Interface = () => {
   const [edgeThickness, setEdgeThickness] = useState<number>(0.7);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [showSettings, setShowSettings] = useState<boolean>(false);
+
+  //Welcome screen state
+  const [showWelcome, setShowWelcome] = useState(true);
+
+
+  // Tutorial state
+  const [tutorialStep, setTutorialStep] = useState<number>(1);
+  const [tutorialActive, setTutorialActive] = useState<boolean>(false);
 
   //
   //
@@ -118,6 +131,10 @@ const Interface = () => {
   ////////////// functions for PathBar ///////////////////////
   //
   //mode setters
+
+  useEffect(() => {
+    console.log("tutorialStep:", tutorialStep);
+  });
   const setInvert = () => {
     if (operationMode == "invert") {
       setOperationMode("normal");
@@ -151,112 +168,183 @@ const Interface = () => {
   //   console.log("Move Records:", moveRecords);
   // }, [moveRecords]);
 
-  // Concatenate two stored paths (for example, the first two paths)
-  const concatenate = (index1: number, index2: number) => {
-    // check for valid
-    if (
-      index1 < 0 ||
-      index1 >= moveRecords.length ||
-      index2 < 0 ||
-      index2 >= moveRecords.length
-    ) {
-      console.error("Invalid indices:", index1, index2);
-      return;
-    }
+  ///////////////////////////////////concatenate helpers//////////////////////////////
 
-    //fetch data
-    const path1Moves = [...moveRecords[index1]];
-    const path2Moves = [...moveRecords[index2]];
-    let newMoves: Direction[] = [];
-
-    // Remove canceling moves
-    while (path1Moves.length !== 0 && path2Moves.length !== 0) {
-      const tail = path1Moves.at(-1);
-      const head = path2Moves.at(0);
-      if (tail !== undefined && head !== undefined) {
-        if (head === oppositeMoves[tail]) {
-          path1Moves.pop();
-          path2Moves.shift();
-        } else {
-          break;
-        }
+  function doConcat(pathA: Direction[], pathB: Direction[]): Direction[] {
+    let a = [...pathA];
+    let b = [...pathB];
+    // Canceling moves at the junction
+    while (a.length && b.length) {
+      if (b[0] === oppositeMoves[a[a.length - 1]]) {
+        a.pop();
+        b.shift();
       } else {
-        console.log("One of the elements is undefined");
         break;
       }
     }
-
-    newMoves = path1Moves; // Combine path1 and path2
-    newMoves.push(...path2Moves);
-
-    if (newMoves.length === 0) {
-      const updatedMoveRecords = [...moveRecords];
-      const updatedNodePaths = [...nodePaths];
-      const updatedEdgePaths = [...edgePaths];
-      const updatedPathIndex = [...pathIndex];
+    return [...a, ...b];
+  }
   
-      updatedMoveRecords.splice(index1, 1);
-      updatedNodePaths.splice(index1, 1);
-      updatedEdgePaths.splice(index1, 1);
-      const newPathIndex = updatedPathIndex.filter((i) => i !== index1);
+  ////////////////////////////////////////
+  // 可选：回退操作 (若你想要真正回退到之前的 moves)
+  ////////////////////////////////////////
+  function revertConcat(originalA: Direction[], originalB: Direction[], indexA: number, indexB: number) {
+    alert("Concat failed. Reverting to previous state!");
+    // 你需要恢复 moveRecords[indexA], moveRecords[indexB]
+    // 这里演示将 moveRecords 重置为 original
+    setMoveRecords((prev) => {
+      const newRec = [...prev];
+      newRec[indexA] = originalA;
+      newRec[indexB] = originalB;
+      return newRec;
+    });
+    const { newNodes: nodesA, newEdges: edgesA } = buildNodesEdgesFromMoves(originalA);
+    const { newNodes: nodesB, newEdges: edgesB } = buildNodesEdgesFromMoves(originalB);
   
-      setMoveRecords(updatedMoveRecords);
-      setNodePaths(updatedNodePaths);
-      setEdgePaths(updatedEdgePaths);
-      setPathIndex(newPathIndex);
-      return;}
-    //moveRecord update for path demonstration
-    const updatedMoveRecords = [...moveRecords];
-    updatedMoveRecords[index1] = newMoves;
-    setMoveRecords(updatedMoveRecords);
+    setNodePaths((prev) => {
+      const newPaths = [...prev];
+      newPaths[indexA] = nodesA;
+      newPaths[indexB] = nodesB;
+      return newPaths;
+    });
+  
+    setEdgePaths((prev) => {
+      const newEdgesArr = [...prev];
+      newEdgesArr[indexA] = edgesA;
+      newEdgesArr[indexB] = edgesB;
+      return newEdgesArr;
+    });
+  }
+  
 
-    // Reconstruct nodes and edges
-    let newNodes: string[] = ["0,0"];
-    let newEdges: string[] = [];
-    for (const direction of newMoves) {
-      let prevNode = newNodes[newNodes.length - 1];
-      const [x, y] = prevNode.split(",").map(Number);
-      let nextNodeRaw: [number, number] | null = null;
-      switch (direction) {
-        case "up":
-          nextNodeRaw = [x, y + 100.0 / 2 ** (newNodes.length - 1)];
-          break;
-        case "down":
-          nextNodeRaw = [x, y - 100.0 / 2 ** (newNodes.length - 1)];
-          break;
-        case "left":
-          nextNodeRaw = [x - 100.0 / 2 ** (newNodes.length - 1), y];
-          break;
-        case "right":
-          nextNodeRaw = [x + 100.0 / 2 ** (newNodes.length - 1), y];
-          break;
-        default:
-          return;
-      }
-      const nextNode = `${nextNodeRaw[0]},${nextNodeRaw[1]}`;
-      newNodes.push(nextNode);
-      const edgeId = `${x},${y}->${nextNodeRaw[0]},${nextNodeRaw[1]}`;
-      newEdges.push(edgeId);
+  // Concatenate two stored paths (for example, the first two paths)
+  const concatenate = (index1: number, index2: number) => {
+    if (index1 === index2) {
+      // alert("Cannot concatenate the same path with itself!");
+      return;
     }
-    //state update
-    const updatedNodePath = [...nodePaths];
-    const updatedEdgePath = [...edgePaths];
-    updatedNodePath[index1] = newNodes;
-    updatedEdgePath[index1] = newEdges;
-    //since it's still the same number of paths showing, no need to change index;
-    setNodePaths(updatedNodePath);
-    setEdgePaths(updatedEdgePath);
+    if (index1 < 0 || index2 < 0 || index1 >= moveRecords.length || index2 >= moveRecords.length) {
+      alert("Invalid path indices for concatenation!");
+      return;
+    }
+  
+    // 备份：以便失败时 revert
+    const originalA = [...moveRecords[index1]];
+    const originalB = [...moveRecords[index2]];
+  
+    // ========== Step5: path0 => a, path1 => a^-1b^-1 ==========
+    if (tutorialActive && tutorialStep === 5) {
+      const originalA = [...moveRecords[index1]];
+      const originalB = [...moveRecords[index2]];
+      const newMoves = doConcat(originalA, originalB);
 
-    // setNodes(newNodes);
-    // setEdges(newEdges);
+      const moves0 = newMoves;  
+      const moves1 = originalB;
+      if (
+        JSON.stringify(moves0) === JSON.stringify(["up"]) &&
+        JSON.stringify(moves1) === JSON.stringify(["down","left"])
+      ) {
+        setTutorialStep(6);
+      } else {
+        alert("Try again! The result isn't right!");
+        revertConcat(originalA, originalB, index1, index2);
+        return;
+      }
+
+      setMoveRecords((prev) => {
+        const newRec = [...prev];
+        newRec[index1] = newMoves;
+        return newRec;
+      });
+
+      const { newNodes, newEdges } = buildNodesEdgesFromMoves(newMoves);
+      setNodePaths((prev) => {
+        const nextPaths = [...prev];
+        nextPaths[index1] = newNodes;
+        return nextPaths;
+      });
+      setEdgePaths((prev) => {
+        const nextEdges = [...prev];
+        nextEdges[index1] = newEdges;
+        return nextEdges;
+      });
+    }
+  
+    // ========== Step6: path0 => b^-1, path1 => a^-1b^-1 ==========
+    if (tutorialActive && tutorialStep === 6) {
+      if (index1 !== 0 || index2 !== 1) {
+        alert("In this step, you must select path1 then path2 again!");
+        return;
+      }
+    
+      const originalA = [...moveRecords[index1]];
+      const originalB = [...moveRecords[index2]];
+    
+      const newMoves = doConcat(originalA, originalB);
+
+      const moves0 = newMoves;
+      const moves1 = originalB;
+    
+      if (
+        JSON.stringify(moves0) === JSON.stringify(["left"]) &&
+        JSON.stringify(moves1) === JSON.stringify(["down","left"])
+      ) {
+        setTutorialStep(7);
+      } else {
+        alert("Try again! The result isn't right!");
+        revertConcat(originalA, originalB, index1, index2);
+        return; 
+      }
+    
+      setMoveRecords((prev) => {
+        const newRec = [...prev];
+        newRec[index1] = newMoves; 
+        return newRec;
+      });
+    
+      const { newNodes, newEdges } = buildNodesEdgesFromMoves(newMoves);
+      setNodePaths((prev) => {
+        const newPaths = [...prev];
+        newPaths[index1] = newNodes;
+        return newPaths;
+      });
+      setEdgePaths((prev) => {
+        const newEdgesArr = [...prev];
+        newEdgesArr[index1] = newEdges;
+        return newEdgesArr;
+      });
+    
+      return; 
+    }
+  
+    // ---------- 如果在 tutorial 模式但 step != 5,6,8 => 提示并撤销 ----------
+  else if (tutorialActive && ![5, 6, 8].includes(tutorialStep)) {
+    alert(` Concatenate isn't expected right now!`);
+    // 不做任何更新就行，撤销操作
+    return;
+  }
+
+  // ---------- 非 tutorial 模式 或 tutorialStep=8 正常 concat ----------
+    const newMoves = doConcat(originalA, originalB);
+    setMoveRecords((prev) => {
+      const newRec = [...prev];
+      newRec[index1] = newMoves;
+      return newRec;
+    });
+    const { newNodes, newEdges } = buildNodesEdgesFromMoves(newMoves);
+    setNodePaths((prev) => {
+      const nextPaths = [...prev];
+      nextPaths[index1] = newNodes;
+      return nextPaths;
+    });
+    setEdgePaths((prev) => {
+      const nextEdges = [...prev];
+      nextEdges[index1] = newEdges;
+      return nextEdges;
+    });
   };
 
-  // // Reset the current (unsaved) path
-  // const reset = () => {
-  //   setNodes(["0,0"]);
-  //   setEdges([]);
-  //   setMoves([]);
-  // };
+
 
   // Clear all stored paths and current data
   const clear = () => {
@@ -272,75 +360,76 @@ const Interface = () => {
 
   // Invert a stored path at a given index
   const invertPath = (index: number) => {
-    if (moveRecords[index]) {
-      let currentMoves = [...moveRecords[index]];
-      let invertedNodes: string[] = ["0,0"];
-      let invertedEdges: string[] = [];
-      let invertedMoves: Direction[] = [];
-      for (let i = currentMoves.length - 1; i >= 0; i--) {
-        let oppositeMove = oppositeMoves[currentMoves[i]];
-        invertedMoves.push(oppositeMove);
-        let prevNode = invertedNodes[invertedNodes.length - 1];
-        const [x, y] = prevNode.split(",").map(Number);
-        let nextNodeRaw: [number, number] | null = null;
-        switch (oppositeMove) {
-          case "up":
-            nextNodeRaw = [x, y + 100.0 / 2 ** (invertedNodes.length - 1)];
-            break;
-          case "down":
-            nextNodeRaw = [x, y - 100.0 / 2 ** (invertedNodes.length - 1)];
-            break;
-          case "left":
-            nextNodeRaw = [x - 100.0 / 2 ** (invertedNodes.length - 1), y];
-            break;
-          case "right":
-            nextNodeRaw = [x + 100.0 / 2 ** (invertedNodes.length - 1), y];
-            break;
-          default:
-            return;
-        }
-        const nextNode = `${nextNodeRaw[0]},${nextNodeRaw[1]}`;
-        invertedNodes.push(nextNode);
-        const edgeId = `${x},${y}->${nextNodeRaw[0]},${nextNodeRaw[1]}`;
-        invertedEdges.push(edgeId);
+    
+    if (!moveRecords[index]) {
+      console.error(`moveRecords[${index}] is undefined or does not exist.`);
+      return;
+    }
+
+    if (tutorialActive && tutorialStep !== 4 && tutorialStep !== 8) {
+      alert("you cannot invert the path right now!");
+      return;
+    }
+  
+    if (tutorialActive && tutorialStep === 4) {
+      if (index !== 1) {
+        alert("You must double-click the SECOND path (index=1) to invert it");
+        return;
       }
-      // setNodes(invertedNodes);
-      // setEdges(invertedEdges);
+      let currentMoves = [...moveRecords[index]];
+      const invertedMoves: Direction[] = [];
+      for (let i = currentMoves.length - 1; i >= 0; i--) {
+        invertedMoves.push(oppositeMoves[currentMoves[i]]);
+      }
+  
       setMoveRecords((prev) => {
-        if (prev.length === 0) return prev;
-        return [
-          ...prev.slice(0, index),
-          invertedMoves,
-          ...prev.slice(index + 1),
-        ];
+        const newRec = [...prev];
+        newRec[index] = invertedMoves;
+        return newRec;
       });
+  
+      const { newNodes, newEdges } = buildNodesEdgesFromMoves(invertedMoves);
       setNodePaths((prev) => {
-        if (prev.length === 0) return prev;
-        return [
-          ...prev.slice(0, index),
-          invertedNodes,
-          ...prev.slice(index + 1),
-        ];
+        const newPaths = [...prev];
+        newPaths[index] = newNodes;
+        return newPaths;
       });
       setEdgePaths((prev) => {
-        if (prev.length === 0) return prev;
-        return [
-          ...prev.slice(0, index),
-          invertedEdges,
-          ...prev.slice(index + 1),
-        ];
+        const newEdgesList = [...prev];
+        newEdgesList[index] = newEdges;
+        return newEdgesList;
       });
-      setMoveRecords((prev) => {
-        if (prev.length === 0) return prev;
-        return [
-          ...prev.slice(0, index),
-          invertedMoves,
-          ...prev.slice(index + 1),
-        ];
-      });
-    } else {
-      console.error(`moveRecords[${index}] is undefined or does not exist.`);
+  
+      if (JSON.stringify(invertedMoves) === JSON.stringify(["down", "left"])) {
+        setTutorialStep(5);
+      } else {
+        alert("It's inverted, but not exactly a^-1 b^-1. Let's proceed anyway.");
+      }
+      return;
     }
+    let currentMoves = [...moveRecords[index]];
+    const invertedMoves: Direction[] = [];
+    for (let i = currentMoves.length - 1; i >= 0; i--) {
+      invertedMoves.push(oppositeMoves[currentMoves[i]]);
+    }
+  
+    setMoveRecords((prev) => {
+      const newRec = [...prev];
+      newRec[index] = invertedMoves;
+      return newRec;
+    });
+  
+    const { newNodes, newEdges } = buildNodesEdgesFromMoves(invertedMoves);
+    setNodePaths((prev) => {
+      const newPaths = [...prev];
+      newPaths[index] = newNodes;
+      return newPaths;
+    });
+    setEdgePaths((prev) => {
+      const newEdgesList = [...prev];
+      newEdgesList[index] = newEdges;
+      return newEdgesList;
+    });
   };
 
   ////////////// GeneratePath for Game //////////////////////
@@ -523,6 +612,61 @@ const Interface = () => {
   };
 
   const GeneratePath = (n: number) => {
+    if (tutorialActive && tutorialStep === 1) {
+      const newMoveRecords: Direction[][] = [
+        ["up", "right", "up"],  // aba
+        ["right", "up"],        // ba
+      ];
+  
+      setEdgePaths([]);
+      setNodePaths([]);
+      setMoveRecords(newMoveRecords);
+      setOperationMode("normal");
+      setPathIndex([0, 1]);
+  
+      const newNodePaths: string[][] = [];
+      const newEdgePaths: string[][] = [];
+  
+      newMoveRecords.forEach((pathMoves) => {
+        let nodes = ["0,0"];
+        let edges: string[] = [];
+        for (let i = 0; i < pathMoves.length; i++) {
+          const dir = pathMoves[i];
+          const [x, y] = nodes[nodes.length - 1].split(",").map(Number);
+          let next: [number, number] = [x, y];
+          switch (dir) {
+            case "up":
+              next = [x, y + 100.0 / 2 ** (nodes.length - 1)];
+              break;
+            case "down":
+              next = [x, y - 100.0 / 2 ** (nodes.length - 1)];
+              break;
+            case "left":
+              next = [x - 100.0 / 2 ** (nodes.length - 1), y];
+              break;
+            case "right":
+              next = [x + 100.0 / 2 ** (nodes.length - 1), y];
+              break;
+          }
+          const nextNode = `${next[0]},${next[1]}`;
+          nodes.push(nextNode);
+          edges.push(`${x},${y}->${next[0]},${next[1]}`);
+        }
+        newNodePaths.push(nodes);
+        newEdgePaths.push(edges);
+      });
+  
+      setNodePaths(newNodePaths);
+      setEdgePaths(newEdgePaths);
+  
+      setTutorialStep(2);
+      return;
+    }
+
+    if (tutorialActive && tutorialStep !== 1) {
+      alert("You cannot generate paths right now!");
+      return;
+    }
     //
     //we need two paths, both start with a and b;
     //generating phase:
@@ -708,12 +852,48 @@ const Interface = () => {
     // setNodes([...nodePaths[index]]);
     // setEdges([...edgePaths[index]]);
     // setMoves([...moveRecords[index]]);
-    setPathIndex(
-      (prevIndexes) =>
+    if (!tutorialActive) {
+      setPathIndex(
+        (prevIndexes) =>
+          prevIndexes.includes(index)
+            ? prevIndexes.filter((i) => i !== index) // Remove if exists
+            : [...prevIndexes, index] // Add if not present
+      );
+    }
+
+    if (tutorialStep === 2) {
+      if (index === 0 ) {
+        // hide path0
+        if (pathIndex.includes(0)) {
+          setPathIndex((prev) => prev.filter((i) => i !== 0));
+          setTutorialStep(3);
+        } else {
+          alert("Path1 is already hidden? Try again.");
+        }
+      } else {
+        alert("Wrong action! You must long press Path1 to hide it!");
+      }
+    }
+    else if (tutorialStep === 3) {
+      if (index === 0) {
+        if (!pathIndex.includes(0)) {
+          setPathIndex((prev) => [...prev, 0]);
+          setTutorialStep(4);
+        } else {
+          alert("Path1 is already shown? Try again!");
+        }
+      } else {
+        alert("Wrong action! You must long press Path1 to show it again!");
+      }
+    }
+    else {
+      setPathIndex((prevIndexes) =>
         prevIndexes.includes(index)
-          ? prevIndexes.filter((i) => i !== index) // Remove if exists
-          : [...prevIndexes, index] // Add if not present
-    );
+          ? prevIndexes.filter((i) => i !== index)
+          : [...prevIndexes, index]
+      );
+    }
+    
   };
 
   ///////////////// CayleyGraph shape config ///////////////////
@@ -725,6 +905,23 @@ const Interface = () => {
     }
   };
   return (
+    <>
+    {showWelcome && (
+      <WelcomeScreen
+        onStartTutorial={() => {
+          setShowWelcome(false);
+          setTutorialStep(1);
+          setTutorialActive(true);  
+    
+        }}
+        onSkipTutorial={() => {
+          setTutorialActive(false);
+          setTutorialStep(0);
+          setShowWelcome(false);
+        }}
+      />
+    )}
+    
     <div className={`${styles.container} ${theme}`}>
       <Headbar
         theme={theme}
@@ -737,7 +934,11 @@ const Interface = () => {
         handleshape={handleshape}
       />
 
-      <ButtonBar generate={GeneratePath} setGen={setGen} />
+      <ButtonBar 
+        generate={GeneratePath}
+        setGen={setGen} 
+        tutorialStep={tutorialStep}
+      />
       <Pathterminal
         pathIndex={pathIndex}
         nodePaths={nodePaths}
@@ -771,8 +972,21 @@ const Interface = () => {
         demonstratePath={demonstratePath}
         concatenate={concatenate}
         invert={invertPath}
+        tutorialStep={tutorialStep}
       />
-      <CheckNielsen movePaths={moveRecords} />
+      <CheckNielsen 
+        movePaths={moveRecords}
+        tutorialActive={tutorialActive}
+        tutorialStep={tutorialStep}
+        onTutorialCheck={(nextStep)=> {
+          if (nextStep === 0) {
+            setTutorialActive(false);
+            setTutorialStep(0);
+          } else {
+            setTutorialStep(nextStep);
+          }
+        }}
+      />
       <Pathbar
         mode={operationMode}
         setInvert={setInvert}
@@ -785,9 +999,14 @@ const Interface = () => {
         concatenate={concatenate}
         invert={invertPath}
       />
-
-  
+      <Tutorial
+        step={tutorialStep}
+        isActive={tutorialActive}
+        onNext={() => setTutorialStep((s) => s + 1)}
+        onSkip={() => {setTutorialActive(false);setTutorialStep(0);}}
+      />
     </div>
+    </>
   );
 };
 
