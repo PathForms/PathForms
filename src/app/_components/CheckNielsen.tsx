@@ -98,7 +98,7 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
         resultstatements += " The word list does not satisfy N0. ";
       }
       if (reducedConditionStatus[1] === false) {
-        resultstatements += " The word list does not satisfy N1. ";
+        resultstatements += " The word list does not satisfy Nielsen condition N1. The words can be further shortened. ";
       }
       if (reducedConditionStatus[2] === false) {
         resultstatements += " The word list does not satisfy N2.";
