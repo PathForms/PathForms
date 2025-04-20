@@ -42,6 +42,5 @@ npm run build # generate out
 scp -r ./out/ hd9@play.math.illinois.edu:/srv/data/PathForms/www/
 # give public read access
 chmod -R o+rx /srv/data/PathForms/www/out
-#link:
 
 ```
