@@ -331,17 +331,39 @@ const Pathterminal: React.FC<PathterminalProps> = ({
         currentModeRef.current = "guide";
         setGameMode("guide");
 
-        term.writeln(
-          "> In this short guide, we will lead you through operations for this game."
-        );
-        term.writeln(
-          "> First thing to do, you need to generate a list of words to start playing."
-        );
-        term.writeln(
-          "> Enter \x1b[38;5;226mg\x1b[0m to go to generate mode or use the buttons we provided."
-        );
-        term.writeln("> Enter \x1b[38;5;226mok\x1b[0m when you are done.");
-        term.write("> ");
+        // term.writeln(
+        //   "> In this short guide, we will lead you through operations for this game."
+        // );
+        // term.writeln(
+        //   "> First thing to do, you need to generate a list of words to start playing."
+        // );
+        // term.writeln(
+        //   "> Enter \x1b[38;5;226mg\x1b[0m to go to generate mode or use the buttons we provided."
+        // );
+        // term.writeln("> Enter \x1b[38;5;226mok\x1b[0m when you are done.");
+        // term.write("> ");
+        async function intro() {
+          if (!term) return;
+          await typeTextln(
+            term,
+            "In this short guide, we will lead you through operations for this game."
+          );
+          await typeTextln(
+            term,
+            "First thing to do, you need to generate a list of words to start playing."
+          );
+          await typeTextln(
+            term,
+            "Enter \x1b[38;5;226mg\x1b[0m to go to generate mode or use the buttons we provided."
+          );
+          await typeTextln(
+            term,
+            "Enter \x1b[38;5;226mok\x1b[0m when you are done."
+          );
+          await typeText(term, "");
+        }
+
+        intro();
         return;
       }
 
