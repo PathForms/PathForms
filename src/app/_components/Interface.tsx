@@ -859,6 +859,7 @@ const Interface = () => {
             ? prevIndexes.filter((i) => i !== index) // Remove if exists
             : [...prevIndexes, index] // Add if not present
       );
+      return;
     }
 
     if (tutorialStep === 2) {
