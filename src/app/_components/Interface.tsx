@@ -913,7 +913,7 @@ const Interface = () => {
     //set Move Records;
     //let's start with trying 20 things;
     //this should do it, add a button to test;
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 4 * n; i++) {
       //random path index;
       let index = Math.floor(Math.random() * n);
       //random move;
@@ -1063,11 +1063,13 @@ const Interface = () => {
     // Reset refs
     //check: if n is smaller than bases: do the first n bases;
     //else: fill the first n words with bases;
-    //also, need to remove the length check;
+
+    //default bases;
     if (bases.length == 0) {
       //if emptuy, generate default words
       bases = [["up"], ["right"]];
     }
+
     if (n < bases.length) {
       moveRecordsRef.current = bases.slice(0, n).map((path) => [...path]);
     } else {
@@ -1200,8 +1202,18 @@ const Interface = () => {
         else if (c === "b") newbase.push("right");
         i += 1;
       }
+      //automatically cancel;
+      const tail = newbase.at(-1);
+      const head = newbase.at(-2);
+
+      if (tail && head && head === oppositeMoves[tail]) {
+        newbase.pop();
+        newbase.pop();
+      }
     }
-    setBases((prev) => [...prev, newbase]);
+    if (newbase.length != 0) {
+      setBases((prev) => [...prev, newbase]);
+    }
   };
 
   const clearBase = () => {
