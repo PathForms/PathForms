@@ -256,7 +256,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
           Bases
         </div>
         {bases.length === 0 ? (
-          <div>No Data</div>
+          <div>No specified bases, default bases a,b. </div>
         ) : (
           bases.map((path, i) => (
             <div

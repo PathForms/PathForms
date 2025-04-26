@@ -922,12 +922,23 @@ const Interface = () => {
       switch (move) {
         case 0:
           moveRecordsRef.current[index].push("up");
+          break;
         case 1:
           moveRecordsRef.current[index].push("down");
+          break;
         case 2:
           moveRecordsRef.current[index].push("left");
+          break;
         case 3:
           moveRecordsRef.current[index].push("right");
+          break;
+      }
+      const tail = moveRecordsRef.current[index].at(-1);
+      const head = moveRecordsRef.current[index].at(-2);
+
+      if (tail && head && head === oppositeMoves[tail]) {
+        moveRecordsRef.current[index].pop();
+        moveRecordsRef.current[index].pop();
       }
     }
 
