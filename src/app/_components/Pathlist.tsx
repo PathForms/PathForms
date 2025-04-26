@@ -107,7 +107,7 @@ const Pathlist: React.FC<PathlistProps> = ({
           }
         `}
       </style>
-      <h2 style={{ margin: "0 0 8px 0", fontSize: "18px" }}>Word List</h2>
+      <h2 style={{ margin: "0 0 8px 0", fontSize: "18px" }}>Path List</h2>
       <div
         style={{
           display: "flex",
@@ -163,7 +163,7 @@ const Pathlist: React.FC<PathlistProps> = ({
                 onMouseUp={() => handleMouseUp(rowIndex)}
                 onClick={() => handleClick(rowIndex)}
               >
-                {`[W${rowIndex + 1}]: `}{" "}
+                {`[P${rowIndex + 1}]: `}{" "}
                 {path.length === 0
                   ? "1"
                   : path
