@@ -213,6 +213,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
             Generate Rand
           </button>
           <button
+            className={`${tutorialStep === 1 ? styles.highlight : ""}`}
             style={{
               width: 140,
               height: 28,
@@ -224,7 +225,8 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
               borderRadius: 4,
               transition: "0.3s",
             }}
-            onClick={handlebaseClick}
+            onClick={handlebaseClick} 
+            //onClick={handleClick}
           >
             Generate Paths
           </button>
