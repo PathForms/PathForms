@@ -11,7 +11,7 @@ interface TutorialProps {
 }
 
 const tutorialSteps = [
-  "Click the 'Generate Words' button to generate paths.",
+  "Click the 'Generate Paths' button to generate paths.",
   "Long press a path in the Word List to hide it.",
   "Long press again to show it back.",
   "Double-click the second path to invert it.",

@@ -813,81 +813,10 @@ const Interface = () => {
   };
 
   const GenerateRandomPath = (n: number) => {
-    // if (tutorialActive && tutorialStep === 1) {
-    //   const newMoveRecords: Direction[][] = [
-    //     ["up", "right", "up"],  // aba
-    //     ["right", "up"],        // ba
-    //   ];
-
-    //   setEdgePaths([]);
-    //   setNodePaths([]);
-    //   setMoveRecords(newMoveRecords);
-    //   setOperationMode("normal");
-    //   setPathIndex([0, 1]);
-
-    //   const newNodePaths: string[][] = [];
-    //   const newEdgePaths: string[][] = [];
-
-    //   newMoveRecords.forEach((pathMoves) => {
-    //     let nodes = ["0,0"];
-    //     let edges: string[] = [];
-    //     for (let i = 0; i < pathMoves.length; i++) {
-    //       const dir = pathMoves[i];
-    //       const [x, y] = nodes[nodes.length - 1].split(",").map(Number);
-    //       let next: [number, number] = [x, y];
-    //       switch (dir) {
-    //         case "up":
-    //           next = [x, y + 100.0 / 2 ** (nodes.length - 1)];
-    //           break;
-    //         case "down":
-    //           next = [x, y - 100.0 / 2 ** (nodes.length - 1)];
-    //           break;
-    //         case "left":
-    //           next = [x - 100.0 / 2 ** (nodes.length - 1), y];
-    //           break;
-    //         case "right":
-    //           next = [x + 100.0 / 2 ** (nodes.length - 1), y];
-    //           break;
-    //       }
-    //       const nextNode = `${next[0]},${next[1]}`;
-    //       nodes.push(nextNode);
-    //       edges.push(`${x},${y}->${next[0]},${next[1]}`);
-    //     }
-    //     newNodePaths.push(nodes);
-    //     newEdgePaths.push(edges);
-    //   });
-
-    //   setNodePaths(newNodePaths);
-    //   setEdgePaths(newEdgePaths);
-
-    //   setTutorialStep(2);
-    //   return;
-    // }
-
-    // if (tutorialActive && tutorialStep !== 1) {
-    //   alert("You cannot generate paths right now!");
-    //   return;
-    // }
-    //
-    //we need two paths, both start with a and b;
-    //generating phase:
-    //1. invert the current path
-    //2. add path 2 to the back of path 1 or path 1 to the back of path 2;
-    //
-    //One to notice: the operation better not shorten the length of the path;
-    // There can be optimization for runtime: check the conditions instead of the length of the sentences;
-    // Can make animation effect: paths showing up;
-    //
-    //For demonstrating 2 paths, try add "0,0" as separations
-    //
-    //
-    //
-    //reset current states
-    //
-
-    // setNodes(["0,0"]);
-    // setEdges([]);
-    // setMoves([]);
+    if (tutorialActive) {
+      alert("You cannot generate paths with random bases right now!");
+      return;
+    }
     setEdgePaths([]);
     setNodePaths([]);
     setMoveRecords([]);
@@ -1055,6 +984,62 @@ const Interface = () => {
 
   // function for generating path based on given bases;
   const GenerateBasedPath = (n: number, bases: Direction[][]) => {
+    if (tutorialActive && tutorialStep === 1) {
+      const newMoveRecords: Direction[][] = [
+        ["up", "right", "up"], // aba
+        ["right", "up"], // ba
+      ];
+
+      setEdgePaths([]);
+      setNodePaths([]);
+      setMoveRecords(newMoveRecords);
+      setOperationMode("normal");
+      setPathIndex([0, 1]);
+
+      const newNodePaths: string[][] = [];
+      const newEdgePaths: string[][] = [];
+
+      newMoveRecords.forEach((pathMoves) => {
+        let nodes = ["0,0"];
+        let edges: string[] = [];
+        for (let i = 0; i < pathMoves.length; i++) {
+          const dir = pathMoves[i];
+          const [x, y] = nodes[nodes.length - 1].split(",").map(Number);
+          let next: [number, number] = [x, y];
+          switch (dir) {
+            case "up":
+              next = [x, y + 100.0 / 2 ** (nodes.length - 1)];
+              break;
+            case "down":
+              next = [x, y - 100.0 / 2 ** (nodes.length - 1)];
+              break;
+            case "left":
+              next = [x - 100.0 / 2 ** (nodes.length - 1), y];
+              break;
+            case "right":
+              next = [x + 100.0 / 2 ** (nodes.length - 1), y];
+              break;
+          }
+          const nextNode = `${next[0]},${next[1]}`;
+          nodes.push(nextNode);
+          edges.push(`${x},${y}->${next[0]},${next[1]}`);
+        }
+        newNodePaths.push(nodes);
+        newEdgePaths.push(edges);
+      });
+
+      setNodePaths(newNodePaths);
+      setEdgePaths(newEdgePaths);
+
+      setTutorialStep(2);
+      return;
+    }
+
+    if (tutorialActive && tutorialStep !== 1) {
+      alert("You cannot generate paths right now!");
+      return;
+    }
+
     setEdgePaths([]);
     setNodePaths([]);
     setMoveRecords([]);
