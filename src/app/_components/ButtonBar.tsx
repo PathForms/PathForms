@@ -134,7 +134,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
             size={10}
             value={currBase}
             onChange={handleBaseChange}
-            placeholder="Add Base"
+            placeholder="Add Generator"
           />
           <button
             style={{
@@ -225,7 +225,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
               borderRadius: 4,
               transition: "0.3s",
             }}
-            onClick={handlebaseClick} 
+            onClick={handlebaseClick}
             //onClick={handleClick}
           >
             Generate Paths
@@ -255,7 +255,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
         }}
       >
         <div style={{ fontWeight: "bold", color: "white", marginBottom: 4 }}>
-          Bases
+          Generators
         </div>
         {bases.length === 0 ? (
           <div>No specified bases, default bases a,b. </div>
@@ -269,7 +269,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
                 marginBottom: 2,
               }}
             >
-              <strong>[B{i + 1}]:</strong>{" "}
+              <strong>[G{i + 1}]:</strong>{" "}
               {path.length === 0
                 ? "1"
                 : path
