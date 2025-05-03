@@ -1,20 +1,24 @@
 "use client";
 import React, { useState } from "react";
-import {Direction, reduceMoves,concatenate, invert} from "../utils/NielsenTrans";
+import {
+  Direction,
+  reduceMoves,
+  concatenate,
+  invert,
+} from "../utils/NielsenTrans";
 
 interface CheckNielsenProps {
   movePaths: Direction[][];
   tutorialActive?: boolean;
   tutorialStep?: number;
-  onTutorialCheck?: (step: number) => void; 
+  onTutorialCheck?: (step: number) => void;
 }
 
-
-const CheckNielsen: React.FC<CheckNielsenProps> = ({ 
+const CheckNielsen: React.FC<CheckNielsenProps> = ({
   movePaths,
   tutorialActive = false,
   tutorialStep = 0,
-  onTutorialCheck = () => {}
+  onTutorialCheck = () => {},
 }) => {
   const [result, setResult] = useState<string>("");
 
@@ -22,7 +26,7 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
     let result: boolean[] = [];
     //N0
     const reducedPaths = paths.map((p) => reduceMoves(p));
-    result.push(true)
+    result.push(true);
     for (let i = 0; i < reducedPaths.length; i++) {
       if (reducedPaths[i].length === 0) {
         result[0] = false;
@@ -31,45 +35,75 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
     }
     //N1
 
-    result.push(true)
+    result.push(true);
     for (let a = 0; a < reducedPaths.length; a++) {
-      for (let b = 0 ; b < reducedPaths.length; b++) {
+      for (let b = 0; b < reducedPaths.length; b++) {
         if (a !== b) {
-           let concatPath =concatenate(reducedPaths[a], reducedPaths[b]);
-           let concatPath2 =concatenate(reducedPaths[a], invert(reducedPaths[b]));
-           if (concatPath.length < reducedPaths[a].length 
-            || concatPath.length < reducedPaths[b].length
-            || concatPath2.length < reducedPaths[a].length
-            || concatPath2.length < reducedPaths[b].length) {
-             result[1] = false;
-             break;
-           }
-        }
-      }
-    }
-    //N2
-    result.push(true)
-    for (let a = 0; a < reducedPaths.length; a++) {
-      for (let b = 0 ; b < reducedPaths.length; b++) {
-        for (let c = 0 ; c < reducedPaths.length; c++) {
-          if (a !== b && a !== c && b !== c) {
-             let concatPath =concatenate(concatenate(reducedPaths[a], reducedPaths[b]), reducedPaths[c]);
-             let concatPath2 =concatenate(concatenate(reducedPaths[a], reducedPaths[b]), invert(reducedPaths[c]));
-             let concatPath3 =concatenate(concatenate(reducedPaths[a], invert(reducedPaths[b])), reducedPaths[c]);
-             let concatPath4 =concatenate(concatenate(reducedPaths[a], invert(reducedPaths[b])), invert(reducedPaths[c]));
-             if (concatPath.length <= reducedPaths[a].length - reducedPaths[b].length + reducedPaths[c].length
-              || concatPath2.length <= reducedPaths[a].length - reducedPaths[b].length + reducedPaths[c].length
-              || concatPath3.length <= reducedPaths[a].length - reducedPaths[b].length + reducedPaths[c].length
-              || concatPath4.length <= reducedPaths[a].length - reducedPaths[b].length + reducedPaths[c].length
-             ) {
-               result[2] = false;
-               break;
-             }
+          let concatPath = concatenate(reducedPaths[a], reducedPaths[b]);
+          let concatPath2 = concatenate(
+            reducedPaths[a],
+            invert(reducedPaths[b])
+          );
+          if (
+            concatPath.length < reducedPaths[a].length ||
+            concatPath.length < reducedPaths[b].length ||
+            concatPath2.length < reducedPaths[a].length ||
+            concatPath2.length < reducedPaths[b].length
+          ) {
+            result[1] = false;
+            break;
           }
         }
       }
     }
-    return result
+    //N2
+    result.push(true);
+    for (let a = 0; a < reducedPaths.length; a++) {
+      for (let b = 0; b < reducedPaths.length; b++) {
+        for (let c = 0; c < reducedPaths.length; c++) {
+          if (a !== b && a !== c && b !== c) {
+            let concatPath = concatenate(
+              concatenate(reducedPaths[a], reducedPaths[b]),
+              reducedPaths[c]
+            );
+            let concatPath2 = concatenate(
+              concatenate(reducedPaths[a], reducedPaths[b]),
+              invert(reducedPaths[c])
+            );
+            let concatPath3 = concatenate(
+              concatenate(reducedPaths[a], invert(reducedPaths[b])),
+              reducedPaths[c]
+            );
+            let concatPath4 = concatenate(
+              concatenate(reducedPaths[a], invert(reducedPaths[b])),
+              invert(reducedPaths[c])
+            );
+            if (
+              concatPath.length <=
+                reducedPaths[a].length -
+                  reducedPaths[b].length +
+                  reducedPaths[c].length ||
+              concatPath2.length <=
+                reducedPaths[a].length -
+                  reducedPaths[b].length +
+                  reducedPaths[c].length ||
+              concatPath3.length <=
+                reducedPaths[a].length -
+                  reducedPaths[b].length +
+                  reducedPaths[c].length ||
+              concatPath4.length <=
+                reducedPaths[a].length -
+                  reducedPaths[b].length +
+                  reducedPaths[c].length
+            ) {
+              result[2] = false;
+              break;
+            }
+          }
+        }
+      }
+    }
+    return result;
   }
 
   const handleCheck = () => {
@@ -83,14 +117,14 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
       const isSuccess = reducedConditionStatus.every((cond) => cond === true);
       if (isSuccess) {
         alert("🎉 Congrats! You have successfully reduced the paths!");
-        onTutorialCheck(0); 
+        onTutorialCheck(0);
       }
       return;
     }
-  }
+  };
   function check() {
     const reducedConditionStatus = checkNielsenReduced(movePaths);
-    if (reducedConditionStatus.every(condition => condition === true)) {
+    if (reducedConditionStatus.every((condition) => condition === true)) {
       setResult("Success: The word list satisfies Nielsen Reduced Form!");
     } else {
       let resultstatements = "Failure: ";
@@ -98,7 +132,8 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
         resultstatements += " The word list does not satisfy N0. ";
       }
       if (reducedConditionStatus[1] === false) {
-        resultstatements += " The word list does not satisfy Nielsen condition N1. The words can be further shortened. ";
+        resultstatements +=
+          " The word list does not satisfy Nielsen condition N1. The words can be further shortened. ";
       }
       if (reducedConditionStatus[2] === false) {
         resultstatements += " The word list does not satisfy N2.";
@@ -106,7 +141,6 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
       setResult(resultstatements);
     }
   }
-
 
   return (
     <div
@@ -146,18 +180,34 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
     {result && (
       <span
       style={{
-        position: "absolute",
-        top: "110%",
-        left: "50%",
-        transform: "translateX(-50%)",
-        width: "140px",         
-        maxWidth: "300px",     
+// <<<<<<< HEAD
+//         position: "absolute",
+//         top: "110%",
+//         left: "50%",
+//         transform: "translateX(-50%)",
+//         width: "140px",         
+//         maxWidth: "300px",     
     
-        whiteSpace: "normal",
-        wordWrap: "break-word",
-        color: "rgb(255, 255, 0)",
-        textAlign: "center",
-        marginTop: "4px",
+//         whiteSpace: "normal",
+//         wordWrap: "break-word",
+//         color: "rgb(255, 255, 0)",
+//         textAlign: "center",
+//         marginTop: "4px",
+// =======
+        position: "fixed",
+        top: "15%",
+        left: "90%",
+        transform: "translateX(-50%)",
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        padding: "10px",
+        borderRadius: "8px",
+        zIndex: 10,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: "8px",
+        fontSize: "0.8rem",
+// >>>>>>> a6661922ee805a836379e509b11676cc1ed9f176
       }}
     >
       {result}
@@ -169,5 +219,3 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
 };
 
 export default CheckNielsen;
-
-

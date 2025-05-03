@@ -23,7 +23,7 @@ interface PathlistProps {
   tutorialStep?: number;
 }
 
-const CLICK_INTERVAL = 250; 
+const CLICK_INTERVAL = 250;
 const LONG_PRESS_DURATION = 500;
 
 const Pathlist: React.FC<PathlistProps> = ({
@@ -37,7 +37,6 @@ const Pathlist: React.FC<PathlistProps> = ({
   invert,
   tutorialStep,
 }) => {
-
   const [concatIndexes, setConcatIndexes] = useState<number[]>([]);
   const singleClickTimer = useRef<NodeJS.Timeout | null>(null);
 
@@ -81,7 +80,6 @@ const Pathlist: React.FC<PathlistProps> = ({
   useEffect(() => {
     setConcatIndexes([]);
   }, [movePaths]);
-
   return (
     <div
       style={{
@@ -94,12 +92,29 @@ const Pathlist: React.FC<PathlistProps> = ({
         backgroundColor: "rgba(47, 47, 47, 0.5)",
         padding: "10px",
         borderRadius: "8px",
-        overflow: "auto",
-        scrollbarWidth: "none",
+        maxHeight: "450px",
+        overflowY: "auto",
+        overflowX: "hidden",
+        scrollbarWidth: "none", // Firefox
+        msOverflowStyle: "none", // IE/Edge
+        WebkitOverflowScrolling: "touch", // iOS smooth scroll
       }}
     >
-      <h2 style={{ margin: "0 0 8px 0", fontSize: "18px" }}>Word List</h2>
-      <div style={{ display: "flex", flexDirection: "column", maxWidth: "33vw" }}>
+      <style>
+        {`
+          div::-webkit-scrollbar {
+            display: none;
+          }
+        `}
+      </style>
+      <h2 style={{ margin: "0 0 8px 0", fontSize: "18px" }}>Path List</h2>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          maxWidth: "33vw",
+        }}
+      >
         {movePaths.length === 0 ? (
           <p
             style={{
@@ -143,17 +158,18 @@ const Pathlist: React.FC<PathlistProps> = ({
                   overflowX: "auto",
                   padding: "2px",
                   margin: "0",
-                  scrollbarWidth: "none",
                 }}
                 onMouseDown={() => handleMouseDown(rowIndex)}
                 onMouseUp={() => handleMouseUp(rowIndex)}
                 onClick={() => handleClick(rowIndex)}
               >
-                {`[W${rowIndex + 1}]: `}
+                {`[P${rowIndex + 1}]: `}{" "}
                 {path.length === 0
                   ? "1"
                   : path
-                      .map((node) => translation[node as keyof typeof translation])
+                      .map(
+                        (node) => translation[node as keyof typeof translation]
+                      )
                       .join(" ")}
               </p>
             );
