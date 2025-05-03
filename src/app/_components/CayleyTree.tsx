@@ -69,6 +69,7 @@ interface CayleyTreeProps {
   edgePaths: string[][];
   edgeThickness: number;
   shape: string;
+  showArrows: boolean
 }
 
 const CayleyTree: React.FC<CayleyTreeProps> = ({
@@ -77,6 +78,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
   edgePaths,
   edgeThickness,
   shape,
+  showArrows,
 }) => {
   const [nodes, setNodes] = useState<LayoutNode[]>([]);
   const [links, setLinks] = useState<LayoutLink[]>([]);
@@ -221,6 +223,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
                 pathIndex.some((index) => edgePaths[index]?.includes(lk.id))
               }
               edgeThickness={edgeThickness}
+              showArrow={showArrows}  
             />
           ))}
 

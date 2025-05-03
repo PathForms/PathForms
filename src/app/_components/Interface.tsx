@@ -49,6 +49,7 @@ const Interface = () => {
   const [edgeThickness, setEdgeThickness] = useState<number>(0.7);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [showSettings, setShowSettings] = useState<boolean>(false);
+  const [showArrows, setShowArrows] = useState<boolean>(true); 
 
   //Welcome screen state
   const [showWelcome, setShowWelcome] = useState(true);
@@ -824,6 +825,7 @@ const Interface = () => {
   ) => {
     setEdgeThickness(Number(e.target.value));
   };
+  const toggleArrows = () => setShowArrows((prev) => !prev);
 
   // Handle theme change
   const handleThemeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -933,6 +935,8 @@ const Interface = () => {
         handleThemeChange={handleThemeChange}
         shape={shape}
         handleshape={handleshape}
+        showArrows={showArrows} 
+        toggleArrows={toggleArrows} 
       />
 
       <ButtonBar 
@@ -962,6 +966,7 @@ const Interface = () => {
         edgePaths={edgePaths}
         edgeThickness={edgeThickness}
         shape={shape}
+        showArrows={showArrows}
       />
 
       <Pathlist

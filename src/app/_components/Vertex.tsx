@@ -12,9 +12,9 @@ interface VertexProps {
 
 const Vertex: React.FC<VertexProps> = ({ id, x, y, isActive }) => {
   //color logic
-  let fillColor = "rgba(244, 252, 0, 0.14)";
+  let fillColor = "rgba(138, 143, 0, 0.29)";
   if (isActive) {
-    fillColor = "rgb(255, 255, 255)";
+    fillColor = "rgba(255, 242, 0, 0.92)";
   }
 
   return (

@@ -13,6 +13,8 @@ interface HeadbarProps {
   handleThemeChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   shape: string;
   handleshape: () => void;
+  showArrows: boolean;
+  toggleArrows: () => void;
 }
 
 //function for return
@@ -27,6 +29,8 @@ const Headbar: React.FC<HeadbarProps> = ({
 
   handleThemeChange,
   handleshape,
+  showArrows,
+  toggleArrows,
 }) => {
   const colors = [
     "rgb(255, 50, 91)",
@@ -73,7 +77,19 @@ const Headbar: React.FC<HeadbarProps> = ({
       {" "}
       {/* Use CSS module styling for dynamic class */}
       <div>{heading}</div>
-      <button className={styles["settings-button"]} onClick={toggleSettings}>
+      <button className={styles["settings-button"]} onClick={toggleSettings}
+      style={{
+        width: "100px",
+        height: "30px",
+        fontSize: "16px",
+        backgroundColor: "gray",
+        border: "2px solid",
+        borderColor: "rgb(13, 255, 0)",
+        color: "rgb(13, 255, 0)",
+        cursor: "pointer",
+        borderRadius: "4px",
+        transition: "0.3s",
+      }}>
         Settings
       </button>
       {showSettings && (
@@ -105,7 +121,14 @@ const Headbar: React.FC<HeadbarProps> = ({
               <option value="rect">rectangle</option>
             </select>
           </div>
-
+          <div>
+            <label>Show Arrows:</label>
+            <input
+              type="checkbox"
+              checked={showArrows}
+              onChange={toggleArrows}
+            />
+          </div>
           <button onClick={toggleSettings}>Close</button>
         </div>
       )}

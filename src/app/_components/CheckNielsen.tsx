@@ -110,30 +110,61 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
 
   return (
     <div
+    style={{
+      position: "absolute",
+      bottom: "85%",
+      left: "95.3%",
+      transform: "translateX(-50%)",
+      backgroundColor: "rgba(0, 0, 0, 0.5)",
+      padding: "10px",
+      borderRadius: "8px",
+      zIndex: 10,
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      fontSize: "0.8rem",
+    }}
+  >
+  <div style={{ position: "relative" }}>
+    <button
+      id="checkBtn"
+      style={{
+        height: "35px",
+        width: "100%",
+        fontSize: "14px",
+        cursor: "pointer",
+        borderRadius: "4px",
+        transition: "0.1s ease-in-out",
+        backgroundColor: "transparent",
+        color: "rgb(13, 255, 0)",
+        borderColor: "rgb(13, 255, 0)",
+      }}
+      onClick={handleCheck}
+    >
+      Check
+    </button>
+    {result && (
+      <span
       style={{
         position: "absolute",
-        bottom: "70%",
-        left: "90%",
+        top: "110%",
+        left: "50%",
         transform: "translateX(-50%)",
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
-        padding: "10px",
-        borderRadius: "8px",
-        zIndex: 10,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: "8px",
-        fontSize: "0.8rem"
+        width: "140px",         
+        maxWidth: "300px",     
+    
+        whiteSpace: "normal",
+        wordWrap: "break-word",
+        color: "rgb(255, 255, 0)",
+        textAlign: "center",
+        marginTop: "4px",
       }}
     >
-      <button
-        style={{ fontSize: "1.2rem", padding: "8px 16px" }}
-        onClick={handleCheck}
-      >
-        Check
-      </button>
-      {result && <p style={{ margin: 0, textAlign: "center" }}>{result}</p>}
-    </div>
+      {result}
+    </span>
+    )}
+  </div>
+  </div>
   );
 };
 
