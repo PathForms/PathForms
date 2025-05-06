@@ -120,11 +120,12 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
       >
         {/* Row 1: Size Input */}
         <div style={{ display: "flex", gap: 8 }}>
+          <label>Number of Paths:</label>
           <input
-            size={15}
+            size={10}
             value={inputSize}
             onChange={handleSizeChange}
-            placeholder="Number of Paths"
+            placeholder="2"
           />
         </div>
 
