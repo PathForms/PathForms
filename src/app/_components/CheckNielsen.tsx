@@ -44,11 +44,17 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
             reducedPaths[a],
             invert(reducedPaths[b])
           );
+          let concatPath3 = concatenate(
+            invert(reducedPaths[a]),
+            reducedPaths[b]
+          );
           if (
             concatPath.length < reducedPaths[a].length ||
             concatPath.length < reducedPaths[b].length ||
             concatPath2.length < reducedPaths[a].length ||
-            concatPath2.length < reducedPaths[b].length
+            concatPath2.length < reducedPaths[b].length ||
+            concatPath3.length < reducedPaths[a].length ||
+            concatPath3.length < reducedPaths[b].length
           ) {
             result[1] = false;
             break;
@@ -78,6 +84,19 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
               concatenate(reducedPaths[a], invert(reducedPaths[b])),
               invert(reducedPaths[c])
             );
+            let concatPath5 = concatenate(
+              concatenate(invert(reducedPaths[a]), reducedPaths[b]),
+              reducedPaths[c]
+            );
+            let concatPath6 = concatenate(
+              concatenate(invert(reducedPaths[a]), reducedPaths[b]),
+              invert(reducedPaths[c])
+            );
+            let concatPath7 = concatenate(
+              concatenate(invert(reducedPaths[a]), invert(reducedPaths[b])),
+              reducedPaths[c]
+            );
+
             if (
               concatPath.length <=
                 reducedPaths[a].length -
@@ -94,7 +113,19 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
               concatPath4.length <=
                 reducedPaths[a].length -
                   reducedPaths[b].length +
-                  reducedPaths[c].length
+                  reducedPaths[c].length ||
+              concatPath5.length <=
+                reducedPaths[a].length -
+                  reducedPaths[b].length +
+                  reducedPaths[c].length ||
+              concatPath6.length <=
+                reducedPaths[a].length -
+                  reducedPaths[b].length +
+                  reducedPaths[c].length ||
+              concatPath7.length <=
+                reducedPaths[a].length -
+                  reducedPaths[b].length +
+                  reducedPaths[c].length  
             ) {
               result[2] = false;
               break;
