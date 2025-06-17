@@ -20,6 +20,7 @@ interface PathlistProps {
   demonstratePath: (index: number) => void;
   concatenate: (index1: number, index2: number) => void;
   invert: (index: number) => void;
+  removePath: (index: number) => void;
   tutorialStep?: number;
 }
 
@@ -35,12 +36,17 @@ const Pathlist: React.FC<PathlistProps> = ({
   demonstratePath,
   concatenate,
   invert,
+  removePath,
   tutorialStep,
 }) => {
   const [concatIndexes, setConcatIndexes] = useState<number[]>([]);
   const singleClickTimer = useRef<NodeJS.Timeout | null>(null);
 
   const handleClick = (index: number) => {
+    if (movePaths[index].length === 0) {
+      removePath(index);
+      return;
+    }
     if (singleClickTimer.current) {
       clearTimeout(singleClickTimer.current);
       singleClickTimer.current = null;

@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import "./components.module.css";
 import styles from "./components.module.css";
-import * as Tone from 'tone';
+import * as Tone from "tone";
 
 type Direction = "up" | "down" | "left" | "right";
 const translation: Record<Direction, string> = {
@@ -13,12 +13,12 @@ const translation: Record<Direction, string> = {
 };
 
 // Sound related constants
-const NOTES = ['C4', 'D4', 'E4', 'G4', 'A4']; // Pentatonic scale notes
+const NOTES = ["C4", "D4", "E4", "G4", "A4"]; // Pentatonic scale notes
 const DIRECTION_NOTES = {
-  up: 'C5',
-  down: 'G4',
-  left: 'E4',
-  right: 'A4'
+  up: "C5",
+  down: "G4",
+  left: "E4",
+  right: "A4",
 };
 
 interface ButtonBarProps {
@@ -68,70 +68,70 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
 
   const playButtonSound = () => {
     if (!isSoundInitialized) return;
-    
+
     const synth = new Tone.Synth({
       oscillator: {
-        type: "triangle"
+        type: "triangle",
       },
       envelope: {
         attack: 0.005,
         decay: 0.1,
         sustain: 0.3,
-        release: 0.2
-      }
+        release: 0.2,
+      },
     }).toDestination();
-    
+
     synth.triggerAttackRelease("C5", "16n");
   };
 
   const playAddSound = () => {
     if (!isSoundInitialized) return;
-    
+
     const synth = new Tone.Synth({
       oscillator: {
-        type: "sine"
+        type: "sine",
       },
       envelope: {
         attack: 0.01,
         decay: 0.1,
         sustain: 0.5,
-        release: 0.4
-      }
+        release: 0.4,
+      },
     }).toDestination();
-    
+
     synth.triggerAttackRelease("E5", "16n");
   };
 
   const playClearSound = () => {
     if (!isSoundInitialized) return;
-    
+
     const synth = new Tone.Synth({
       oscillator: {
-        type: "square"
+        type: "square",
       },
       envelope: {
         attack: 0.01,
         decay: 0.2,
         sustain: 0.2,
-        release: 0.3
-      }
+        release: 0.3,
+      },
     }).toDestination();
-    
+
     synth.triggerAttackRelease("A3", "8n");
   };
 
   const playGenerateSound = () => {
     if (!isSoundInitialized) return;
-    
+
     // Create a polyphonic synth
     const synth = new Tone.PolySynth(Tone.Synth).toDestination();
-    
+
     // Play a chord
     synth.triggerAttackRelease(["C4", "E4", "G4"], "8n");
-    
+
     // Play an arpeggio after generating
     setTimeout(() => {
-      const notes = ['C4', 'E4', 'G4', 'C5'];
+      const notes = ["C4", "E4", "G4", "C5"];
       notes.forEach((note, i) => {
         setTimeout(() => {
           synth.triggerAttackRelease(note, "16n");
@@ -143,22 +143,22 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
   // Play a unique sound for each path generated
   const playPathSound = (path: Direction[]) => {
     if (!isSoundInitialized || path.length === 0) return;
-    
+
     const synth = new Tone.Synth({
       oscillator: {
-        type: "sine"
+        type: "sine",
       },
       envelope: {
         attack: 0.01,
         decay: 0.1,
         sustain: 0.3,
-        release: 0.4
-      }
+        release: 0.4,
+      },
     }).toDestination();
-    
+
     // Play notes sequentially based on the path
     path.forEach((direction, i) => {
-      const note = DIRECTION_NOTES[direction] || 'C4';
+      const note = DIRECTION_NOTES[direction] || "C4";
       setTimeout(() => {
         synth.triggerAttackRelease(note, "16n");
       }, i * 150);
@@ -169,16 +169,16 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
   const handleSizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInputSize(event.target.value);
   };
-  
+
   // Function to handle input change
   const handleBaseChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setCurrBase(event.target.value);
   };
-  
+
   const handlebaseClick = async () => {
     await initializeAudio();
     playGenerateSound();
-    
+
     let inputNumber = 2; // Make sure to convert the input to a number
     if (inputSize != "") {
       inputNumber = Number(inputSize);
@@ -188,7 +188,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
     } else {
       generate_base(2, bases); // Handle invalid number input
     }
-    
+
     // Play sounds for each path
     setTimeout(() => {
       bases.forEach((path, i) => {
@@ -198,7 +198,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
       });
     }, 500);
   };
-  
+
   const handlebaseremove = async () => {
     await initializeAudio();
     playClearSound();
@@ -209,7 +209,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
   };
-  
+
   const handleAddBase = async () => {
     await initializeAudio();
     playAddSound();
@@ -220,7 +220,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
   const handleClick = async () => {
     await initializeAudio();
     playButtonSound();
-    
+
     // Convert inputValue to a number and pass it to generate
     let inputNumber = 2; // Make sure to convert the input to a number
     if (inputSize != "") {
@@ -228,8 +228,16 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
     }
     if (!isNaN(inputNumber)) {
       generate(inputNumber); // Pass the number to the generate function
+      // Play generate sound after paths are generated
+      setTimeout(() => {
+        playGenerateSound();
+      }, 100);
     } else {
       generate(2); // Handle invalid number input
+      // Play generate sound after paths are generated
+      setTimeout(() => {
+        playGenerateSound();
+      }, 100);
     }
   };
 
@@ -237,7 +245,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
   const handleClickRand = async () => {
     await initializeAudio();
     playGenerateSound();
-    
+
     // Convert inputValue to a number and pass it to generate
     let inputNumber = 2; // Make sure to convert the input to a number
     if (inputSize != "") {
@@ -268,7 +276,6 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
           alignItems: "left",
         }}
       >
-
         {/* Row 1: Size Input */}
         <div style={{ display: "flex", gap: 8 }}>
           <label>Number of Paths:</label>

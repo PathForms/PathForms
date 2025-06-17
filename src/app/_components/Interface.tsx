@@ -1296,6 +1296,15 @@ const Interface = () => {
     }
   };
 
+  const removePath = (idx: number) => {
+    setMoveRecords((prev) => prev.filter((_, i) => i !== idx));
+    setNodePaths((prev) => prev.filter((_, i) => i !== idx));
+    setEdgePaths((prev) => prev.filter((_, i) => i !== idx));
+    setPathIndex((prev) =>
+      prev.filter((i) => i !== idx).map((i) => (i > idx ? i - 1 : i))
+    );
+  };
+
   ///////////////// CayleyGraph shape config ///////////////////
   const handleshape = () => {
     if (shape == "circle") {
@@ -1376,6 +1385,7 @@ const Interface = () => {
           demonstratePath={demonstratePath}
           concatenate={concatenate}
           invert={invertPath}
+          removePath={removePath}
           tutorialStep={tutorialStep}
         />
         <CheckNielsen
