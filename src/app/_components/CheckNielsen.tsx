@@ -21,14 +21,28 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
   tutorialStep = 0,
   onTutorialCheck = () => {},
 }) => {
+  const [nStatus, setNStatus] = useState<boolean[]>([false, false, false]);
   const [result, setResult] = useState<string>("");
+  const [emptyCnt,setEmptyCnt] = useState<number>(0);
+  const [totalLen, setTotalLen] = useState<number>(0);
   const [isSoundInitialized, setSoundInitialized] = useState<boolean>(false);
   const [showConfetti, setShowConfetti] = useState<boolean>(false);
   const previousPathsRef = useRef<Direction[][]>([]);
   const confettiCanvas = useRef<HTMLCanvasElement>(null);
   const confettiAnimationRef = useRef<number | null>(null);
 
-  // Initialize Tone.js on first user interaction
+  useEffect(() => {
+    setEmptyCnt(movePaths.filter((path) => path.length === 0).length);
+    setTotalLen(movePaths.reduce((acc, path) => acc + path.length, 0));
+    const status = checkNielsenReduced(movePaths);
+    setNStatus(status);
+
+    if (movePaths.length>0&&status.every((x) => x) && !showConfetti) {
+      playSuccessSound();
+      setShowConfetti(true);
+    }
+  }, [movePaths]);
+  
   useEffect(() => {
     const initializeAudio = async () => {
       // Only initialize once
@@ -469,16 +483,35 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
           flexDirection: "column",
           alignItems: "center",
           gap: "8px",
-          fontSize: "0.8rem",
+          fontSize: "1.2rem",
+          
         }}
       >
-        <button
-          style={{ fontSize: "1.2rem", padding: "8px 16px" }}
-          onClick={handleCheck}
-        >
-          Check
-        </button>
-        {result && <p style={{ margin: 0, textAlign: "center" }}>{result}</p>}
+        {/* N0：空路径数 & 颜色 */}
+        <div
+        className="tip-row"
+        title="N0: No path may be empty."
+        style={{
+           color: nStatus[0] ? "limegreen" : "red" 
+        }}>
+          number&nbsp;of&nbsp;empty&nbsp;path:&nbsp;{emptyCnt}
+        </div>
+
+        {/* N1：总长度 & 颜色 */}
+        <div
+        className="tip-row"
+        title="N1: For any two distinct paths u and v, the concatenations uv, u v⁻¹, u⁻¹v must not be shorter than either u or v."
+        style={{ color: nStatus[1] ? "limegreen" : "red" }}>
+          Total&nbsp;Path&nbsp;Length:&nbsp;{totalLen}
+        </div>
+
+        {/* N2 单独一行 */}
+        <div
+        className="tip-row"
+        title = "N2: For any three pairwise distinct paths u, v, w, every concatenation of the form u± v± w± must not be shorter than u."
+        style={{ color: nStatus[2] ? "limegreen" : "red" }}>
+          N2&nbsp;{nStatus[2] ? "Satisfied" : "Unsatisfied"}
+        </div>
       </div>
     </>
   );
