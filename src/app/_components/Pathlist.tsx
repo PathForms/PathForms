@@ -18,7 +18,7 @@ interface PathlistProps {
   movePaths: string[][];
   pathIndex: number[];
   demonstratePath: (index: number) => void;
-  concatenate: (index1: number, index2: number) => void;
+  concatenate: (from: number, to: number) => void;
   invert: (index: number) => void;
   removePath: (index: number) => void;
   tutorialStep?: number;
@@ -39,27 +39,60 @@ const Pathlist: React.FC<PathlistProps> = ({
   removePath,
   tutorialStep,
 }) => {
-  const [concatIndexes, setConcatIndexes] = useState<number[]>([]);
   const singleClickTimer = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  ///////////// dragging handler //////////////
+  const handleDragStart = (
+    e: React.DragEvent<HTMLParagraphElement>,
+    fromIndex: number
+  ) => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", String(fromIndex));
+    e.currentTarget.classList.add(styles.dragging);
+  };
+
+  const handleDragEnd = (e: React.DragEvent<HTMLParagraphElement>) => {
+    e.currentTarget.classList.remove(styles.dragging);
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLParagraphElement>) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    e.currentTarget.classList.add(styles.dragOver);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLParagraphElement>) => {
+    e.currentTarget.classList.remove(styles.dragOver);
+  };
+
+  const handleDrop = (
+    e: React.DragEvent<HTMLParagraphElement>,
+    toIndex: number
+  ) => {
+    e.preventDefault();
+    const fromIndex = Number(e.dataTransfer.getData("text/plain"));
+    e.currentTarget.classList.remove(styles.dragOver);
+    if (fromIndex !== toIndex) {
+      concatenate(toIndex, fromIndex);
+    }
+  };
 
   const handleClick = (index: number) => {
     if (movePaths[index].length === 0) {
       removePath(index);
       return;
     }
-    if (singleClickTimer.current) {
-      clearTimeout(singleClickTimer.current);
-      singleClickTimer.current = null;
-      invert(index);
-    } else {
-      singleClickTimer.current = setTimeout(() => {
-        singleClickTimer.current = null;
-        setConcatIndexes((prev) => [...prev, index]);
-      }, CLICK_INTERVAL);
-    }
   };
 
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
   const handleMouseDown = (index: number) => {
     timerRef.current = setTimeout(() => {
       demonstratePath(index);
@@ -76,16 +109,6 @@ const Pathlist: React.FC<PathlistProps> = ({
     }
   };
 
-  useEffect(() => {
-    if (concatIndexes.length === 2) {
-      concatenate(concatIndexes[0], concatIndexes[1]);
-      setConcatIndexes([]);
-    }
-  }, [concatIndexes, concatenate]);
-
-  useEffect(() => {
-    setConcatIndexes([]);
-  }, [movePaths]);
   return (
     <div
       style={{
@@ -155,6 +178,12 @@ const Pathlist: React.FC<PathlistProps> = ({
                     ? styles.highlight
                     : ""
                 }`}
+                draggable
+                onDragStart={(e) => handleDragStart(e, rowIndex)}
+                onDragEnd={handleDragEnd}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={(e) => handleDrop(e, rowIndex)}
                 style={{
                   color: textColor,
                   textAlign: "left",
@@ -168,6 +197,7 @@ const Pathlist: React.FC<PathlistProps> = ({
                 onMouseDown={() => handleMouseDown(rowIndex)}
                 onMouseUp={() => handleMouseUp(rowIndex)}
                 onClick={() => handleClick(rowIndex)}
+                onDoubleClick={() => invert(rowIndex)}
               >
                 {`[P${rowIndex + 1}]: `}{" "}
                 {path.length === 0

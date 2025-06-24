@@ -16,9 +16,9 @@ const tutorialSteps = [
   "Long press a path in the Word List to hide it.",
   "Long press again to show it back.",
   "Double-click the second path to invert it.",
-  "Click path 1, then path 2 to concatenate them.",
-  "Click path 1, then path 2 again to concatenate.",
-  "Click the Check button. Did it fail?",
+  "Drag Path 2 and put it on Path 1 to concatenate Path 2 after Path 1.",
+  "Again, drag Path 2 and put it on Path 1 to concatenate Path 2 after Path 1.",
+  "It seems failed, why?",
   "Try using invert and concatenate to shorten the paths. Then click Check again!",
 ];
 

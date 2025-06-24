@@ -248,3 +248,15 @@
   animation: pulse 2.4s ease-in-out infinite;
 }
 
+.textbox {
+  cursor: grab;
+}
+
+.textbox.dragging {
+  opacity: 0.5;
+  cursor: grabbing;
+}
+
+.textbox.dragOver {
+  background-color: rgba(255, 255, 0, 0.2);
+}
