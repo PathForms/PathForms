@@ -490,27 +490,27 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
         {/* N0：空路径数 & 颜色 */}
         <div
         className="tip-row"
-        title="N0: No path may be empty."
+        title="(N0): No path may be empty."
         style={{
            color: nStatus[0] ? "limegreen" : "red" 
         }}>
-          number&nbsp;of&nbsp;empty&nbsp;path:&nbsp;{emptyCnt}
+          number&nbsp;of&nbsp;empty&nbsp;paths:&nbsp;{emptyCnt}
         </div>
 
         {/* N1：总长度 & 颜色 */}
         <div
         className="tip-row"
-        title="N1: For any two distinct paths u and v, the concatenations uv, u v⁻¹, u⁻¹v must not be shorter than either u or v."
+        title="(N1): For any two distinct paths u and v, the concatenations uv, u v⁻¹, u⁻¹v must not be shorter than either u or v."
         style={{ color: nStatus[1] ? "limegreen" : "red" }}>
-          Total&nbsp;Path&nbsp;Length:&nbsp;{totalLen}
+          total&nbsp;path&nbsp;length:&nbsp;{totalLen}
         </div>
 
         {/* N2 单独一行 */}
         <div
         className="tip-row"
-        title = "N2: For any three pairwise distinct paths u, v, w, every concatenation of the form u± v± w± must not be shorter than u."
+        title = "(N2): For any three pairwise distinct paths u, v, w, every concatenation of the form u± v± w± must not be shorter than u."
         style={{ color: nStatus[2] ? "limegreen" : "red" }}>
-          N2&nbsp;{nStatus[2] ? "Satisfied" : "Unsatisfied"}
+          (N2)&nbsp;{nStatus[2] ? "satisfied" : "not satisfied"}
         </div>
       </div>
     </>
