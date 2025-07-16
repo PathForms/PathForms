@@ -260,3 +260,14 @@
 .textbox.dragOver {
   background-color: rgba(255, 255, 0, 0.2);
 }
+
+.stepCounter {
+  position: fixed;
+  top: 40%;
+  right: 1rem;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}

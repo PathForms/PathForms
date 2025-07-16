@@ -13,6 +13,8 @@ import Tutorial from "./Tutorial";
 import WelcomeScreen from "./WelcomeScreen";
 import buildNodesEdgesFromMoves from "../utils/buildNodesEdgesFromMoves";
 import next from "next";
+import Steps from "./Steps";
+import { greedyNielsenSteps } from "../utils/greedyNielsen";
 
 type Direction = "up" | "down" | "left" | "right";
 
@@ -57,6 +59,10 @@ const Interface = () => {
   // Tutorial state
   const [tutorialStep, setTutorialStep] = useState<number>(1);
   const [tutorialActive, setTutorialActive] = useState<boolean>(false);
+
+  // Steps state
+  const [targetSteps, setTargetSteps] = useState(0);
+  const [usedConcatSteps, setUsedConcatSteps] = useState<number>(0);
 
   //
   //
@@ -267,6 +273,7 @@ const Interface = () => {
         newRec[index1] = newMoves;
         return newRec;
       });
+      setUsedConcatSteps(prev => prev + 1);
 
       const { newNodes, newEdges } = buildNodesEdgesFromMoves(newMoves);
       setNodePaths((prev) => {
@@ -312,6 +319,7 @@ const Interface = () => {
         newRec[index1] = newMoves;
         return newRec;
       });
+      setUsedConcatSteps(prev => prev + 1);
 
       const { newNodes, newEdges } = buildNodesEdgesFromMoves(newMoves);
       setNodePaths((prev) => {
@@ -342,6 +350,7 @@ const Interface = () => {
       newRec[index1] = newMoves;
       return newRec;
     });
+    setUsedConcatSteps(prev => prev + 1);
     const { newNodes, newEdges } = buildNodesEdgesFromMoves(newMoves);
     setNodePaths((prev) => {
       const nextPaths = [...prev];
@@ -365,6 +374,8 @@ const Interface = () => {
     setMoveRecords([]);
     setPathIndex([]);
     setOperationMode("normal");
+    setUsedConcatSteps(0);
+    setTargetSteps(0);
   };
 
   // Invert a stored path at a given index
@@ -631,6 +642,8 @@ const Interface = () => {
       setEdgePaths([]);
       setNodePaths([]);
       setMoveRecords(newMoveRecords);
+      setTargetSteps(greedyNielsenSteps(newMoveRecords));
+      setUsedConcatSteps(0);
       setOperationMode("normal");
       setPathIndex([0, 1]);
 
@@ -756,7 +769,8 @@ const Interface = () => {
 
     // After paths are generated, set moveRecordsRef to the state
     setMoveRecords(moveRecordsRef.current);
-
+    setTargetSteps(greedyNielsenSteps(moveRecordsRef.current));
+    setUsedConcatSteps(0);
     // Process paths and translate them into coordinates and edges
     const newNodePaths: string[][] = [];
     const newEdgePaths: string[][] = [];
@@ -908,7 +922,8 @@ const Interface = () => {
 
     // After paths are generated, set moveRecordsRef to the state
     setMoveRecords(moveRecordsRef.current);
-
+    setTargetSteps(greedyNielsenSteps(moveRecordsRef.current));
+    setUsedConcatSteps(0);
     // Process paths and translate them into coordinates and edges
     const newNodePaths: string[][] = [];
     const newEdgePaths: string[][] = [];
@@ -993,6 +1008,8 @@ const Interface = () => {
       setEdgePaths([]);
       setNodePaths([]);
       setMoveRecords(newMoveRecords);
+      setTargetSteps(greedyNielsenSteps(newMoveRecords));
+      setUsedConcatSteps(0);
       setOperationMode("normal");
       setPathIndex([0, 1]);
 
@@ -1112,7 +1129,8 @@ const Interface = () => {
 
     // After paths are generated, set moveRecordsRef to the state
     setMoveRecords(moveRecordsRef.current);
-
+    setTargetSteps(greedyNielsenSteps(moveRecordsRef.current));
+    setUsedConcatSteps(0);
     // Process paths and translate them into coordinates and edges
     const newNodePaths: string[][] = [];
     const newEdgePaths: string[][] = [];
@@ -1423,6 +1441,7 @@ const Interface = () => {
             setTutorialStep(0);
           }}
         />
+        <Steps optimalSteps={targetSteps} usedSteps={usedConcatSteps} />
       </div>
     </>
   );

@@ -481,7 +481,7 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
           zIndex: 10,
           display: "flex",
           flexDirection: "column",
-          alignItems: "center",
+          alignItems: "flex-start",
           gap: "8px",
           fontSize: "1.2rem",
           
@@ -490,25 +490,26 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
         {/* N0：空路径数 & 颜色 */}
         <div
         className="tip-row"
-        title="(N0): No path may be empty."
+        title="Condition (N0) is : All paths must be non-empty."
         style={{
            color: nStatus[0] ? "limegreen" : "red" 
         }}>
-          number&nbsp;of&nbsp;empty&nbsp;paths:&nbsp;{emptyCnt}
+          Nelisen Reduced Condition
+          (N0)&nbsp;number&nbsp;of&nbsp;empty&nbsp;paths:&nbsp;{emptyCnt}
         </div>
 
         {/* N1：总长度 & 颜色 */}
         <div
         className="tip-row"
-        title="(N1): For any two distinct paths u and v, the concatenations uv, u v⁻¹, u⁻¹v must not be shorter than either u or v."
+        title="Condition (N1) is : For any two distinct paths u and v, the concatenations uv, u v⁻¹, u⁻¹v must not be shorter than either u or v."
         style={{ color: nStatus[1] ? "limegreen" : "red" }}>
-          total&nbsp;path&nbsp;length:&nbsp;{totalLen}
+          (N1)&nbsp;{nStatus[1] ? "satisfied" : "not satisfied"};total&nbsp;path&nbsp;length:&nbsp;{totalLen}
         </div>
 
         {/* N2 单独一行 */}
         <div
         className="tip-row"
-        title = "(N2): For any three pairwise distinct paths u, v, w, every concatenation of the form u± v± w± must not be shorter than u."
+        title = "Condition (N2) is : For any three pairwise distinct paths u, v, w, every concatenation of the form u± v± w± must not be shorter than u."
         style={{ color: nStatus[2] ? "limegreen" : "red" }}>
           (N2)&nbsp;{nStatus[2] ? "satisfied" : "not satisfied"}
         </div>
