@@ -18,15 +18,33 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@eslint/js": "^9.35.0",
     "@types/d3": "^7.4.3",
     "@types/node": "^20.17.16",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19",
     "@types/xterm": "^3.0.0",
-    "eslint": "^9",
+    "eslint": "^9.35.0",
     "eslint-config-next": "15.1.6",
+    "eslint-plugin-react": "^7.37.5",
+    "globals": "^16.3.0",
     "postcss": "^8",
+    "prettier": "^3.6.2",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
-  }
+  },
+  "description": "To sync with latest remote (Pathforms/PathForms):",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PathForms/PathForms.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/PathForms/PathForms/issues"
+  },
+  "homepage": "https://github.com/PathForms/PathForms#readme"
 }
