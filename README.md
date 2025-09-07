@@ -1,5 +1,4 @@
 # PathForms
-Prabhat
 To sync with latest remote (Pathforms/PathForms):
 
 ```bash
