@@ -29,7 +29,7 @@ const Edge: React.FC<EdgeProps> = ({
 
   useEffect(() => {
     if (!isActive) {
-      setProgress(0); // 如果不活跃，重置进度
+      setProgress(0); 
       return;
     }
 
@@ -47,7 +47,6 @@ const Edge: React.FC<EdgeProps> = ({
     };
   }, [isActive]);
   
-  // --- 样式计算逻辑保持不变 ---
   let strokeColor = "rgba(255, 34, 5, 0.2)";
   if ((x === x2 && y <= y2) || (x === x2 && y >= y2)) {
     strokeColor = "rgba(0, 94, 255, 0.23)";
@@ -63,18 +62,16 @@ const Edge: React.FC<EdgeProps> = ({
     thickness += 2;
   }
   
-  // 使用 useMemo 来计算角度，避免在每次渲染时都重新计算
   const angle = useMemo(() => 
     Math.atan2(targetY - sourceY, targetX - sourceX) * 180 / Math.PI,
     [sourceX, sourceY, targetX, targetY]
   );
   
-  // 根据 progress 计算箭头当前在路径上的位置
   const arrowX = sourceX + (targetX - sourceX) * progress;
   const arrowY = sourceY + (targetY - sourceY) * progress;
 
   return (
-    // 使用 <g> 元素来包裹线和箭头
+
     <g>
       <line
         x1={sourceX}
