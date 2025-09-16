@@ -46,6 +46,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
   const [inputSize, setInputSize] = useState<string>("");
   const [currBase, setCurrBase] = useState<string>("");
   const [isSoundInitialized, setSoundInitialized] = useState<boolean>(false);
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
 
   // Initialize Tone.js on first user interaction
   useEffect(() => {
@@ -67,7 +68,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
   };
 
   const playButtonSound = () => {
-    if (!isSoundInitialized) return;
+    if (!isSoundInitialized || !soundEnabled) return;
 
     const synth = new Tone.Synth({
       oscillator: {
@@ -85,7 +86,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
   };
 
   const playAddSound = () => {
-    if (!isSoundInitialized) return;
+    if (!isSoundInitialized || !soundEnabled) return;
 
     const synth = new Tone.Synth({
       oscillator: {
@@ -103,7 +104,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
   };
 
   const playClearSound = () => {
-    if (!isSoundInitialized) return;
+    if (!isSoundInitialized || !soundEnabled) return;
 
     const synth = new Tone.Synth({
       oscillator: {
@@ -121,7 +122,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
   };
 
   const playGenerateSound = () => {
-    if (!isSoundInitialized) return;
+    if (!isSoundInitialized || !soundEnabled) return;
 
     // Create a polyphonic synth
     const synth = new Tone.PolySynth(Tone.Synth).toDestination();
@@ -142,7 +143,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
 
   // Play a unique sound for each path generated
   const playPathSound = (path: Direction[]) => {
-    if (!isSoundInitialized || path.length === 0) return;
+    if (!isSoundInitialized || path.length === 0 || !soundEnabled) return;
 
     const synth = new Tone.Synth({
       oscillator: {
@@ -370,6 +371,22 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
             onClick={handlebaseClick}
           >
             Generate Paths
+          </button>
+          <button
+            style={{
+              width: 140,
+              height: 28,
+              fontSize: 13,
+              backgroundColor: "transparent",
+              border: "2px solid rgb(13, 255, 0)",
+              color: "rgb(13, 255, 0)",
+              cursor: "pointer",
+              borderRadius: 4,
+              transition: "0.3s",
+            }}
+            onClick={() => setSoundEnabled(!soundEnabled)}
+          >
+            {soundEnabled ? "Sound On" : "Sound Off"}
           </button>
         </div>
       </div>
