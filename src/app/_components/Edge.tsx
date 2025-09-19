@@ -35,7 +35,6 @@ const Edge: React.FC<EdgeProps> = ({
 
     let animationFrameId: number;
     const animate = () => {
-     
       setProgress(prev => (prev + 0.008) % 1); 
       animationFrameId = requestAnimationFrame(animate);
     };
@@ -47,31 +46,48 @@ const Edge: React.FC<EdgeProps> = ({
     };
   }, [isActive]);
   
-  let strokeColor = "rgba(255, 34, 5, 0.2)";
-  if ((x === x2 && y <= y2) || (x === x2 && y >= y2)) {
-    strokeColor = "rgba(0, 94, 255, 0.23)";
-  }
+  const isVertical = (x === x2 && y !== y2);
+  let strokeColor = isVertical ? "rgba(0, 94, 255, 0.23)" : "rgba(255, 34, 5, 0.2)";
 
   let thickness = edgeThickness ?? 1;
-  let activeStrokeColor = "rgb(251, 0, 71)";
+  let activeStrokeColor = isVertical ? "rgb(0, 140, 255)" : "rgb(251, 0, 71)";
   
   if (isActive) {
-    if ((x === x2 && y <= y2) || (x === x2 && y >= y2)) {
-      activeStrokeColor = "rgb(0, 140, 255)";
-    }
     thickness += 2;
   }
   
-  const angle = useMemo(() => 
-    Math.atan2(targetY - sourceY, targetX - sourceX) * 180 / Math.PI,
-    [sourceX, sourceY, targetX, targetY]
-  );
+  const angle = useMemo(() => {
+    if (isVertical) {
+      return -90; // 朝上
+    } else {
+      return 0;   // 朝右
+    }
+  }, [isVertical]);
   
-  const arrowX = sourceX + (targetX - sourceX) * progress;
-  const arrowY = sourceY + (targetY - sourceY) * progress;
+  // ==================== 核心修改点 ====================
+  // 根据固定方向，重新定义动画的起点和终点
+  let animStartX, animStartY, animEndX, animEndY;
+
+  if (isVertical) {
+    // 强制动画方向为“从下到上” (Y值从大到小)
+    animStartX = sourceX;
+    animEndX = targetX;
+    animStartY = Math.max(sourceY, targetY);
+    animEndY = Math.min(sourceY, targetY);
+  } else {
+    // 强制动画方向为“从左到右” (X值从小到大)
+    animStartY = sourceY;
+    animEndY = targetY;
+    animStartX = Math.min(sourceX, targetX);
+    animEndX = Math.max(sourceX, targetX);
+  }
+
+  // 使用新的动画起点和终点来计算箭头位置
+  const arrowX = animStartX + (animEndX - animStartX) * progress;
+  const arrowY = animStartY + (animEndY - animStartY) * progress;
+  // ======================================================
 
   return (
-
     <g>
       <line
         x1={sourceX}
