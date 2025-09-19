@@ -30,6 +30,8 @@ interface ButtonBarProps {
   clearbase: () => void;
   setGen: () => void;
   tutorialStep?: number;
+  //sound button:
+  soundEnabled: boolean;
 }
 
 const ButtonBar: React.FC<ButtonBarProps> = ({
@@ -41,12 +43,13 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
   clearbase,
   setGen,
   tutorialStep,
+  //sound button:
+  soundEnabled,
 }) => {
   //input config
   const [inputSize, setInputSize] = useState<string>("");
   const [currBase, setCurrBase] = useState<string>("");
   const [isSoundInitialized, setSoundInitialized] = useState<boolean>(false);
-  const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
 
   // Initialize Tone.js on first user interaction
   useEffect(() => {
@@ -68,8 +71,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
   };
 
   const playButtonSound = () => {
-    if (!isSoundInitialized || !soundEnabled) return;
-
+    if (!isSoundInitialized) return;
     const synth = new Tone.Synth({
       oscillator: {
         type: "triangle",
@@ -86,7 +88,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
   };
 
   const playAddSound = () => {
-    if (!isSoundInitialized || !soundEnabled) return;
+    if (!isSoundInitialized) return;
 
     const synth = new Tone.Synth({
       oscillator: {
@@ -104,7 +106,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
   };
 
   const playClearSound = () => {
-    if (!isSoundInitialized || !soundEnabled) return;
+    if (!isSoundInitialized) return;
 
     const synth = new Tone.Synth({
       oscillator: {
@@ -122,7 +124,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
   };
 
   const playGenerateSound = () => {
-    if (!isSoundInitialized || !soundEnabled) return;
+    if (!isSoundInitialized) return;
 
     // Create a polyphonic synth
     const synth = new Tone.PolySynth(Tone.Synth).toDestination();
@@ -143,7 +145,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
 
   // Play a unique sound for each path generated
   const playPathSound = (path: Direction[]) => {
-    if (!isSoundInitialized || path.length === 0 || !soundEnabled) return;
+    if (!isSoundInitialized || path.length === 0) return;
 
     const synth = new Tone.Synth({
       oscillator: {
@@ -177,8 +179,10 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
   };
 
   const handlebaseClick = async () => {
+    //sound button:
+    if (soundEnabled) playButtonSound();
     await initializeAudio();
-    playGenerateSound();
+    if (soundEnabled) playGenerateSound();
 
     let inputNumber = 2; // Make sure to convert the input to a number
     if (inputSize != "") {
@@ -191,36 +195,45 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
     }
 
     // Play sounds for each path
-    setTimeout(() => {
-      bases.forEach((path, i) => {
-        setTimeout(() => {
-          playPathSound(path);
-        }, i * 300);
-      });
-    }, 500);
+    if (soundEnabled) {
+      setTimeout(() => {
+        bases.forEach((path, i) => {
+          setTimeout(() => {
+            playPathSound(path);
+          }, i * 300);
+        });
+      }, 500);
+    }
   };
 
   const handlebaseremove = async () => {
+    //sound button:
+    if (soundEnabled) playButtonSound();
     await initializeAudio();
-    playClearSound();
+    if (soundEnabled) playClearSound();
     clearbase();
   };
 
   // Function to handle the submit (not being used here, but left for context)
   const handleSubmit = (event: React.FormEvent) => {
+    //sound button:
+    if (soundEnabled) playButtonSound();
     event.preventDefault();
   };
 
   const handleAddBase = async () => {
+    //sound button:
+    if (soundEnabled) playButtonSound();
     await initializeAudio();
-    playAddSound();
+    if (soundEnabled) playAddSound();
     addbase(currBase);
   };
 
   // Function to be called when the button is clicked
   const handleClick = async () => {
+    //sound button:
+    if (soundEnabled) playButtonSound();
     await initializeAudio();
-    playButtonSound();
 
     // Convert inputValue to a number and pass it to generate
     let inputNumber = 2; // Make sure to convert the input to a number
@@ -231,21 +244,23 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
       generate(inputNumber); // Pass the number to the generate function
       // Play generate sound after paths are generated
       setTimeout(() => {
-        playGenerateSound();
+        if (soundEnabled) playGenerateSound();
       }, 100);
     } else {
       generate(2); // Handle invalid number input
       // Play generate sound after paths are generated
       setTimeout(() => {
-        playGenerateSound();
+        if (soundEnabled) playGenerateSound();
       }, 100);
     }
   };
 
   // Function to be called when the button is clicked
   const handleClickRand = async () => {
+    //sound button:
+    if (soundEnabled) playButtonSound();
     await initializeAudio();
-    playGenerateSound();
+    if (soundEnabled) playGenerateSound();
 
     // Convert inputValue to a number and pass it to generate
     let inputNumber = 2; // Make sure to convert the input to a number
@@ -372,22 +387,6 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
           >
             Generate Paths
           </button>
-          <button
-            style={{
-              width: 140,
-              height: 28,
-              fontSize: 13,
-              backgroundColor: "transparent",
-              border: "2px solid rgb(13, 255, 0)",
-              color: "rgb(13, 255, 0)",
-              cursor: "pointer",
-              borderRadius: 4,
-              transition: "0.3s",
-            }}
-            onClick={() => setSoundEnabled(!soundEnabled)}
-          >
-            {soundEnabled ? "Sound On" : "Sound Off"}
-          </button>
         </div>
       </div>
 
@@ -427,7 +426,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
                 marginBottom: 2,
               }}
               onClick={() => {
-                if (isSoundInitialized) {
+                if (soundEnabled && isSoundInitialized) {
                   playPathSound(path);
                 }
               }}

@@ -13,6 +13,10 @@ interface HeadbarProps {
   handleThemeChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   shape: string;
   handleshape: () => void;
+
+  //sound button:
+  soundEnabled: boolean;
+  setSoundEnabled: (value: boolean) => void;
 }
 
 //function for return
@@ -27,6 +31,9 @@ const Headbar: React.FC<HeadbarProps> = ({
 
   handleThemeChange,
   handleshape,
+  //sound button
+  soundEnabled,
+  setSoundEnabled,
 }) => {
   const colors = [
     "rgb(255, 50, 91)",
@@ -78,6 +85,17 @@ const Headbar: React.FC<HeadbarProps> = ({
       </button>
       {showSettings && (
         <div className={`${styles["settings-modal"]} ${styles[theme]}`}>
+          <div>
+            <label>Sound:</label>
+            <select
+              value={soundEnabled ? "on" : "off"}
+              onChange={(e) => setSoundEnabled(e.target.value === "on")}
+            >
+              <option value="on">On</option>
+              <option value="off">Off</option>
+            </select>
+          </div>
+
           <div>
             <label>Edge Thickness:</label>
             <input

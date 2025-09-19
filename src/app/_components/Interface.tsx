@@ -32,6 +32,8 @@ const Interface = () => {
   const [nodePaths, setNodePaths] = useState<string[][]>([]);
   const [edgePaths, setEdgePaths] = useState<string[][]>([]);
   const [moveRecords, setMoveRecords] = useState<Direction[][]>([]);
+  //
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
 
   // states for bases;
   const [bases, setBases] = useState<Direction[][]>([]);
@@ -273,7 +275,7 @@ const Interface = () => {
         newRec[index1] = newMoves;
         return newRec;
       });
-      setUsedConcatSteps(prev => prev + 1);
+      setUsedConcatSteps((prev) => prev + 1);
 
       const { newNodes, newEdges } = buildNodesEdgesFromMoves(newMoves);
       setNodePaths((prev) => {
@@ -319,7 +321,7 @@ const Interface = () => {
         newRec[index1] = newMoves;
         return newRec;
       });
-      setUsedConcatSteps(prev => prev + 1);
+      setUsedConcatSteps((prev) => prev + 1);
 
       const { newNodes, newEdges } = buildNodesEdgesFromMoves(newMoves);
       setNodePaths((prev) => {
@@ -350,7 +352,7 @@ const Interface = () => {
       newRec[index1] = newMoves;
       return newRec;
     });
-    setUsedConcatSteps(prev => prev + 1);
+    setUsedConcatSteps((prev) => prev + 1);
     const { newNodes, newEdges } = buildNodesEdgesFromMoves(newMoves);
     setNodePaths((prev) => {
       const nextPaths = [...prev];
@@ -1358,6 +1360,9 @@ const Interface = () => {
           handleThemeChange={handleThemeChange}
           shape={shape}
           handleshape={handleshape}
+          //sound button:
+          soundEnabled={soundEnabled}
+          setSoundEnabled={setSoundEnabled}
         />
 
         <ButtonBar
@@ -1369,6 +1374,7 @@ const Interface = () => {
           generate_base={GenerateBasedPath}
           addbase={Addbase}
           clearbase={clearBase}
+          soundEnabled={soundEnabled}
         />
         <Pathterminal
           pathIndex={pathIndex}
@@ -1433,6 +1439,7 @@ const Interface = () => {
           invert={invertPath}
         /> */}
         <Tutorial
+          soundEnabled={soundEnabled}
           step={tutorialStep}
           isActive={tutorialActive}
           onNext={() => setTutorialStep((s) => s + 1)}
