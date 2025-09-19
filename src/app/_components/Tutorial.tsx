@@ -7,6 +7,7 @@ import * as Tone from 'tone';
 interface TutorialProps {
   step: number;
   isActive: boolean;
+  isCompleted?: boolean;
   onNext: () => void;
   onSkip: () => void;
 }
@@ -18,13 +19,13 @@ const tutorialSteps = [
   "Double-click the second path to invert it.",
   "Drag Path 2 and put it on Path 1 to concatenate Path 2 after Path 1.",
   "Again, drag Path 2 and put it on Path 1 to concatenate Path 2 after Path 1.",
-  "It seems failed, why?",
-  "Try using invert and concatenate to shorten the paths. Then click Check again!",
+  "The paths are still too long. Try using invert and concatenate operations to shorten them.",
 ];
 
 const Tutorial: React.FC<TutorialProps> = ({
   step,
   isActive,
+  isCompleted = false,
   onNext,
   onSkip,
 }) => {
@@ -144,7 +145,18 @@ const Tutorial: React.FC<TutorialProps> = ({
   return (
     <div className={styles.tutorialOverlay}>
       <div className={styles.tutorialBox}>
-        <p style={{ color: "black", margin: 0 }}>{tutorialSteps[step - 1]}</p>
+        {isCompleted ? (
+          <div style={{ textAlign: "center" }}>
+            <h2 style={{ color: "#4CAF50", margin: "0 0 10px 0", fontSize: "24px" }}>
+              🎉 Congratulations! 🎉
+            </h2>
+            <p style={{ color: "black", margin: "0 0 10px 0", fontSize: "16px" }}>
+              You have successfully completed the tutorial and reduced the paths to satisfy Nielsen conditions!
+            </p>
+          </div>
+        ) : (
+          <p style={{ color: "black", margin: 0 }}>{tutorialSteps[step - 1]}</p>
+        )}
         <div
           style={{
             display: "flex",
@@ -157,7 +169,7 @@ const Tutorial: React.FC<TutorialProps> = ({
             onClick={handleSkip}
             onMouseEnter={playHoverSound}
           >
-            Skip Tutorial
+            {isCompleted ? "Exit Tutorial" : "Skip Tutorial"}
           </button>
         </div>
       </div>

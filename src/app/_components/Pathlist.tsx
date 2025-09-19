@@ -176,6 +176,8 @@ const Pathlist: React.FC<PathlistProps> = ({
                     ? styles.highlight
                     : tutorialStep === 6 && (rowIndex === 0 || rowIndex === 1)
                     ? styles.highlight
+                    : tutorialStep === 7 && (rowIndex === 0 || rowIndex === 1)
+                    ? styles.highlight
                     : ""
                 }`}
                 draggable
