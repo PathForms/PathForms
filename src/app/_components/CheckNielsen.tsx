@@ -41,7 +41,17 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
       playSuccessSound();
       setShowConfetti(true);
     }
-  }, [movePaths]);
+
+    // Auto-check for tutorial completion
+    if (tutorialActive && (tutorialStep === 7 || tutorialStep === 8)) {
+      const isSuccess = status.every((cond) => cond === true);
+      if (isSuccess && onTutorialCheck) {
+        playSuccessSound();
+        setShowConfetti(true);
+        onTutorialCheck(0); // Tutorial completed
+      }
+    }
+  }, [movePaths, tutorialActive, tutorialStep, onTutorialCheck]);
   
   useEffect(() => {
     const initializeAudio = async () => {
@@ -407,26 +417,6 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
     return result;
   }
 
-  const handleCheck = () => {
-    check();
-    if (tutorialStep === 7 && onTutorialCheck) {
-      onTutorialCheck(8);
-    }
-
-    if (tutorialStep === 8 && onTutorialCheck) {
-      const reducedConditionStatus = checkNielsenReduced(movePaths);
-      const isSuccess = reducedConditionStatus.every((cond) => cond === true);
-      if (isSuccess) {
-        playSuccessSound();
-        setShowConfetti(true);
-        alert("🎉 Congrats! You have successfully reduced the paths!");
-        onTutorialCheck(0);
-      } else {
-        playFailSound();
-      }
-      return;
-    }
-  };
 
   function check() {
     const reducedConditionStatus = checkNielsenReduced(movePaths);

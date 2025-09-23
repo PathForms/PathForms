@@ -61,6 +61,7 @@ const Interface = () => {
   // Tutorial state
   const [tutorialStep, setTutorialStep] = useState<number>(1);
   const [tutorialActive, setTutorialActive] = useState<boolean>(false);
+  const [tutorialCompleted, setTutorialCompleted] = useState<boolean>(false);
 
   // Steps state
   const [targetSteps, setTargetSteps] = useState(0);
@@ -338,8 +339,8 @@ const Interface = () => {
       return;
     }
 
-    // ---------- 如果在 tutorial 模式但 step != 5,6,8 => 提示并撤销 ----------
-    else if (tutorialActive && ![5, 6, 8].includes(tutorialStep)) {
+    // ---------- 如果在 tutorial 模式但 step != 5,6,7,8 => 提示并撤销 ----------
+    else if (tutorialActive && ![5, 6, 7, 8].includes(tutorialStep)) {
       alert(` Concatenate isn't expected right now!`);
       // 不做任何更新就行，撤销操作
       return;
@@ -387,7 +388,7 @@ const Interface = () => {
       return;
     }
 
-    if (tutorialActive && tutorialStep !== 4 && tutorialStep !== 8) {
+    if (tutorialActive && ![4, 7, 8].includes(tutorialStep)) {
       alert("you cannot invert the path right now!");
       return;
     }
@@ -1434,8 +1435,8 @@ const Interface = () => {
           tutorialStep={tutorialStep}
           onTutorialCheck={(nextStep) => {
             if (nextStep === 0) {
-              setTutorialActive(false);
-              setTutorialStep(0);
+              setTutorialCompleted(true);
+              // Keep tutorial active to show completion message
             } else {
               setTutorialStep(nextStep);
             }
@@ -1457,10 +1458,12 @@ const Interface = () => {
         <Tutorial
           step={tutorialStep}
           isActive={tutorialActive}
+          isCompleted={tutorialCompleted}
           onNext={() => setTutorialStep((s) => s + 1)}
           onSkip={() => {
             setTutorialActive(false);
             setTutorialStep(0);
+            setTutorialCompleted(false);
           }}
         />
         <Steps optimalSteps={targetSteps} usedSteps={usedConcatSteps} />
