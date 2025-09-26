@@ -9,6 +9,7 @@ interface EdgeProps {
   source: string;
   target: string;
   isActive?: boolean;
+  isPreview?: boolean;
   edgeThickness?: number;
 }
 
@@ -20,6 +21,7 @@ const Edge: React.FC<EdgeProps> = ({
   targetX,
   targetY,
   isActive,
+  isPreview = false,
   edgeThickness,
 }) => {
   const [x, y] = source.split(",").map(Number);
@@ -57,7 +59,16 @@ const Edge: React.FC<EdgeProps> = ({
   let strokeDasharray = "none";
   let strokeDashoffset = "0";
   
-  if (isActive) {
+  if (isPreview) {
+    strokeColor = "rgba(255, 255, 0, 0.8)"; // Yellow for preview
+    thickness += 1;
+    strokeDasharray = "8,4"; // Dashed line for preview
+    strokeDashoffset = dashOffset.toString();
+    
+    if ((x == x2 && y <= y2) || (x == x2 && y >= y2)) {
+      strokeColor = "rgba(0, 255, 255, 0.8)"; // Cyan for vertical preview
+    }
+  } else if (isActive) {
     strokeColor = "rgb(251, 0, 71)";
     thickness += 2;
     strokeDasharray = "5,3"; // Add dotted line effect when active

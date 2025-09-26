@@ -69,6 +69,12 @@ interface CayleyTreeProps {
   edgePaths: string[][];
   edgeThickness: number;
   shape: string;
+  previewPath?: {
+    nodes: string[];
+    edges: string[];
+    moves: string[];
+  } | null;
+  isDragging?: boolean;
 }
 
 const CayleyTree: React.FC<CayleyTreeProps> = ({
@@ -77,6 +83,8 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
   edgePaths,
   edgeThickness,
   shape,
+  previewPath,
+  isDragging = false,
 }) => {
   const [nodes, setNodes] = useState<LayoutNode[]>([]);
   const [links, setLinks] = useState<LayoutLink[]>([]);
@@ -207,35 +215,43 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
       >
         <g ref={gRef}>
           {/* Use a path element so that we can place a marker at the midpoint */}
-          {links.map((lk) => (
-            <Edge
-              key={lk.id}
-              source={lk.source}
-              target={lk.target}
-              sourceX={lk.sourceX}
-              sourceY={lk.sourceY}
-              targetX={lk.targetX}
-              targetY={lk.targetY}
-              isActive={
-                pathIndex.length > 0 &&
-                pathIndex.some((index) => edgePaths[index]?.includes(lk.id))
-              }
-              edgeThickness={edgeThickness}
-            />
-          ))}
+          {links.map((lk) => {
+            const isActive = pathIndex.length > 0 &&
+              pathIndex.some((index) => edgePaths[index]?.includes(lk.id));
+            const isPreview = Boolean(previewPath && previewPath.edges.includes(lk.id));
+            
+            return (
+              <Edge
+                key={lk.id}
+                source={lk.source}
+                target={lk.target}
+                sourceX={lk.sourceX}
+                sourceY={lk.sourceY}
+                targetX={lk.targetX}
+                targetY={lk.targetY}
+                isActive={isActive}
+                isPreview={isPreview}
+                edgeThickness={edgeThickness}
+              />
+            );
+          })}
 
-          {nodes.map((nd) => (
-            <Vertex
-              key={nd.id}
-              id={nd.id}
-              x={nd.x}
-              y={nd.y}
-              isActive={
-                pathIndex.length > 0 &&
-                pathIndex.some((index) => nodePaths[index]?.includes(nd.id))
-              }
-            />
-          ))}
+          {nodes.map((nd) => {
+            const isActive = pathIndex.length > 0 &&
+              pathIndex.some((index) => nodePaths[index]?.includes(nd.id));
+            const isPreview = Boolean(previewPath && previewPath.nodes.includes(nd.id));
+            
+            return (
+              <Vertex
+                key={nd.id}
+                id={nd.id}
+                x={nd.x}
+                y={nd.y}
+                isActive={isActive}
+                isPreview={isPreview}
+              />
+            );
+          })}
         </g>
       </svg>
     </div>

@@ -65,6 +65,16 @@ const Interface = () => {
   const [targetSteps, setTargetSteps] = useState(0);
   const [usedConcatSteps, setUsedConcatSteps] = useState<number>(0);
 
+  // Drag preview state
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [dragFromIndex, setDragFromIndex] = useState<number>(-1);
+  const [dragHoverIndex, setDragHoverIndex] = useState<number>(-1);
+  const [previewPath, setPreviewPath] = useState<{
+    nodes: string[];
+    edges: string[];
+    moves: Direction[];
+  } | null>(null);
+
   //
   //
   //
@@ -377,6 +387,31 @@ const Interface = () => {
     setOperationMode("normal");
     setUsedConcatSteps(0);
     setTargetSteps(0);
+  };
+
+  // Calculate preview path for drag operation (without Nielsen cancellation)
+  const calculatePreviewPath = (fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0 || 
+        fromIndex >= moveRecords.length || toIndex >= moveRecords.length) {
+      return null;
+    }
+
+    // When dragging fromIndex to toIndex, we want to concatenate fromIndex to the end of toIndex
+    // So it should be: toIndex + fromIndex (path2 + path1)
+    // But WITHOUT Nielsen cancellation - just pure concatenation
+    const pathA = [...moveRecords[toIndex]];  // target path (path2)
+    const pathB = [...moveRecords[fromIndex]]; // dragged path (path1)
+    
+    // Pure concatenation without cancellation
+    const previewMoves = [...pathA, ...pathB];
+    
+    const { newNodes, newEdges } = buildNodesEdgesFromMoves(previewMoves);
+    
+    return {
+      nodes: newNodes,
+      edges: newEdges,
+      moves: previewMoves
+    };
   };
 
   // Invert a stored path at a given index
@@ -1332,6 +1367,36 @@ const Interface = () => {
       setShape("circle");
     }
   };
+
+  ///////////////// Drag preview functions ///////////////////
+  const handleDragStart = (fromIndex: number) => {
+    setIsDragging(true);
+    setDragFromIndex(fromIndex);
+    setDragHoverIndex(-1);
+    setPreviewPath(null);
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+    setDragFromIndex(-1);
+    setDragHoverIndex(-1);
+    setPreviewPath(null);
+  };
+
+  const handleDragHover = (toIndex: number) => {
+    if (!isDragging || dragFromIndex === -1) return;
+    
+    setDragHoverIndex(toIndex);
+    const preview = calculatePreviewPath(dragFromIndex, toIndex);
+    setPreviewPath(preview);
+  };
+
+  const handleDragLeave = () => {
+    if (isDragging) {
+      setDragHoverIndex(-1);
+      setPreviewPath(null);
+    }
+  };
   return (
     <>
       {showWelcome && (
@@ -1393,6 +1458,8 @@ const Interface = () => {
           edgePaths={edgePaths}
           edgeThickness={edgeThickness}
           shape={shape}
+          previewPath={previewPath}
+          isDragging={isDragging}
         />
 
         <Pathlist
@@ -1406,6 +1473,13 @@ const Interface = () => {
           invert={invertPath}
           removePath={removePath}
           tutorialStep={tutorialStep}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          onDragHover={handleDragHover}
+          onDragLeave={handleDragLeave}
+          isDragging={isDragging}
+          dragFromIndex={dragFromIndex}
+          dragHoverIndex={dragHoverIndex}
         />
         <CheckNielsen
           movePaths={moveRecords}

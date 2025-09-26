@@ -8,9 +8,10 @@ interface VertexProps {
   isHighlighted?: boolean;
   isShined?: boolean;
   isActive?: boolean;
+  isPreview?: boolean;
 }
 
-const Vertex: React.FC<VertexProps> = ({ id, x, y, isActive }) => {
+const Vertex: React.FC<VertexProps> = ({ id, x, y, isActive, isPreview = false }) => {
   //color logic
   const isRoot = id === "0,0";
 
@@ -25,7 +26,12 @@ const Vertex: React.FC<VertexProps> = ({ id, x, y, isActive }) => {
     stroke = "#ffffff";
     strokeW = 0.8;
   }
-  if (isActive) {
+  if (isPreview) {
+    fillColor = "rgba(255, 255, 0, 0.8)"; // Yellow for preview
+    radius = 3;
+    stroke = "rgba(255, 255, 0, 1)";
+    strokeW = 1;
+  } else if (isActive) {
     fillColor = "#ffffff";
   }
 
