@@ -1337,6 +1337,7 @@ const Interface = () => {
     <>
       {showWelcome && (
         <WelcomeScreen
+          soundEnabled={soundEnabled}
           onStartTutorial={() => {
             setShowWelcome(false);
             setTutorialStep(1);
@@ -1416,6 +1417,7 @@ const Interface = () => {
           movePaths={moveRecords}
           tutorialActive={tutorialActive}
           tutorialStep={tutorialStep}
+          soundEnabled={soundEnabled}
           onTutorialCheck={(nextStep) => {
             if (nextStep === 0) {
               setTutorialActive(false);
