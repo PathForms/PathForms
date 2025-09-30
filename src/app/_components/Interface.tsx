@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import ButtonBar from "./ButtonBar";
 import CayleyTree from "./CayleyTree";
 import Pathbar from "./Pathbar";
@@ -27,6 +28,7 @@ const oppositeMoves: Record<Direction, Direction> = {
 };
 
 const Interface = () => {
+  const router = useRouter();
   // State for storing historical paths & cayley graph rendering
   const [pathIndex, setPathIndex] = useState<number[]>([]); // index of paths to show on the Cayley graph;
   const [nodePaths, setNodePaths] = useState<string[][]>([]);
@@ -736,16 +738,19 @@ const Interface = () => {
       const operation = Math.random() < 0.5 ? 0 : 1;
 
       if (operation === 0) {
-        // Inversion with weighted random choice
-        weightedInversion();
-      } else if (operation === 1) {
-        // Concatenate as usual (could also be enhanced with weights if desired)
-        let [index1, index2] = generateRandomPathPair(n);
-        while (moveRecordsRef.current[index1].length >= 4) {
-          [index1, index2] = generateRandomPathPair(n);
+        //invert one of them
+        const index = Math.random() < 0.5 ? 0 : 1;
+        let currentMoves = [...moveRecordsRef.current[index]];
+        for (let i = currentMoves.length - 1; i >= 0; i--) {
+          let oppositeMove = oppositeMoves[currentMoves[i]];
+          moveRecordsRef.current[index][currentMoves.length - 1 - i] =
+            oppositeMove;
         }
-        const path1Moves = [...moveRecordsRef.current[index1]];
-        const path2Moves = [...moveRecordsRef.current[index2]];
+      } else if (operation === 1) {
+        //concatenate
+        const index = Math.random() < 0.5 ? 0 : 1;
+        const path1Moves = [...moveRecordsRef.current[index]];
+        const path2Moves = [...moveRecordsRef.current[1 - index]];
         let newMoves: Direction[] = [];
 
         // Remove canceling moves at the junction
@@ -763,7 +768,7 @@ const Interface = () => {
 
         newMoves = path1Moves;
         newMoves.push(...path2Moves);
-        moveRecordsRef.current[index1] = newMoves;
+        moveRecordsRef.current[index] = newMoves;
       }
     }
 
@@ -1370,6 +1375,23 @@ const Interface = () => {
           addbase={Addbase}
           clearbase={clearBase}
         />
+        <button
+          className={styles.button}
+          style={{
+            position: "fixed",
+            bottom: 24,
+            right: 24,
+            zIndex: 100,
+            padding: "12px 28px",
+            fontSize: "16px",
+            borderRadius: "8px",
+            cursor: "pointer",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.15)"
+          }}
+          onClick={() => router.push("/rank1")}
+        >
+          Go to Rank 1
+        </button>
         <Pathterminal
           pathIndex={pathIndex}
           nodePaths={nodePaths}
