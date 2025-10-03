@@ -70,12 +70,15 @@ interface CayleyTreeProps {
   edgeThickness: number;
   shape: string;
   previewPath?: {
-    nodes: string[];
-    edges: string[];
-    moves: string[];
-    cancellationInfo?: {
-      cancelledEdges: string[];
-      cancelledNodes: string[];
+    finalResult: {
+      nodes: string[];
+      edges: string[];
+      moves: string[];
+    };
+    cancelledParts: {
+      nodes: string[];
+      edges: string[];
+      moves: string[];
     };
   } | null;
   isDragging?: boolean;
@@ -222,8 +225,8 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
           {links.map((lk) => {
             const isActive = pathIndex.length > 0 &&
               pathIndex.some((index) => edgePaths[index]?.includes(lk.id));
-            const isPreview = Boolean(previewPath && previewPath.edges.includes(lk.id));
-            const isCancelled = Boolean(previewPath?.cancellationInfo?.cancelledEdges.includes(lk.id));
+            const isFinalResult = Boolean(previewPath && previewPath.finalResult.edges.includes(lk.id));
+            const isCancelledPart = Boolean(previewPath && previewPath.cancelledParts.edges.includes(lk.id));
             
             return (
               <Edge
@@ -235,8 +238,8 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
                 targetX={lk.targetX}
                 targetY={lk.targetY}
                 isActive={isActive}
-                isPreview={isPreview}
-                isCancelled={isCancelled}
+                isFinalResult={isFinalResult}
+                isCancelledPart={isCancelledPart}
                 edgeThickness={edgeThickness}
               />
             );
@@ -245,8 +248,8 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
           {nodes.map((nd) => {
             const isActive = pathIndex.length > 0 &&
               pathIndex.some((index) => nodePaths[index]?.includes(nd.id));
-            const isPreview = Boolean(previewPath && previewPath.nodes.includes(nd.id));
-            const isCancelled = Boolean(previewPath?.cancellationInfo?.cancelledNodes.includes(nd.id));
+            const isFinalResult = Boolean(previewPath && previewPath.finalResult.nodes.includes(nd.id));
+            const isCancelledPart = Boolean(previewPath && previewPath.cancelledParts.nodes.includes(nd.id));
             
             return (
               <Vertex
@@ -255,8 +258,8 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
                 x={nd.x}
                 y={nd.y}
                 isActive={isActive}
-                isPreview={isPreview}
-                isCancelled={isCancelled}
+                isFinalResult={isFinalResult}
+                isCancelledPart={isCancelledPart}
               />
             );
           })}

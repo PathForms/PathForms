@@ -70,12 +70,15 @@ const Interface = () => {
   const [dragFromIndex, setDragFromIndex] = useState<number>(-1);
   const [dragHoverIndex, setDragHoverIndex] = useState<number>(-1);
   const [previewPath, setPreviewPath] = useState<{
-    nodes: string[];
-    edges: string[];
-    moves: Direction[];
-    cancellationInfo?: {
-      cancelledEdges: string[];
-      cancelledNodes: string[];
+    finalResult: {
+      nodes: string[];
+      edges: string[];
+      moves: Direction[];
+    };
+    cancelledParts: {
+      nodes: string[];
+      edges: string[];
+      moves: Direction[];
     };
   } | null>(null);
 
@@ -393,7 +396,7 @@ const Interface = () => {
     setTargetSteps(0);
   };
 
-  // Calculate preview path for drag operation with cancellation highlighting
+  // Calculate preview path for drag operation with dual preview (final result + cancelled parts)
   const calculatePreviewPath = (fromIndex: number, toIndex: number) => {
     if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0 || 
         fromIndex >= moveRecords.length || toIndex >= moveRecords.length) {
@@ -405,19 +408,109 @@ const Interface = () => {
     const pathA = [...moveRecords[toIndex]];  // target path (path2)
     const pathB = [...moveRecords[fromIndex]]; // dragged path (path1)
     
-    // Pure concatenation without cancellation
-    const previewMoves = [...pathA, ...pathB];
+    // Calculate final result after cancellation
+    const finalMoves = doConcat(pathA, pathB);
+    const { newNodes: finalNodes, newEdges: finalEdges } = buildNodesEdgesFromMoves(finalMoves);
     
-    // Calculate which parts will be cancelled
-    const cancellationInfo = calculateCancellationInfo(pathA, pathB);
-    
-    const { newNodes, newEdges } = buildNodesEdgesFromMoves(previewMoves);
+    // Calculate cancelled parts
+    const cancelledParts = calculateCancelledParts(pathA, pathB);
     
     return {
-      nodes: newNodes,
-      edges: newEdges,
-      moves: previewMoves,
-      cancellationInfo: cancellationInfo
+      // Final result (normal preview)
+      finalResult: {
+        nodes: finalNodes,
+        edges: finalEdges,
+        moves: finalMoves
+      },
+      // Cancelled parts (dimmed preview)
+      cancelledParts: cancelledParts
+    };
+  };
+
+  // Calculate cancelled parts that will be removed during concatenation
+  const calculateCancelledParts = (pathA: Direction[], pathB: Direction[]): {
+    nodes: string[];
+    edges: string[];
+    moves: Direction[];
+  } => {
+    // Calculate the end position of pathA
+    let pathAEndNode = "0,0";
+    for (let i = 0; i < pathA.length; i++) {
+      const [x, y] = pathAEndNode.split(",").map(Number);
+      let next: [number, number] = [x, y];
+      switch (pathA[i]) {
+        case "up":
+          next = [x, y + 100.0 / 2 ** i];
+          break;
+        case "down":
+          next = [x, y - 100.0 / 2 ** i];
+          break;
+        case "left":
+          next = [x - 100.0 / 2 ** i, y];
+          break;
+        case "right":
+          next = [x + 100.0 / 2 ** i, y];
+          break;
+      }
+      pathAEndNode = `${next[0]},${next[1]}`;
+    }
+    
+    // Now simulate the concatenation and find what gets cancelled
+    const concatenated = [...pathA, ...pathB];
+    const finalResult = doConcat(pathA, pathB);
+    
+    // Find which parts of the concatenated path are not in the final result
+    // by building both paths and comparing their edges
+    const { newNodes: concatNodes, newEdges: concatEdges } = buildNodesEdgesFromMoves(concatenated);
+    const { newNodes: finalNodes, newEdges: finalEdges } = buildNodesEdgesFromMoves(finalResult);
+    
+    // Find edges that are in concatenated but not in final
+    const cancelledEdges = concatEdges.filter(edge => !finalEdges.includes(edge));
+    
+    // Find nodes that are in concatenated but not in final (excluding the start node)
+    const cancelledNodes = concatNodes.filter(node => 
+      node !== "0,0" && !finalNodes.includes(node)
+    );
+    
+    // For the moves, we need to find which moves from the concatenated path
+    // correspond to the cancelled edges
+    const cancelledMoves: Direction[] = [];
+    let currentPos = "0,0";
+    
+    for (let i = 0; i < concatenated.length; i++) {
+      const move = concatenated[i];
+      const [x, y] = currentPos.split(",").map(Number);
+      let next: [number, number] = [x, y];
+      
+      switch (move) {
+        case "up":
+          next = [x, y + 100.0 / 2 ** i];
+          break;
+        case "down":
+          next = [x, y - 100.0 / 2 ** i];
+          break;
+        case "left":
+          next = [x - 100.0 / 2 ** i, y];
+          break;
+        case "right":
+          next = [x + 100.0 / 2 ** i, y];
+          break;
+      }
+      
+      const nextPos = `${next[0]},${next[1]}`;
+      const edgeId = `${x},${y}->${next[0]},${next[1]}`;
+      
+      if (cancelledEdges.includes(edgeId)) {
+        cancelledMoves.push(move);
+      }
+      
+      currentPos = nextPos;
+    }
+    
+    return {
+      nodes: cancelledNodes,
+      edges: cancelledEdges,
+      moves: cancelledMoves
     };
   };
 
