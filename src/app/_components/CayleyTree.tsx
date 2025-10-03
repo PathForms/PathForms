@@ -73,6 +73,10 @@ interface CayleyTreeProps {
     nodes: string[];
     edges: string[];
     moves: string[];
+    cancellationInfo?: {
+      cancelledEdges: string[];
+      cancelledNodes: string[];
+    };
   } | null;
   isDragging?: boolean;
 }
@@ -219,6 +223,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
             const isActive = pathIndex.length > 0 &&
               pathIndex.some((index) => edgePaths[index]?.includes(lk.id));
             const isPreview = Boolean(previewPath && previewPath.edges.includes(lk.id));
+            const isCancelled = Boolean(previewPath?.cancellationInfo?.cancelledEdges.includes(lk.id));
             
             return (
               <Edge
@@ -231,6 +236,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
                 targetY={lk.targetY}
                 isActive={isActive}
                 isPreview={isPreview}
+                isCancelled={isCancelled}
                 edgeThickness={edgeThickness}
               />
             );
@@ -240,6 +246,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
             const isActive = pathIndex.length > 0 &&
               pathIndex.some((index) => nodePaths[index]?.includes(nd.id));
             const isPreview = Boolean(previewPath && previewPath.nodes.includes(nd.id));
+            const isCancelled = Boolean(previewPath?.cancellationInfo?.cancelledNodes.includes(nd.id));
             
             return (
               <Vertex
@@ -249,6 +256,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
                 y={nd.y}
                 isActive={isActive}
                 isPreview={isPreview}
+                isCancelled={isCancelled}
               />
             );
           })}

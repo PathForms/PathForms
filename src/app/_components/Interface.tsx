@@ -73,6 +73,10 @@ const Interface = () => {
     nodes: string[];
     edges: string[];
     moves: Direction[];
+    cancellationInfo?: {
+      cancelledEdges: string[];
+      cancelledNodes: string[];
+    };
   } | null>(null);
 
   //
@@ -389,7 +393,7 @@ const Interface = () => {
     setTargetSteps(0);
   };
 
-  // Calculate preview path for drag operation (without Nielsen cancellation)
+  // Calculate preview path for drag operation with cancellation highlighting
   const calculatePreviewPath = (fromIndex: number, toIndex: number) => {
     if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0 || 
         fromIndex >= moveRecords.length || toIndex >= moveRecords.length) {
@@ -398,19 +402,126 @@ const Interface = () => {
 
     // When dragging fromIndex to toIndex, we want to concatenate fromIndex to the end of toIndex
     // So it should be: toIndex + fromIndex (path2 + path1)
-    // But WITHOUT Nielsen cancellation - just pure concatenation
     const pathA = [...moveRecords[toIndex]];  // target path (path2)
     const pathB = [...moveRecords[fromIndex]]; // dragged path (path1)
     
     // Pure concatenation without cancellation
     const previewMoves = [...pathA, ...pathB];
     
+    // Calculate which parts will be cancelled
+    const cancellationInfo = calculateCancellationInfo(pathA, pathB);
+    
     const { newNodes, newEdges } = buildNodesEdgesFromMoves(previewMoves);
     
     return {
       nodes: newNodes,
       edges: newEdges,
-      moves: previewMoves
+      moves: previewMoves,
+      cancellationInfo: cancellationInfo
+    };
+  };
+
+  // Calculate which parts of the concatenated path will be cancelled
+  const calculateCancellationInfo = (pathA: Direction[], pathB: Direction[]): {
+    cancelledEdges: string[];
+    cancelledNodes: string[];
+  } => {
+    const concatenated = [...pathA, ...pathB];
+    const cancelledEdges: string[] = [];
+    const cancelledNodes: string[] = [];
+    
+    // Build nodes and edges for the concatenated path
+    let nodes = ["0,0"];
+    let edges: string[] = [];
+    
+    for (let i = 0; i < concatenated.length; i++) {
+      const dir = concatenated[i];
+      const [x, y] = nodes[nodes.length - 1].split(",").map(Number);
+      let next: [number, number] = [x, y];
+      
+      switch (dir) {
+        case "up":
+          next = [x, y + 100.0 / 2 ** (nodes.length - 1)];
+          break;
+        case "down":
+          next = [x, y - 100.0 / 2 ** (nodes.length - 1)];
+          break;
+        case "left":
+          next = [x - 100.0 / 2 ** (nodes.length - 1), y];
+          break;
+        case "right":
+          next = [x + 100.0 / 2 ** (nodes.length - 1), y];
+          break;
+      }
+      
+      const nextNode = `${next[0]},${next[1]}`;
+      const edgeId = `${x},${y}->${next[0]},${next[1]}`;
+      
+      nodes.push(nextNode);
+      edges.push(edgeId);
+    }
+    
+    // Now find which parts will be cancelled by applying cancellation step by step
+    let currentPath = [...concatenated];
+    let currentNodes = [...nodes];
+    let currentEdges = [...edges];
+    
+    let hasChanges = true;
+    while (hasChanges) {
+      hasChanges = false;
+      const newPath: Direction[] = [];
+      const newNodes: string[] = ["0,0"];
+      const newEdges: string[] = [];
+      
+      for (let i = 0; i < currentPath.length; i++) {
+        if (i < currentPath.length - 1) {
+          const current = currentPath[i];
+          const next = currentPath[i + 1];
+          
+          // Check if current and next are opposite moves
+          if (next === oppositeMoves[current]) {
+            // These two moves will be cancelled
+            // Mark the corresponding edge and node as cancelled
+            if (i < currentEdges.length) {
+              cancelledEdges.push(currentEdges[i]);
+            }
+            if (i + 1 < currentNodes.length) {
+              cancelledNodes.push(currentNodes[i + 1]);
+            }
+            
+            i++; // Skip the next move too
+            hasChanges = true;
+          } else {
+            newPath.push(current);
+            // Rebuild nodes and edges for the remaining path
+            if (i < currentEdges.length) {
+              newEdges.push(currentEdges[i]);
+            }
+            if (i + 1 < currentNodes.length) {
+              newNodes.push(currentNodes[i + 1]);
+            }
+          }
+        } else {
+          newPath.push(currentPath[i]);
+          if (i < currentEdges.length) {
+            newEdges.push(currentEdges[i]);
+          }
+          if (i + 1 < currentNodes.length) {
+            newNodes.push(currentNodes[i + 1]);
+          }
+        }
+      }
+      
+      if (hasChanges) {
+        currentPath = newPath;
+        currentNodes = newNodes;
+        currentEdges = newEdges;
+      }
+    }
+    
+    return {
+      cancelledEdges: [...new Set(cancelledEdges)], // Remove duplicates
+      cancelledNodes: [...new Set(cancelledNodes)]
     };
   };
 

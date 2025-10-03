@@ -9,9 +9,10 @@ interface VertexProps {
   isShined?: boolean;
   isActive?: boolean;
   isPreview?: boolean;
+  isCancelled?: boolean;
 }
 
-const Vertex: React.FC<VertexProps> = ({ id, x, y, isActive, isPreview = false }) => {
+const Vertex: React.FC<VertexProps> = ({ id, x, y, isActive, isPreview = false, isCancelled = false }) => {
   //color logic
   const isRoot = id === "0,0";
 
@@ -27,10 +28,22 @@ const Vertex: React.FC<VertexProps> = ({ id, x, y, isActive, isPreview = false }
     strokeW = 0.8;
   }
   if (isPreview) {
-    fillColor = "rgba(255, 255, 0, 0.8)"; // Yellow for preview
-    radius = 3;
-    stroke = "rgba(255, 255, 0, 1)";
-    strokeW = 1;
+    // Keep original colors and size but add thicker stroke for preview
+    stroke = "#ffffff"; // White stroke for preview
+    strokeW = 2; // Thicker stroke for preview
+    
+    if (isCancelled) {
+      // Dimmed effect for cancelled parts
+      if (!isRoot) {
+        fillColor = "rgba(244, 252, 0, 0.2)"; // Dimmed for cancelled
+      }
+    } else {
+      // Normal preview colors
+      if (!isRoot) {
+        fillColor = "rgba(244, 252, 0, 0.6)"; // Higher opacity for preview
+      }
+    }
+    // Don't change radius - keep original
   } else if (isActive) {
     fillColor = "#ffffff";
   }

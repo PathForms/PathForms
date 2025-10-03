@@ -10,6 +10,7 @@ interface EdgeProps {
   target: string;
   isActive?: boolean;
   isPreview?: boolean;
+  isCancelled?: boolean;
   edgeThickness?: number;
 }
 
@@ -22,6 +23,7 @@ const Edge: React.FC<EdgeProps> = ({
   targetY,
   isActive,
   isPreview = false,
+  isCancelled = false,
   edgeThickness,
 }) => {
   const [x, y] = source.split(",").map(Number);
@@ -60,13 +62,25 @@ const Edge: React.FC<EdgeProps> = ({
   let strokeDashoffset = "0";
   
   if (isPreview) {
-    strokeColor = "rgba(255, 255, 0, 0.8)"; // Yellow for preview
-    thickness += 1;
+    // Keep original colors but make thicker and dashed, with higher opacity
+    thickness += 2; // Make thicker for preview
     strokeDasharray = "8,4"; // Dashed line for preview
     strokeDashoffset = dashOffset.toString();
     
-    if ((x == x2 && y <= y2) || (x == x2 && y >= y2)) {
-      strokeColor = "rgba(0, 255, 255, 0.8)"; // Cyan for vertical preview
+    if (isCancelled) {
+      // Dimmed effect for cancelled parts
+      if ((x === x2 && y <= y2) || (x === x2 && y >= y2)) {
+        strokeColor = "rgba(0, 94, 255, 0.3)"; // Dimmed vertical
+      } else {
+        strokeColor = "rgba(255, 34, 5, 0.3)"; // Dimmed horizontal
+      }
+    } else {
+      // Normal preview colors
+      if ((x === x2 && y <= y2) || (x === x2 && y >= y2)) {
+        strokeColor = "rgba(0, 94, 255, 0.8)"; // Higher opacity for vertical preview
+      } else {
+        strokeColor = "rgba(255, 34, 5, 0.8)"; // Higher opacity for horizontal preview
+      }
     }
   } else if (isActive) {
     strokeColor = "rgb(251, 0, 71)";
