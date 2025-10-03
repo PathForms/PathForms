@@ -69,6 +69,19 @@ interface CayleyTreeProps {
   edgePaths: string[][];
   edgeThickness: number;
   shape: string;
+  previewPath?: {
+    finalResult: {
+      nodes: string[];
+      edges: string[];
+      moves: string[];
+    };
+    cancelledParts: {
+      nodes: string[];
+      edges: string[];
+      moves: string[];
+    };
+  } | null;
+  isDragging?: boolean;
 }
 
 const CayleyTree: React.FC<CayleyTreeProps> = ({
@@ -77,6 +90,8 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
   edgePaths,
   edgeThickness,
   shape,
+  previewPath,
+  isDragging = false,
 }) => {
   const [nodes, setNodes] = useState<LayoutNode[]>([]);
   const [links, setLinks] = useState<LayoutLink[]>([]);
@@ -207,35 +222,47 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
       >
         <g ref={gRef}>
           {/* Use a path element so that we can place a marker at the midpoint */}
-          {links.map((lk) => (
-            <Edge
-              key={lk.id}
-              source={lk.source}
-              target={lk.target}
-              sourceX={lk.sourceX}
-              sourceY={lk.sourceY}
-              targetX={lk.targetX}
-              targetY={lk.targetY}
-              isActive={
-                pathIndex.length > 0 &&
-                pathIndex.some((index) => edgePaths[index]?.includes(lk.id))
-              }
-              edgeThickness={edgeThickness}
-            />
-          ))}
+          {links.map((lk) => {
+            const isActive = pathIndex.length > 0 &&
+              pathIndex.some((index) => edgePaths[index]?.includes(lk.id));
+            const isFinalResult = Boolean(previewPath && previewPath.finalResult.edges.includes(lk.id));
+            const isCancelledPart = Boolean(previewPath && previewPath.cancelledParts.edges.includes(lk.id));
+            
+            return (
+              <Edge
+                key={lk.id}
+                source={lk.source}
+                target={lk.target}
+                sourceX={lk.sourceX}
+                sourceY={lk.sourceY}
+                targetX={lk.targetX}
+                targetY={lk.targetY}
+                isActive={isActive}
+                isFinalResult={isFinalResult}
+                isCancelledPart={isCancelledPart}
+                edgeThickness={edgeThickness}
+              />
+            );
+          })}
 
-          {nodes.map((nd) => (
-            <Vertex
-              key={nd.id}
-              id={nd.id}
-              x={nd.x}
-              y={nd.y}
-              isActive={
-                pathIndex.length > 0 &&
-                pathIndex.some((index) => nodePaths[index]?.includes(nd.id))
-              }
-            />
-          ))}
+          {nodes.map((nd) => {
+            const isActive = pathIndex.length > 0 &&
+              pathIndex.some((index) => nodePaths[index]?.includes(nd.id));
+            const isFinalResult = Boolean(previewPath && previewPath.finalResult.nodes.includes(nd.id));
+            const isCancelledPart = Boolean(previewPath && previewPath.cancelledParts.nodes.includes(nd.id));
+            
+            return (
+              <Vertex
+                key={nd.id}
+                id={nd.id}
+                x={nd.x}
+                y={nd.y}
+                isActive={isActive}
+                isFinalResult={isFinalResult}
+                isCancelledPart={isCancelledPart}
+              />
+            );
+          })}
         </g>
       </svg>
     </div>
