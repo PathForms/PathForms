@@ -2,7 +2,17 @@
 import React, { useEffect, useState } from "react";
 import "./components.module.css";
 import styles from "./components.module.css";
-import * as Tone from "tone";
+import {
+  initializeSynths,
+  initializeAudio,
+  playButtonSound,
+  playAddSound,
+  playClearSound,
+  playGenerateSound,
+  playPathSound,
+  setSoundEnabled,
+  cleanupSynths,
+} from "../utils/soundManager";
 
 type Direction = "up" | "down" | "left" | "right";
 const translation: Record<Direction, string> = {
@@ -12,14 +22,7 @@ const translation: Record<Direction, string> = {
   left: "b\u207B\u00B9",
 };
 
-// Sound related constants
-const NOTES = ["C4", "D4", "E4", "G4", "A4"]; // Pentatonic scale notes
-const DIRECTION_NOTES = {
-  up: "C5",
-  down: "G4",
-  left: "E4",
-  right: "A4",
-};
+// Sound related constants are now imported from soundManager
 
 interface ButtonBarProps {
   bases: Direction[][];
@@ -30,6 +33,8 @@ interface ButtonBarProps {
   clearbase: () => void;
   setGen: () => void;
   tutorialStep?: number;
+  //sound button:
+  soundEnabled: boolean;
 }
 
 const ButtonBar: React.FC<ButtonBarProps> = ({
@@ -41,130 +46,30 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
   clearbase,
   setGen,
   tutorialStep,
+  //sound button:
+  soundEnabled,
 }) => {
   //input config
   const [inputSize, setInputSize] = useState<string>("");
   const [currBase, setCurrBase] = useState<string>("");
-  const [isSoundInitialized, setSoundInitialized] = useState<boolean>(false);
-  const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
 
-  // Initialize Tone.js on first user interaction
+  // Initialize synths and set sound enabled state
   useEffect(() => {
-    // Create the sound objects but don't start audio context yet
-    setupSynths();
+    const initSound = async () => {
+      await initializeSynths();
+      setSoundEnabled(soundEnabled);
+    };
+    initSound();
+  }, [soundEnabled]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      cleanupSynths();
+    };
   }, []);
 
-  // Sound related functions
-  const setupSynths = () => {
-    // We'll set up our synths when needed
-  };
-
-  const initializeAudio = async () => {
-    if (!isSoundInitialized) {
-      await Tone.start();
-      setSoundInitialized(true);
-      console.log("Audio is ready");
-    }
-  };
-
-  const playButtonSound = () => {
-    if (!isSoundInitialized || !soundEnabled) return;
-
-    const synth = new Tone.Synth({
-      oscillator: {
-        type: "triangle",
-      },
-      envelope: {
-        attack: 0.005,
-        decay: 0.1,
-        sustain: 0.3,
-        release: 0.2,
-      },
-    }).toDestination();
-
-    synth.triggerAttackRelease("C5", "16n");
-  };
-
-  const playAddSound = () => {
-    if (!isSoundInitialized || !soundEnabled) return;
-
-    const synth = new Tone.Synth({
-      oscillator: {
-        type: "sine",
-      },
-      envelope: {
-        attack: 0.01,
-        decay: 0.1,
-        sustain: 0.5,
-        release: 0.4,
-      },
-    }).toDestination();
-
-    synth.triggerAttackRelease("E5", "16n");
-  };
-
-  const playClearSound = () => {
-    if (!isSoundInitialized || !soundEnabled) return;
-
-    const synth = new Tone.Synth({
-      oscillator: {
-        type: "square",
-      },
-      envelope: {
-        attack: 0.01,
-        decay: 0.2,
-        sustain: 0.2,
-        release: 0.3,
-      },
-    }).toDestination();
-
-    synth.triggerAttackRelease("A3", "8n");
-  };
-
-  const playGenerateSound = () => {
-    if (!isSoundInitialized || !soundEnabled) return;
-
-    // Create a polyphonic synth
-    const synth = new Tone.PolySynth(Tone.Synth).toDestination();
-
-    // Play a chord
-    synth.triggerAttackRelease(["C4", "E4", "G4"], "8n");
-
-    // Play an arpeggio after generating
-    setTimeout(() => {
-      const notes = ["C4", "E4", "G4", "C5"];
-      notes.forEach((note, i) => {
-        setTimeout(() => {
-          synth.triggerAttackRelease(note, "16n");
-        }, i * 100);
-      });
-    }, 200);
-  };
-
-  // Play a unique sound for each path generated
-  const playPathSound = (path: Direction[]) => {
-    if (!isSoundInitialized || path.length === 0 || !soundEnabled) return;
-
-    const synth = new Tone.Synth({
-      oscillator: {
-        type: "sine",
-      },
-      envelope: {
-        attack: 0.01,
-        decay: 0.1,
-        sustain: 0.3,
-        release: 0.4,
-      },
-    }).toDestination();
-
-    // Play notes sequentially based on the path
-    path.forEach((direction, i) => {
-      const note = DIRECTION_NOTES[direction] || "C4";
-      setTimeout(() => {
-        synth.triggerAttackRelease(note, "16n");
-      }, i * 150);
-    });
-  };
+  // Sound functions are now imported from soundManager
 
   // Function to handle input change
   const handleSizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -177,8 +82,10 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
   };
 
   const handlebaseClick = async () => {
+    //sound button:
+    if (soundEnabled) await playButtonSound();
     await initializeAudio();
-    playGenerateSound();
+    if (soundEnabled) await playGenerateSound();
 
     let inputNumber = 2; // Make sure to convert the input to a number
     if (inputSize != "") {
@@ -194,33 +101,40 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
     setTimeout(() => {
       bases.forEach((path, i) => {
         setTimeout(() => {
-          playPathSound(path);
+          if (soundEnabled) playPathSound(path);
         }, i * 300);
       });
     }, 500);
   };
 
   const handlebaseremove = async () => {
+    //sound button:
+    if (soundEnabled) await playButtonSound();
     await initializeAudio();
-    playClearSound();
+    if (soundEnabled) await playClearSound();
     clearbase();
   };
 
   // Function to handle the submit (not being used here, but left for context)
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
+    //sound button:
+    if (soundEnabled) await playButtonSound();
     event.preventDefault();
   };
 
   const handleAddBase = async () => {
+    //sound button:
+    if (soundEnabled) await playButtonSound();
     await initializeAudio();
-    playAddSound();
+    if (soundEnabled) await playAddSound();
     addbase(currBase);
   };
 
   // Function to be called when the button is clicked
   const handleClick = async () => {
+    //sound button:
+    if (soundEnabled) await playButtonSound();
     await initializeAudio();
-    playButtonSound();
 
     // Convert inputValue to a number and pass it to generate
     let inputNumber = 2; // Make sure to convert the input to a number
@@ -231,21 +145,23 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
       generate(inputNumber); // Pass the number to the generate function
       // Play generate sound after paths are generated
       setTimeout(() => {
-        playGenerateSound();
+        if (soundEnabled) playGenerateSound();
       }, 100);
     } else {
       generate(2); // Handle invalid number input
       // Play generate sound after paths are generated
       setTimeout(() => {
-        playGenerateSound();
+        if (soundEnabled) playGenerateSound();
       }, 100);
     }
   };
 
   // Function to be called when the button is clicked
   const handleClickRand = async () => {
+    //sound button:
+    if (soundEnabled) await playButtonSound();
     await initializeAudio();
-    playGenerateSound();
+    if (soundEnabled) await playGenerateSound();
 
     // Convert inputValue to a number and pass it to generate
     let inputNumber = 2; // Make sure to convert the input to a number
@@ -372,22 +288,6 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
           >
             Generate Paths
           </button>
-          <button
-            style={{
-              width: 140,
-              height: 28,
-              fontSize: 13,
-              backgroundColor: "transparent",
-              border: "2px solid rgb(13, 255, 0)",
-              color: "rgb(13, 255, 0)",
-              cursor: "pointer",
-              borderRadius: 4,
-              transition: "0.3s",
-            }}
-            onClick={() => setSoundEnabled(!soundEnabled)}
-          >
-            {soundEnabled ? "Sound On" : "Sound Off"}
-          </button>
         </div>
       </div>
 
@@ -427,7 +327,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
                 marginBottom: 2,
               }}
               onClick={() => {
-                if (isSoundInitialized) {
+                if (soundEnabled) {
                   playPathSound(path);
                 }
               }}
