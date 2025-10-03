@@ -11,6 +11,20 @@ const translation: Record<Direction, string> = {
   left: "b\u207B\u00B9",
 };
 
+// Color mapping to match CayleyTree colors
+const getDirectionColor = (direction: Direction): string => {
+  switch (direction) {
+    case "up":
+    case "down":
+      return "rgb(0, 140, 255)"; // Blue for a/a^-1
+    case "left":
+    case "right":
+      return "rgb(251, 0, 71)"; // Red for b/b^-1
+    default:
+      return "rgb(64, 73, 65)"; // Default color
+  }
+};
+
 interface PathlistProps {
   mode: string;
   nodePaths: string[][];
@@ -233,11 +247,19 @@ const Pathlist: React.FC<PathlistProps> = ({
                 {`[P${rowIndex + 1}]: `}{" "}
                 {path.length === 0
                   ? "1"
-                  : path
-                      .map(
-                        (node) => translation[node as keyof typeof translation]
-                      )
-                      .join(" ")}
+                  : path.map((node, nodeIndex) => {
+                      const direction = node as Direction;
+                      const letter = translation[direction];
+                      const color = getDirectionColor(direction);
+                      return (
+                        <React.Fragment key={nodeIndex}>
+                          {nodeIndex > 0 && <span style={{ color: "rgb(64, 73, 65)" }}> </span>}
+                          <span style={{ color: color }}>
+                            {letter}
+                          </span>
+                        </React.Fragment>
+                      );
+                    })}
               </p>
             );
           })
