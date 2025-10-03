@@ -205,6 +205,52 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
         height="100%"
         style={{ border: "none", display: "block" }}
       >
+        <defs>
+          {/* Default arrow for circle shape (active paths only) */}
+          <marker
+            id="arrow"
+            markerWidth="10"
+            markerHeight="7"
+            refX="9"
+            refY="3.5"
+            orient="auto"
+          >
+            <polygon
+              points="0 0, 10 3.5, 0 7"
+              fill="rgb(251, 0, 71)"
+            />
+          </marker>
+          {/* Left arrow for rectangle horizontal paths (active only) */}
+          <marker
+            id="arrow-left-mid-active"
+            markerWidth="8"
+            markerHeight="6"
+            refX="4"
+            refY="3"
+            orient="auto"
+            markerUnits="userSpaceOnUse"
+          >
+            <polygon
+              points="8 0, 0 3, 8 6"
+              fill="rgb(251, 0, 71)"
+            />
+          </marker>
+          {/* Up arrow for rectangle vertical paths (active only) */}
+          <marker
+            id="arrow-up-mid-active"
+            markerWidth="6"
+            markerHeight="8"
+            refX="3"
+            refY="4"
+            orient="auto"
+            markerUnits="userSpaceOnUse"
+          >
+            <polygon
+              points="0 8, 6 8, 3 0"
+              fill="rgb(0, 140, 255)"
+            />
+          </marker>
+        </defs>
         <g ref={gRef}>
           {/* Use a path element so that we can place a marker at the midpoint */}
           {links.map((lk) => (
@@ -221,6 +267,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
                 pathIndex.some((index) => edgePaths[index]?.includes(lk.id))
               }
               edgeThickness={edgeThickness}
+              shape={shape}
             />
           ))}
 
