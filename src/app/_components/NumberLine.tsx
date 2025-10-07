@@ -1,14 +1,21 @@
 "use client";
 import React, { useEffect, useRef } from "react";
 
+export interface Rank1Path {
+  exponent: number; // a^exponent (positive = right, negative = left)
+  color: string;
+}
+
 interface NumberLineProps {
   theme: "dark" | "light";
   currentPosition?: number;
+  paths?: Rank1Path[];
 }
 
 const NumberLine: React.FC<NumberLineProps> = ({ 
   theme, 
-  currentPosition = 0 
+  currentPosition = 0,
+  paths = []
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -113,6 +120,73 @@ const NumberLine: React.FC<NumberLineProps> = ({
       ctx.fillText(i.toString(), x, centerY + 18);
     }
 
+    // Draw paths stacked vertically above the number line
+    const pathVerticalSpacing = 60; // vertical spacing between paths
+    const pathStartY = centerY - 80; // start drawing paths above the number line
+    
+    paths.forEach((path, pathIndex) => {
+      const yOffset = pathStartY - (pathIndex * pathVerticalSpacing);
+      const startX = centerX; // always start from 0
+      const endX = centerX + path.exponent * tickSpacing;
+      
+      // Draw the line segment
+      ctx.strokeStyle = path.color;
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(startX, yOffset);
+      ctx.lineTo(endX, yOffset);
+      ctx.stroke();
+      
+      // Draw circles at start and end
+      ctx.fillStyle = path.color;
+      ctx.beginPath();
+      ctx.arc(startX, yOffset, 5, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(endX, yOffset, 5, 0, 2 * Math.PI);
+      ctx.fill();
+      
+      // Draw arrow heads along the path
+      const numArrows = Math.abs(path.exponent);
+      const direction = path.exponent > 0 ? 1 : -1;
+      
+      for (let i = 0; i < numArrows; i++) {
+        const arrowX = startX + (i + 0.5) * tickSpacing * direction;
+        const arrowHeadSize = 8;
+        
+        ctx.fillStyle = path.color;
+        ctx.strokeStyle = path.color;
+        ctx.lineWidth = 2;
+        
+        // Draw arrow pointing right (or left if negative)
+        ctx.beginPath();
+        if (direction > 0) {
+          // Right arrow
+          ctx.moveTo(arrowX + arrowHeadSize, yOffset);
+          ctx.lineTo(arrowX, yOffset - arrowHeadSize / 2);
+          ctx.lineTo(arrowX, yOffset + arrowHeadSize / 2);
+        } else {
+          // Left arrow
+          ctx.moveTo(arrowX - arrowHeadSize, yOffset);
+          ctx.lineTo(arrowX, yOffset - arrowHeadSize / 2);
+          ctx.lineTo(arrowX, yOffset + arrowHeadSize / 2);
+        }
+        ctx.closePath();
+        ctx.fill();
+      }
+      
+      // Draw path label (a^n notation)
+      ctx.fillStyle = path.color;
+      ctx.font = "bold 16px Arial";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      const label = path.exponent === 1 ? "a" : 
+                   path.exponent === -1 ? "a⁻¹" :
+                   path.exponent > 0 ? `a^${path.exponent}` :
+                   `a^${path.exponent}`;
+      ctx.fillText(label, Math.max(startX, endX) + 15, yOffset);
+    });
+
     // Highlight current position if provided
     if (currentPosition !== 0) {
       const posX = centerX + currentPosition * tickSpacing;
@@ -127,7 +201,7 @@ const NumberLine: React.FC<NumberLineProps> = ({
       }
     }
 
-  }, [theme, currentPosition]);
+  }, [theme, currentPosition, paths]);
 
   return (
     <div
