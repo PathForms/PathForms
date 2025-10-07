@@ -11,7 +11,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import ButtonBar from "../_components/ButtonBar";
-import CayleyTree from "../_components/CayleyTree";
+import NumberLine from "../_components/NumberLine";
 import Pathbar from "../_components/Pathbar";
 import Headbar from "../_components/Headbar";
 import Pathlist from "../_components/Pathlist";
@@ -91,6 +91,17 @@ const Rank1 = () => {
         setTheme(selectedTheme);
     };
 
+    // Handle edge thickness change
+    const handleEdgeThicknessChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setEdgeThickness(Number(e.target.value));
+    };
+
+    // Handle shape change (kept as function with no params to match Headbar interface)
+    const handleshape = () => {
+        // This function signature matches Headbar's expectation
+        // Shape changes are handled via the select element directly
+    };
+
   //
   //
   //
@@ -118,22 +129,17 @@ const Rank1 = () => {
             toggleSettings={toggleSettings}
             showSettings={showSettings}
             edgeThickness={edgeThickness}
-            //   handleEdgeThicknessChange={handleEdgeThicknessChange}
+            handleEdgeThicknessChange={handleEdgeThicknessChange}
             handleThemeChange={handleThemeChange}
             shape={shape}
-            //   handleshape={handleshape}
+            handleshape={handleshape}
             />
 
-            <ButtonBar
-            bases={bases}
-            //   generate={GeneratePath}
-            //   generate_rand={GenerateRandomPath}
-            //   setGen={setGen}
-            tutorialStep={tutorialStep}
-            //   generate_base={GenerateBasedPath}
-            //   addbase={Addbase}
-            //   clearbase={clearBase}
+            <NumberLine
+            theme={theme}
+            currentPosition={0}
             />
+
             <button
             className={styles.button}
             style={{
