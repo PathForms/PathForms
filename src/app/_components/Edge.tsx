@@ -12,6 +12,7 @@ interface EdgeProps {
   isFinalResult?: boolean;
   isCancelledPart?: boolean;
   edgeThickness?: number;
+  shape?: string;
 }
 
 const Edge: React.FC<EdgeProps> = ({
@@ -25,10 +26,35 @@ const Edge: React.FC<EdgeProps> = ({
   isFinalResult = false,
   isCancelledPart = false,
   edgeThickness,
+  shape,
 }) => {
   const [x, y] = source.split(",").map(Number);
   const [x2, y2] = target.split(",").map(Number);
   const [dashOffset, setDashOffset] = useState(0);
+
+  // Determine arrow marker for midpoint based on shape and direction
+  const getMidpointArrowMarker = () => {
+    // Only show arrows on active paths (user-generated paths)
+    if (!isActive) return undefined;
+    
+    if (shape === "rect") {
+      // For rectangle shape, determine direction
+      const dx = x2 - x;
+      const dy = y2 - y;
+      
+      // For horizontal movement, always use left arrow
+      // For vertical movement, always use up arrow
+      if (Math.abs(dx) > Math.abs(dy)) {
+        // Horizontal movement - use left arrow
+        return "url(#arrow-left-mid-active)";
+      } else {
+        // Vertical movement - use up arrow
+        return "url(#arrow-up-mid-active)";
+      }
+    }
+    // For circle shape, don't use midpoint arrows (use end arrows instead)
+    return undefined;
+  };
 
   // Animation effect for the dotted line when active
   useEffect(() => {
@@ -92,19 +118,43 @@ const Edge: React.FC<EdgeProps> = ({
     }
   }
 
+  // Calculate midpoint for arrow placement
+  const midX = (sourceX + targetX) / 2;
+  const midY = (sourceY + targetY) / 2;
+
   return (
-    <line
-      x1={sourceX}
-      y1={sourceY}
-      x2={targetX}
-      y2={targetY}
-      stroke={strokeColor}
-      strokeWidth={thickness}
-      strokeDasharray={strokeDasharray}
-      strokeDashoffset={strokeDashoffset}
-      markerEnd="url(#arrow)"
-      style={{ transition: isActive ? "none" : "all 0.3s ease" }}
-    />
+    <>
+      <line
+        x1={sourceX}
+        y1={sourceY}
+        x2={targetX}
+        y2={targetY}
+        stroke={strokeColor}
+        strokeWidth={thickness}
+        strokeDasharray={strokeDasharray}
+        strokeDashoffset={strokeDashoffset}
+        markerEnd={isActive ? (shape === "circle" ? "url(#arrow)" : undefined) : undefined}
+        style={{ transition: isActive ? "none" : "all 0.3s ease" }}
+      />
+      {/* Add arrow at midpoint for rectangle shape */}
+      {isActive && shape === "rect" && (
+        <>
+          {Math.abs(x2 - x) > Math.abs(y2 - y) ? (
+            // Horizontal movement - right arrow (triangle)
+            <polygon
+              points={`${midX-9} ${midY-6}, ${midX+9} ${midY}, ${midX-9} ${midY+6}`}
+              fill="rgb(255, 0, 0)"
+            />
+          ) : (
+            // Vertical movement - down arrow (triangle)
+            <polygon
+              points={`${midX-6} ${midY-9}, ${midX+6} ${midY-9}, ${midX} ${midY+9}`}
+              fill="rgb(255, 0, 0)"
+            />
+          )}
+        </>
+      )}
+    </>
   );
 };
 

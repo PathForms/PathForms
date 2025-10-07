@@ -34,6 +34,8 @@ const Interface = () => {
   const [nodePaths, setNodePaths] = useState<string[][]>([]);
   const [edgePaths, setEdgePaths] = useState<string[][]>([]);
   const [moveRecords, setMoveRecords] = useState<Direction[][]>([]);
+  //
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
 
   // states for bases;
   const [bases, setBases] = useState<Direction[][]>([]);
@@ -293,7 +295,7 @@ const Interface = () => {
         newRec[index1] = newMoves;
         return newRec;
       });
-      setUsedConcatSteps(prev => prev + 1);
+      setUsedConcatSteps((prev) => prev + 1);
 
       const { newNodes, newEdges } = buildNodesEdgesFromMoves(newMoves);
       setNodePaths((prev) => {
@@ -339,7 +341,7 @@ const Interface = () => {
         newRec[index1] = newMoves;
         return newRec;
       });
-      setUsedConcatSteps(prev => prev + 1);
+      setUsedConcatSteps((prev) => prev + 1);
 
       const { newNodes, newEdges } = buildNodesEdgesFromMoves(newMoves);
       setNodePaths((prev) => {
@@ -370,7 +372,7 @@ const Interface = () => {
       newRec[index1] = newMoves;
       return newRec;
     });
-    setUsedConcatSteps(prev => prev + 1);
+    setUsedConcatSteps((prev) => prev + 1);
     const { newNodes, newEdges } = buildNodesEdgesFromMoves(newMoves);
     setNodePaths((prev) => {
       const nextPaths = [...prev];
@@ -1610,6 +1612,7 @@ const Interface = () => {
     <>
       {showWelcome && (
         <WelcomeScreen
+          soundEnabled={soundEnabled}
           onStartTutorial={() => {
             setShowWelcome(false);
             setTutorialStep(1);
@@ -1633,6 +1636,9 @@ const Interface = () => {
           handleThemeChange={handleThemeChange}
           shape={shape}
           handleshape={handleshape}
+          //sound button:
+          soundEnabled={soundEnabled}
+          setSoundEnabled={setSoundEnabled}
         />
 
         <ButtonBar
@@ -1644,6 +1650,7 @@ const Interface = () => {
           generate_base={GenerateBasedPath}
           addbase={Addbase}
           clearbase={clearBase}
+          soundEnabled={soundEnabled}
         />
         <button
           className={styles.button}
@@ -1711,6 +1718,7 @@ const Interface = () => {
           movePaths={moveRecords}
           tutorialActive={tutorialActive}
           tutorialStep={tutorialStep}
+          soundEnabled={soundEnabled}
           onTutorialCheck={(nextStep) => {
             if (nextStep === 0) {
               setTutorialCompleted(true);
@@ -1734,6 +1742,7 @@ const Interface = () => {
           invert={invertPath}
         /> */}
         <Tutorial
+          soundEnabled={soundEnabled}
           step={tutorialStep}
           isActive={tutorialActive}
           isCompleted={tutorialCompleted}
