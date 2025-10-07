@@ -10,14 +10,115 @@ interface NumberLineProps {
   theme: "dark" | "light";
   currentPosition?: number;
   paths?: Rank1Path[];
+  onPathInvert?: (index: number) => void;
+  onPathConcatenate?: (draggedIndex: number, targetIndex: number) => void;
 }
 
 const NumberLine: React.FC<NumberLineProps> = ({ 
   theme, 
   currentPosition = 0,
-  paths = []
+  paths = [],
+  onPathInvert,
+  onPathConcatenate
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [draggedPathIndex, setDraggedPathIndex] = React.useState<number | null>(null);
+  const [hoveredPathIndex, setHoveredPathIndex] = React.useState<number | null>(null);
+  const [mousePosition, setMousePosition] = React.useState<{ x: number; y: number } | null>(null);
+
+  // Helper function to get path index at mouse position
+  const getPathAtPosition = (mouseX: number, mouseY: number): number | null => {
+    const canvas = canvasRef.current;
+    if (!canvas) return null;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = mouseX - rect.left;
+    const y = mouseY - rect.top;
+    
+    const width = rect.width;
+    const height = rect.height;
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const tickSpacing = 60;
+    const pathVerticalSpacing = 60;
+    const pathStartY = centerY - 80;
+
+    // Check each path
+    for (let i = 0; i < paths.length; i++) {
+      const path = paths[i];
+      const yOffset = pathStartY - (i * pathVerticalSpacing);
+      const startX = centerX;
+      const endX = centerX + path.exponent * tickSpacing;
+      
+      const minX = Math.min(startX, endX);
+      const maxX = Math.max(startX, endX);
+      
+      // Check if mouse is within the path's bounding box (with some tolerance)
+      if (x >= minX - 10 && x <= maxX + 10 && 
+          y >= yOffset - 15 && y <= yOffset + 15) {
+        return i;
+      }
+    }
+    
+    return null;
+  };
+
+  // Handle double-click to invert
+  const handleDoubleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const pathIndex = getPathAtPosition(e.clientX, e.clientY);
+    if (pathIndex !== null && onPathInvert) {
+      onPathInvert(pathIndex);
+    }
+  };
+
+  // Handle mouse down to start drag
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const pathIndex = getPathAtPosition(e.clientX, e.clientY);
+    if (pathIndex !== null) {
+      setDraggedPathIndex(pathIndex);
+    }
+  };
+
+  // Handle mouse move to track hover and drag position
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    // Update mouse position for drag rendering
+    setMousePosition({ x, y });
+    
+    const pathIndex = getPathAtPosition(e.clientX, e.clientY);
+    
+    // Only update hover if not dragging
+    if (draggedPathIndex === null) {
+      setHoveredPathIndex(pathIndex);
+    }
+    
+    // Update cursor style
+    if (canvas) {
+      if (draggedPathIndex !== null) {
+        canvas.style.cursor = 'grabbing';
+      } else {
+        canvas.style.cursor = pathIndex !== null ? 'grab' : 'default';
+      }
+    }
+  };
+
+  // Handle mouse up to complete drag
+  const handleMouseUp = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (draggedPathIndex !== null) {
+      const targetPathIndex = getPathAtPosition(e.clientX, e.clientY);
+      if (targetPathIndex !== null && targetPathIndex !== draggedPathIndex && onPathConcatenate) {
+        onPathConcatenate(draggedPathIndex, targetPathIndex);
+      }
+      setDraggedPathIndex(null);
+      setMousePosition(null);
+    }
+  };
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -129,21 +230,37 @@ const NumberLine: React.FC<NumberLineProps> = ({
       const startX = centerX; // always start from 0
       const endX = centerX + path.exponent * tickSpacing;
       
+      const isHovered = hoveredPathIndex === pathIndex;
+      const isDragged = draggedPathIndex === pathIndex;
+      
+      // Draw highlight background if hovered or dragged
+      if (isHovered || isDragged) {
+        const minX = Math.min(startX, endX);
+        const maxX = Math.max(startX, endX);
+        ctx.fillStyle = isDragged ? 
+          'rgba(255, 255, 255, 0.2)' : 
+          'rgba(255, 255, 255, 0.1)';
+        ctx.fillRect(minX - 15, yOffset - 20, maxX - minX + 30, 40);
+      }
+      
       // Draw the line segment
       ctx.strokeStyle = path.color;
-      ctx.lineWidth = 4;
+      ctx.lineWidth = isDragged ? 6 : isHovered ? 5 : 4;
+      ctx.globalAlpha = isDragged ? 0.7 : 1;
       ctx.beginPath();
       ctx.moveTo(startX, yOffset);
       ctx.lineTo(endX, yOffset);
       ctx.stroke();
+      ctx.globalAlpha = 1;
       
       // Draw circles at start and end
       ctx.fillStyle = path.color;
+      const circleRadius = isDragged ? 7 : isHovered ? 6 : 5;
       ctx.beginPath();
-      ctx.arc(startX, yOffset, 5, 0, 2 * Math.PI);
+      ctx.arc(startX, yOffset, circleRadius, 0, 2 * Math.PI);
       ctx.fill();
       ctx.beginPath();
-      ctx.arc(endX, yOffset, 5, 0, 2 * Math.PI);
+      ctx.arc(endX, yOffset, circleRadius, 0, 2 * Math.PI);
       ctx.fill();
       
       // Draw arrow heads along the path
@@ -187,6 +304,81 @@ const NumberLine: React.FC<NumberLineProps> = ({
       ctx.fillText(label, Math.max(startX, endX) + 15, yOffset);
     });
 
+    // Draw dragged path following mouse cursor
+    if (draggedPathIndex !== null && mousePosition && paths[draggedPathIndex]) {
+      const draggedPath = paths[draggedPathIndex];
+      const dragX = mousePosition.x;
+      const dragY = mousePosition.y;
+      
+      // Calculate path dimensions
+      const pathLength = Math.abs(draggedPath.exponent) * tickSpacing;
+      const dragStartX = dragX - pathLength / 2;
+      const dragEndX = dragX + pathLength / 2;
+      
+      // Draw semi-transparent background for dragged path
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+      ctx.fillRect(dragStartX - 15, dragY - 25, pathLength + 30, 50);
+      
+      // Draw the dragged path with enhanced visibility
+      ctx.strokeStyle = draggedPath.color;
+      ctx.lineWidth = 5;
+      ctx.globalAlpha = 0.9;
+      ctx.shadowColor = draggedPath.color;
+      ctx.shadowBlur = 15;
+      ctx.beginPath();
+      ctx.moveTo(dragStartX, dragY);
+      ctx.lineTo(dragEndX, dragY);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      ctx.globalAlpha = 1;
+      
+      // Draw circles at start and end
+      ctx.fillStyle = draggedPath.color;
+      ctx.beginPath();
+      ctx.arc(dragStartX, dragY, 6, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(dragEndX, dragY, 6, 0, 2 * Math.PI);
+      ctx.fill();
+      
+      // Draw arrow heads along the dragged path
+      const numArrows = Math.abs(draggedPath.exponent);
+      const direction = draggedPath.exponent > 0 ? 1 : -1;
+      
+      for (let i = 0; i < numArrows; i++) {
+        const arrowX = dragStartX + (i + 0.5) * tickSpacing * direction;
+        const arrowHeadSize = 10;
+        
+        ctx.fillStyle = draggedPath.color;
+        ctx.strokeStyle = draggedPath.color;
+        ctx.lineWidth = 2;
+        
+        ctx.beginPath();
+        if (direction > 0) {
+          ctx.moveTo(arrowX + arrowHeadSize, dragY);
+          ctx.lineTo(arrowX, dragY - arrowHeadSize / 2);
+          ctx.lineTo(arrowX, dragY + arrowHeadSize / 2);
+        } else {
+          ctx.moveTo(arrowX - arrowHeadSize, dragY);
+          ctx.lineTo(arrowX, dragY - arrowHeadSize / 2);
+          ctx.lineTo(arrowX, dragY + arrowHeadSize / 2);
+        }
+        ctx.closePath();
+        ctx.fill();
+      }
+      
+      // Draw path label
+      ctx.fillStyle = draggedPath.color;
+      ctx.font = "bold 16px Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      const dragLabel = draggedPath.exponent === 1 ? "a" : 
+                        draggedPath.exponent === -1 ? "a⁻¹" :
+                        draggedPath.exponent > 0 ? `a^${draggedPath.exponent}` :
+                        `a^${draggedPath.exponent}`;
+      ctx.fillText(dragLabel, dragX, dragY + 15);
+    }
+
     // Highlight current position if provided
     if (currentPosition !== 0) {
       const posX = centerX + currentPosition * tickSpacing;
@@ -201,7 +393,7 @@ const NumberLine: React.FC<NumberLineProps> = ({
       }
     }
 
-  }, [theme, currentPosition, paths]);
+  }, [theme, currentPosition, paths, hoveredPathIndex, draggedPathIndex, mousePosition]);
 
   return (
     <div
@@ -216,11 +408,21 @@ const NumberLine: React.FC<NumberLineProps> = ({
     >
       <canvas
         ref={canvasRef}
+        onDoubleClick={handleDoubleClick}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={() => {
+          setHoveredPathIndex(null);
+          setDraggedPathIndex(null);
+          setMousePosition(null);
+        }}
         style={{
           width: "100%",
           height: "100%",
           maxWidth: "1400px",
           maxHeight: "500px",
+          cursor: "default",
         }}
       />
     </div>

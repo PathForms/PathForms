@@ -177,6 +177,42 @@ const Rank1 = () => {
         // Not used in Rank 1
     };
 
+    // Handle path inversion (double-click)
+    const handlePathInvert = (index: number) => {
+        setRank1Paths(prevPaths => {
+            const newPaths = [...prevPaths];
+            if (newPaths[index]) {
+                // Invert the exponent: a^4 becomes a^-4
+                newPaths[index] = {
+                    ...newPaths[index],
+                    exponent: -newPaths[index].exponent
+                };
+            }
+            return newPaths;
+        });
+    };
+
+    // Handle path concatenation (drag and drop)
+    const handlePathConcatenate = (draggedIndex: number, targetIndex: number) => {
+        setRank1Paths(prevPaths => {
+            const newPaths = [...prevPaths];
+            if (newPaths[draggedIndex] && newPaths[targetIndex]) {
+                // Concatenate: a^m * a^n = a^(m+n)
+                const draggedExponent = newPaths[draggedIndex].exponent;
+                newPaths[targetIndex] = {
+                    ...newPaths[targetIndex],
+                    exponent: newPaths[targetIndex].exponent + draggedExponent
+                };
+                
+                // If result is 0, set it to 1 to avoid invisible paths
+                if (newPaths[targetIndex].exponent === 0) {
+                    newPaths[targetIndex].exponent = 1;
+                }
+            }
+            return newPaths;
+        });
+    };
+
   //
   //
   //
@@ -225,6 +261,8 @@ const Rank1 = () => {
             theme={theme}
             currentPosition={0}
             paths={rank1Paths}
+            onPathInvert={handlePathInvert}
+            onPathConcatenate={handlePathConcatenate}
             />
 
             <button
