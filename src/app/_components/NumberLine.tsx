@@ -47,6 +47,17 @@ const NumberLine: React.FC<NumberLineProps> = ({
     for (let i = 0; i < paths.length; i++) {
       const path = paths[i];
       const yOffset = pathStartY - (i * pathVerticalSpacing);
+      
+      // Special handling for a^0 (identity element) - check if near the dot
+      if (path.exponent === 0) {
+        const dotRadius = 15; // Hit detection radius
+        const distance = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - yOffset, 2));
+        if (distance <= dotRadius) {
+          return i;
+        }
+        continue;
+      }
+      
       const startX = centerX;
       const endX = centerX + path.exponent * tickSpacing;
       
@@ -233,6 +244,40 @@ const NumberLine: React.FC<NumberLineProps> = ({
       const isHovered = hoveredPathIndex === pathIndex;
       const isDragged = draggedPathIndex === pathIndex;
       
+      // Special handling for a^0 (identity element) - render as a dot
+      if (path.exponent === 0) {
+        // Draw highlight background if hovered or dragged
+        if (isHovered || isDragged) {
+          ctx.fillStyle = isDragged ? 
+            'rgba(255, 255, 255, 0.2)' : 
+            'rgba(255, 255, 255, 0.1)';
+          ctx.fillRect(startX - 20, yOffset - 20, 40, 40);
+        }
+        
+        // Draw a single prominent dot at the origin
+        ctx.fillStyle = path.color;
+        const dotRadius = isDragged ? 10 : isHovered ? 9 : 8;
+        ctx.beginPath();
+        ctx.arc(startX, yOffset, dotRadius, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // Add a subtle glow effect
+        ctx.strokeStyle = path.color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(startX, yOffset, dotRadius + 3, 0, 2 * Math.PI);
+        ctx.stroke();
+        
+        // Draw label
+        ctx.fillStyle = path.color;
+        ctx.font = "bold 16px Arial";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.fillText("a⁰", startX + 15, yOffset);
+        
+        return; // Skip the rest of the rendering for this path
+      }
+      
       // Draw highlight background if hovered or dragged
       if (isHovered || isDragged) {
         const minX = Math.min(startX, endX);
@@ -263,17 +308,17 @@ const NumberLine: React.FC<NumberLineProps> = ({
       ctx.arc(endX, yOffset, circleRadius, 0, 2 * Math.PI);
       ctx.fill();
       
-      // Draw arrow heads along the path
+      // Draw arrow heads along the path (larger and more visible)
       const numArrows = Math.abs(path.exponent);
       const direction = path.exponent > 0 ? 1 : -1;
       
       for (let i = 0; i < numArrows; i++) {
         const arrowX = startX + (i + 0.5) * tickSpacing * direction;
-        const arrowHeadSize = 8;
+        const arrowHeadSize = 12; // Increased from 8
         
         ctx.fillStyle = path.color;
         ctx.strokeStyle = path.color;
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 2.5; // Increased from 2
         
         // Draw arrow pointing right (or left if negative)
         ctx.beginPath();
@@ -310,73 +355,107 @@ const NumberLine: React.FC<NumberLineProps> = ({
       const dragX = mousePosition.x;
       const dragY = mousePosition.y;
       
-      // Calculate path dimensions
-      const pathLength = Math.abs(draggedPath.exponent) * tickSpacing;
-      const dragStartX = dragX - pathLength / 2;
-      const dragEndX = dragX + pathLength / 2;
-      
-      // Draw semi-transparent background for dragged path
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-      ctx.fillRect(dragStartX - 15, dragY - 25, pathLength + 30, 50);
-      
-      // Draw the dragged path with enhanced visibility
-      ctx.strokeStyle = draggedPath.color;
-      ctx.lineWidth = 5;
-      ctx.globalAlpha = 0.9;
-      ctx.shadowColor = draggedPath.color;
-      ctx.shadowBlur = 15;
-      ctx.beginPath();
-      ctx.moveTo(dragStartX, dragY);
-      ctx.lineTo(dragEndX, dragY);
-      ctx.stroke();
-      ctx.shadowBlur = 0;
-      ctx.globalAlpha = 1;
-      
-      // Draw circles at start and end
-      ctx.fillStyle = draggedPath.color;
-      ctx.beginPath();
-      ctx.arc(dragStartX, dragY, 6, 0, 2 * Math.PI);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(dragEndX, dragY, 6, 0, 2 * Math.PI);
-      ctx.fill();
-      
-      // Draw arrow heads along the dragged path
-      const numArrows = Math.abs(draggedPath.exponent);
-      const direction = draggedPath.exponent > 0 ? 1 : -1;
-      
-      for (let i = 0; i < numArrows; i++) {
-        const arrowX = dragStartX + (i + 0.5) * tickSpacing * direction;
-        const arrowHeadSize = 10;
+      // Special handling for a^0 (identity element) when dragging
+      if (draggedPath.exponent === 0) {
+        // Draw semi-transparent background
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        ctx.fillRect(dragX - 25, dragY - 25, 50, 50);
         
+        // Draw a prominent dot
         ctx.fillStyle = draggedPath.color;
+        ctx.globalAlpha = 0.9;
+        ctx.shadowColor = draggedPath.color;
+        ctx.shadowBlur = 15;
+        ctx.beginPath();
+        ctx.arc(dragX, dragY, 10, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // Add glow effect
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = 1;
         ctx.strokeStyle = draggedPath.color;
         ctx.lineWidth = 2;
-        
         ctx.beginPath();
-        if (direction > 0) {
-          ctx.moveTo(arrowX + arrowHeadSize, dragY);
-          ctx.lineTo(arrowX, dragY - arrowHeadSize / 2);
-          ctx.lineTo(arrowX, dragY + arrowHeadSize / 2);
-        } else {
-          ctx.moveTo(arrowX - arrowHeadSize, dragY);
-          ctx.lineTo(arrowX, dragY - arrowHeadSize / 2);
-          ctx.lineTo(arrowX, dragY + arrowHeadSize / 2);
-        }
-        ctx.closePath();
+        ctx.arc(dragX, dragY, 13, 0, 2 * Math.PI);
+        ctx.stroke();
+        
+        // Draw label
+        ctx.fillStyle = draggedPath.color;
+        ctx.font = "bold 16px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
+        ctx.fillText("a⁰", dragX, dragY + 20);
+        
+      } else {
+        // Regular path rendering
+        // Calculate path dimensions
+        const pathLength = Math.abs(draggedPath.exponent) * tickSpacing;
+        const dragStartX = dragX - pathLength / 2;
+        const dragEndX = dragX + pathLength / 2;
+        
+        // Draw semi-transparent background for dragged path
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        ctx.fillRect(dragStartX - 15, dragY - 25, pathLength + 30, 50);
+        
+        // Draw the dragged path with enhanced visibility
+        ctx.strokeStyle = draggedPath.color;
+        ctx.lineWidth = 5;
+        ctx.globalAlpha = 0.9;
+        ctx.shadowColor = draggedPath.color;
+        ctx.shadowBlur = 15;
+        ctx.beginPath();
+        ctx.moveTo(dragStartX, dragY);
+        ctx.lineTo(dragEndX, dragY);
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = 1;
+        
+        // Draw circles at start and end
+        ctx.fillStyle = draggedPath.color;
+        ctx.beginPath();
+        ctx.arc(dragStartX, dragY, 6, 0, 2 * Math.PI);
         ctx.fill();
+        ctx.beginPath();
+        ctx.arc(dragEndX, dragY, 6, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // Draw arrow heads along the dragged path (larger and more visible)
+        const numArrows = Math.abs(draggedPath.exponent);
+        const direction = draggedPath.exponent > 0 ? 1 : -1;
+        
+        for (let i = 0; i < numArrows; i++) {
+          const arrowX = dragStartX + (i + 0.5) * tickSpacing * direction;
+          const arrowHeadSize = 14; // Increased from 10
+          
+          ctx.fillStyle = draggedPath.color;
+          ctx.strokeStyle = draggedPath.color;
+          ctx.lineWidth = 2.5; // Increased from 2
+          
+          ctx.beginPath();
+          if (direction > 0) {
+            ctx.moveTo(arrowX + arrowHeadSize, dragY);
+            ctx.lineTo(arrowX, dragY - arrowHeadSize / 2);
+            ctx.lineTo(arrowX, dragY + arrowHeadSize / 2);
+          } else {
+            ctx.moveTo(arrowX - arrowHeadSize, dragY);
+            ctx.lineTo(arrowX, dragY - arrowHeadSize / 2);
+            ctx.lineTo(arrowX, dragY + arrowHeadSize / 2);
+          }
+          ctx.closePath();
+          ctx.fill();
+        }
+        
+        // Draw path label
+        ctx.fillStyle = draggedPath.color;
+        ctx.font = "bold 16px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
+        const dragLabel = draggedPath.exponent === 1 ? "a" : 
+                          draggedPath.exponent === -1 ? "a⁻¹" :
+                          draggedPath.exponent > 0 ? `a^${draggedPath.exponent}` :
+                          `a^${draggedPath.exponent}`;
+        ctx.fillText(dragLabel, dragX, dragY + 15);
       }
-      
-      // Draw path label
-      ctx.fillStyle = draggedPath.color;
-      ctx.font = "bold 16px Arial";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "top";
-      const dragLabel = draggedPath.exponent === 1 ? "a" : 
-                        draggedPath.exponent === -1 ? "a⁻¹" :
-                        draggedPath.exponent > 0 ? `a^${draggedPath.exponent}` :
-                        `a^${draggedPath.exponent}`;
-      ctx.fillText(dragLabel, dragX, dragY + 15);
     }
 
     // Highlight current position if provided

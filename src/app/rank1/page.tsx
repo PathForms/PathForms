@@ -204,10 +204,8 @@ const Rank1 = () => {
                     exponent: newPaths[targetIndex].exponent + draggedExponent
                 };
                 
-                // If result is 0, set it to 1 to avoid invisible paths
-                if (newPaths[targetIndex].exponent === 0) {
-                    newPaths[targetIndex].exponent = 1;
-                }
+                // Keep result as 0 to represent identity element (a^0 = 1)
+                // This will be rendered as a dot instead of a line
             }
             return newPaths;
         });
