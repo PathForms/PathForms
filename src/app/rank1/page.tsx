@@ -11,7 +11,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import ButtonBar from "../_components/ButtonBar";
-import NumberLine from "../_components/NumberLine";
+import NumberLine, { Rank1Path } from "../_components/NumberLine";
 import Pathbar from "../_components/Pathbar";
 import Headbar from "../_components/Headbar";
 import Pathlist from "../_components/Pathlist";
@@ -42,6 +42,9 @@ const Rank1 = () => {
     const [nodePaths, setNodePaths] = useState<string[][]>([]);
     const [edgePaths, setEdgePaths] = useState<string[][]>([]);
     const [moveRecords, setMoveRecords] = useState<Direction[][]>([]);
+
+    // State for Rank 1 paths
+    const [rank1Paths, setRank1Paths] = useState<Rank1Path[]>([]);
 
     // states for bases;
     const [bases, setBases] = useState<Direction[][]>([]);
@@ -102,6 +105,112 @@ const Rank1 = () => {
         // Shape changes are handled via the select element directly
     };
 
+    // Generate random paths for Rank 1
+    const GenerateRandomPath = (n: number) => {
+        if (tutorialActive) {
+            alert("You cannot generate paths with random bases right now!");
+            return;
+        }
+        
+        // Reset paths
+        setRank1Paths([]);
+        setOperationMode("normal");
+        
+        // Ensure we have at least 2 paths
+        if (n < 2) {
+            n = 2;
+        }
+        
+        // Generate n random paths with different colors
+        const colors = [
+            "#FF5733", // Red-Orange
+            "#33FF57", // Green
+            "#3357FF", // Blue
+            "#FF33F5", // Pink
+            "#F5FF33", // Yellow
+            "#33FFF5", // Cyan
+            "#FF8C33", // Orange
+            "#8C33FF", // Purple
+            "#33FF8C", // Mint
+            "#FF3333", // Red
+        ];
+        
+        const newPaths: Rank1Path[] = [];
+        
+        for (let i = 0; i < n; i++) {
+            // Generate random exponent between -10 and 10 (excluding 0)
+            let exponent = Math.floor(Math.random() * 21) - 10;
+            if (exponent === 0) {
+                exponent = 1; // Default to 1 if we get 0
+            }
+            
+            // Assign color from palette (cycle through if n > colors.length)
+            const color = colors[i % colors.length];
+            
+            newPaths.push({
+                exponent,
+                color
+            });
+        }
+        
+        setRank1Paths(newPaths);
+    };
+
+    // Dummy functions for ButtonBar compatibility
+    const GeneratePath = (size: number) => {
+        // Not used in Rank 1
+    };
+
+    const GenerateBasedPath = (size: number, b: Direction[][]) => {
+        // Not used in Rank 1
+    };
+
+    const Addbase = (input: string) => {
+        // Not used in Rank 1
+    };
+
+    const clearBase = () => {
+        // Not used in Rank 1
+    };
+
+    const setGen = () => {
+        // Not used in Rank 1
+    };
+
+    // Handle path inversion (double-click)
+    const handlePathInvert = (index: number) => {
+        setRank1Paths(prevPaths => {
+            const newPaths = [...prevPaths];
+            if (newPaths[index]) {
+                // Invert the exponent: a^4 becomes a^-4
+                newPaths[index] = {
+                    ...newPaths[index],
+                    exponent: -newPaths[index].exponent
+                };
+            }
+            return newPaths;
+        });
+    };
+
+    // Handle path concatenation (drag and drop)
+    const handlePathConcatenate = (draggedIndex: number, targetIndex: number) => {
+        setRank1Paths(prevPaths => {
+            const newPaths = [...prevPaths];
+            if (newPaths[draggedIndex] && newPaths[targetIndex]) {
+                // Concatenate: a^m * a^n = a^(m+n)
+                const draggedExponent = newPaths[draggedIndex].exponent;
+                newPaths[targetIndex] = {
+                    ...newPaths[targetIndex],
+                    exponent: newPaths[targetIndex].exponent + draggedExponent
+                };
+                
+                // Keep result as 0 to represent identity element (a^0 = 1)
+                // This will be rendered as a dot instead of a line
+            }
+            return newPaths;
+        });
+    };
+
   //
   //
   //
@@ -135,9 +244,23 @@ const Rank1 = () => {
             handleshape={handleshape}
             />
 
+            <ButtonBar
+            bases={bases}
+            generate={GeneratePath}
+            generate_rand={GenerateRandomPath}
+            setGen={setGen}
+            tutorialStep={tutorialStep}
+            generate_base={GenerateBasedPath}
+            addbase={Addbase}
+            clearbase={clearBase}
+            />
+
             <NumberLine
             theme={theme}
             currentPosition={0}
+            paths={rank1Paths}
+            onPathInvert={handlePathInvert}
+            onPathConcatenate={handlePathConcatenate}
             />
 
             <button
@@ -158,7 +281,7 @@ const Rank1 = () => {
             Go to Rank 2
             </button>
         
-            <Steps optimalSteps={targetSteps} usedSteps={usedConcatSteps} />
+            {/* <Steps optimalSteps={targetSteps} usedSteps={usedConcatSteps} /> */}
         </div>
         </>
     );
