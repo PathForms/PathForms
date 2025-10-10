@@ -224,15 +224,15 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
           {/* Default arrow for circle shape (active paths only) */}
           <marker
             id="arrow"
-            markerWidth="10"
-            markerHeight="7"
-            refX="9"
-            refY="3.5"
+            markerWidth="6"
+            markerHeight="4"
+            refX="5"
+            refY="2"
             orient="auto"
           >
             <polygon
-              points="0 0, 10 3.5, 0 7"
-              fill="rgb(251, 0, 71)"
+              points="0 0, 6 2, 0 4"
+              fill="rgb(0, 255, 0)"
             />
           </marker>
           {/* Left arrow for rectangle horizontal paths (active only) */}
@@ -247,7 +247,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
           >
             <polygon
               points="8 0, 0 3, 8 6"
-              fill="rgb(251, 0, 71)"
+              fill="rgb(0, 255, 0)"
             />
           </marker>
           {/* Up arrow for rectangle vertical paths (active only) */}
@@ -262,7 +262,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
           >
             <polygon
               points="0 8, 6 8, 3 0"
-              fill="rgb(0, 140, 255)"
+              fill="rgb(0, 255, 0)"
             />
           </marker>
         </defs>

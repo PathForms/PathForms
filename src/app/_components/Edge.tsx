@@ -133,25 +133,63 @@ const Edge: React.FC<EdgeProps> = ({
         strokeWidth={thickness}
         strokeDasharray={strokeDasharray}
         strokeDashoffset={strokeDashoffset}
-        markerEnd={isActive ? (shape === "circle" ? "url(#arrow)" : undefined) : undefined}
+        markerEnd={undefined}
         style={{ transition: isActive ? "none" : "all 0.3s ease" }}
       />
-      {/* Add arrow at midpoint for rectangle shape */}
-      {isActive && shape === "rect" && (
+      {/* Add arrow at midpoint */}
+      {isActive && (
         <>
-          {Math.abs(x2 - x) > Math.abs(y2 - y) ? (
-            // Horizontal movement - right arrow (triangle)
-            <polygon
-              points={`${midX-9} ${midY-6}, ${midX+9} ${midY}, ${midX-9} ${midY+6}`}
-              fill="rgb(255, 0, 0)"
-            />
-          ) : (
-            // Vertical movement - down arrow (triangle)
-            <polygon
-              points={`${midX-6} ${midY-9}, ${midX+6} ${midY-9}, ${midX} ${midY+9}`}
-              fill="rgb(255, 0, 0)"
-            />
-          )}
+          {shape === "rect" ? (
+            // Rectangle shape - keep original logic (up and left only)
+            <>
+              {Math.abs(x2 - x) > Math.abs(y2 - y) ? (
+                // Horizontal movement - left arrow (triangle) - pointing towards source
+                <polygon
+                  points={`${midX-9} ${midY-6}, ${midX+9} ${midY}, ${midX-9} ${midY+6}`}
+                  fill="rgb(0, 255, 0)"
+                />
+              ) : (
+                // Vertical movement - up arrow (triangle) - pointing towards source
+                <polygon
+                  points={`${midX-6} ${midY+9}, ${midX+6} ${midY+9}, ${midX} ${midY-9}`}
+                  fill="rgb(0, 255, 0)"
+                />
+              )}
+            </>
+          ) : shape === "circle" ? (
+            // Circle shape - follow actual path direction (outward)
+            (() => {
+              // Calculate actual path direction
+              const dx = targetX - sourceX;
+              const dy = targetY - sourceY;
+              const length = Math.sqrt(dx * dx + dy * dy);
+              const pathDirX = dx / length;
+              const pathDirY = dy / length;
+              
+              // Calculate perpendicular vector for arrow width
+              const perpX = -pathDirY;
+              const perpY = pathDirX;
+              
+              // Arrow dimensions (wider base)
+              const arrowLength = 9;
+              const arrowWidth = 12;
+              
+              // Calculate arrow points (pointing outward along path)
+              const tipX = midX + pathDirX * arrowLength;
+              const tipY = midY + pathDirY * arrowLength;
+              const base1X = midX - pathDirX * arrowLength + perpX * arrowWidth / 2;
+              const base1Y = midY - pathDirY * arrowLength + perpY * arrowWidth / 2;
+              const base2X = midX - pathDirX * arrowLength - perpX * arrowWidth / 2;
+              const base2Y = midY - pathDirY * arrowLength - perpY * arrowWidth / 2;
+              
+              return (
+                <polygon
+                  points={`${base1X} ${base1Y}, ${tipX} ${tipY}, ${base2X} ${base2Y}`}
+                  fill="rgb(0, 255, 0)"
+                />
+              );
+            })()
+          ) : null}
         </>
       )}
     </>

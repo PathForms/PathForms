@@ -144,14 +144,14 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
     if (!isNaN(inputNumber)) {
       generate(inputNumber); // Pass the number to the generate function
       // Play generate sound after paths are generated
-      setTimeout(() => {
-        if (soundEnabled) playGenerateSound();
+      setTimeout(async () => {
+        if (soundEnabled) await playGenerateSound();
       }, 100);
     } else {
       generate(2); // Handle invalid number input
       // Play generate sound after paths are generated
-      setTimeout(() => {
-        if (soundEnabled) playGenerateSound();
+      setTimeout(async () => {
+        if (soundEnabled) await playGenerateSound();
       }, 100);
     }
   };
