@@ -82,6 +82,8 @@ interface CayleyTreeProps {
     };
   } | null;
   isDragging?: boolean;
+  dragFromIndex?: number;
+  dragHoverIndex?: number;
 }
 
 const CayleyTree: React.FC<CayleyTreeProps> = ({
@@ -92,6 +94,8 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
   shape,
   previewPath,
   isDragging = false,
+  dragFromIndex = -1,
+  dragHoverIndex = -1,
 }) => {
   const [nodes, setNodes] = useState<LayoutNode[]>([]);
   const [links, setLinks] = useState<LayoutLink[]>([]);
@@ -220,57 +224,21 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
         height="100%"
         style={{ border: "none", display: "block" }}
       >
-        <defs>
-          {/* Default arrow for circle shape (active paths only) */}
-          <marker
-            id="arrow"
-            markerWidth="10"
-            markerHeight="7"
-            refX="9"
-            refY="3.5"
-            orient="auto"
-          >
-            <polygon
-              points="0 0, 10 3.5, 0 7"
-              fill="rgb(251, 0, 71)"
-            />
-          </marker>
-          {/* Left arrow for rectangle horizontal paths (active only) */}
-          <marker
-            id="arrow-left-mid-active"
-            markerWidth="8"
-            markerHeight="6"
-            refX="4"
-            refY="3"
-            orient="auto"
-            markerUnits="userSpaceOnUse"
-          >
-            <polygon
-              points="8 0, 0 3, 8 6"
-              fill="rgb(251, 0, 71)"
-            />
-          </marker>
-          {/* Up arrow for rectangle vertical paths (active only) */}
-          <marker
-            id="arrow-up-mid-active"
-            markerWidth="6"
-            markerHeight="8"
-            refX="3"
-            refY="4"
-            orient="auto"
-            markerUnits="userSpaceOnUse"
-          >
-            <polygon
-              points="0 8, 6 8, 3 0"
-              fill="rgb(0, 140, 255)"
-            />
-          </marker>
-        </defs>
         <g ref={gRef}>
           {/* Use a path element so that we can place a marker at the midpoint */}
           {links.map((lk) => {
-            const isActive = pathIndex.length > 0 &&
-              pathIndex.some((index) => edgePaths[index]?.includes(lk.id));
+            // Determine if this edge should be highlighted
+            let isActive = false;
+            if (isDragging && dragFromIndex >= 0 && dragHoverIndex >= 0) {
+              // When dragging, only highlight the two paths involved in concatenation
+              isActive = edgePaths[dragFromIndex]?.includes(lk.id) || 
+                        edgePaths[dragHoverIndex]?.includes(lk.id);
+            } else {
+              // Normal display: highlight all paths in pathIndex
+              isActive = pathIndex.length > 0 &&
+                pathIndex.some((index) => edgePaths[index]?.includes(lk.id));
+            }
+            
             const isFinalResult = Boolean(previewPath && previewPath.finalResult.edges.includes(lk.id));
             const isCancelledPart = Boolean(previewPath && previewPath.cancelledParts.edges.includes(lk.id));
             
@@ -287,14 +255,23 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
                 isFinalResult={isFinalResult}
                 isCancelledPart={isCancelledPart}
                 edgeThickness={edgeThickness}
-                shape={shape}
               />
             );
           })}
 
           {nodes.map((nd) => {
-            const isActive = pathIndex.length > 0 &&
-              pathIndex.some((index) => nodePaths[index]?.includes(nd.id));
+            // Determine if this node should be highlighted
+            let isActive = false;
+            if (isDragging && dragFromIndex >= 0 && dragHoverIndex >= 0) {
+              // When dragging, only highlight the two paths involved in concatenation
+              isActive = nodePaths[dragFromIndex]?.includes(nd.id) || 
+                        nodePaths[dragHoverIndex]?.includes(nd.id);
+            } else {
+              // Normal display: highlight all paths in pathIndex
+              isActive = pathIndex.length > 0 &&
+                pathIndex.some((index) => nodePaths[index]?.includes(nd.id));
+            }
+            
             const isFinalResult = Boolean(previewPath && previewPath.finalResult.nodes.includes(nd.id));
             const isCancelledPart = Boolean(previewPath && previewPath.cancelledParts.nodes.includes(nd.id));
             
