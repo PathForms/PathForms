@@ -320,19 +320,11 @@ const NumberLine: React.FC<NumberLineProps> = ({
         ctx.strokeStyle = path.color;
         ctx.lineWidth = 2.5; // Increased from 2
         
-        // Draw arrow pointing right (or left if negative)
+        // Draw arrow always pointing right
         ctx.beginPath();
-        if (direction > 0) {
-          // Right arrow
-          ctx.moveTo(arrowX + arrowHeadSize, yOffset);
-          ctx.lineTo(arrowX, yOffset - arrowHeadSize / 2);
-          ctx.lineTo(arrowX, yOffset + arrowHeadSize / 2);
-        } else {
-          // Left arrow
-          ctx.moveTo(arrowX - arrowHeadSize, yOffset);
-          ctx.lineTo(arrowX, yOffset - arrowHeadSize / 2);
-          ctx.lineTo(arrowX, yOffset + arrowHeadSize / 2);
-        }
+        ctx.moveTo(arrowX + arrowHeadSize, yOffset);
+        ctx.lineTo(arrowX, yOffset - arrowHeadSize / 2);
+        ctx.lineTo(arrowX, yOffset + arrowHeadSize / 2);
         ctx.closePath();
         ctx.fill();
       }
@@ -431,16 +423,11 @@ const NumberLine: React.FC<NumberLineProps> = ({
           ctx.strokeStyle = draggedPath.color;
           ctx.lineWidth = 2.5; // Increased from 2
           
+          // Draw arrow always pointing right
           ctx.beginPath();
-          if (direction > 0) {
-            ctx.moveTo(arrowX + arrowHeadSize, dragY);
-            ctx.lineTo(arrowX, dragY - arrowHeadSize / 2);
-            ctx.lineTo(arrowX, dragY + arrowHeadSize / 2);
-          } else {
-            ctx.moveTo(arrowX - arrowHeadSize, dragY);
-            ctx.lineTo(arrowX, dragY - arrowHeadSize / 2);
-            ctx.lineTo(arrowX, dragY + arrowHeadSize / 2);
-          }
+          ctx.moveTo(arrowX + arrowHeadSize, dragY);
+          ctx.lineTo(arrowX, dragY - arrowHeadSize / 2);
+          ctx.lineTo(arrowX, dragY + arrowHeadSize / 2);
           ctx.closePath();
           ctx.fill();
         }
