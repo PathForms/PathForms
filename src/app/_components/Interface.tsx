@@ -1469,6 +1469,10 @@ const Interface = () => {
   const clearBase = () => {
     setBases([]);
   };
+
+  const removeBase = (index: number) => {
+    setBases((prevBases) => prevBases.filter((_, i) => i !== index));
+  };
   //
   //
   //
@@ -1650,6 +1654,7 @@ const Interface = () => {
           generate_base={GenerateBasedPath}
           addbase={Addbase}
           clearbase={clearBase}
+          removebase={removeBase}
           soundEnabled={soundEnabled}
         />
         <button
