@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import ButtonBar from "./ButtonBar";
 import CayleyTree from "./CayleyTree";
 import Pathbar from "./Pathbar";
@@ -27,6 +28,7 @@ const oppositeMoves: Record<Direction, Direction> = {
 };
 
 const Interface = () => {
+  const router = useRouter();
   // State for storing historical paths & cayley graph rendering
   const [pathIndex, setPathIndex] = useState<number[]>([]); // index of paths to show on the Cayley graph;
   const [nodePaths, setNodePaths] = useState<string[][]>([]);
