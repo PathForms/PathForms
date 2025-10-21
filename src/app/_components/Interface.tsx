@@ -1640,6 +1640,23 @@ const Interface = () => {
           addbase={Addbase}
           clearbase={clearBase}
         />
+        <button
+            className={styles.button}
+            style={{
+                position: "fixed",
+                bottom: 24,
+                right: 24,
+                zIndex: 100,
+                padding: "12px 28px",
+                fontSize: "16px",
+                borderRadius: "8px",
+                cursor: "pointer",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.15)"
+            }}
+            onClick={() => router.push("/")}
+            >
+            Go back to Home
+            </button>
         <Pathterminal
           pathIndex={pathIndex}
           nodePaths={nodePaths}
