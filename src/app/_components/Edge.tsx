@@ -9,6 +9,8 @@ interface EdgeProps {
   source: string;
   target: string;
   isActive?: boolean;
+  isFinalResult?: boolean;
+  isCancelledPart?: boolean;
   edgeThickness?: number;
 }
 
@@ -20,6 +22,8 @@ const Edge: React.FC<EdgeProps> = ({
   targetX,
   targetY,
   isActive,
+  isFinalResult = false,
+  isCancelledPart = false,
   edgeThickness,
 }) => {
   const [x, y] = source.split(",").map(Number);
@@ -57,7 +61,27 @@ const Edge: React.FC<EdgeProps> = ({
   let strokeDasharray = "none";
   let strokeDashoffset = "0";
   
-  if (isActive) {
+  if (isFinalResult) {
+    // Final result preview - bright and dashed
+    thickness += 2;
+    strokeDasharray = "8,4";
+    strokeDashoffset = dashOffset.toString();
+    if ((x === x2 && y <= y2) || (x === x2 && y >= y2)) {
+      strokeColor = "rgba(0, 94, 255, 0.8)"; // Bright blue for final result
+    } else {
+      strokeColor = "rgba(255, 34, 5, 0.8)"; // Bright red for final result
+    }
+  } else if (isCancelledPart) {
+    // Cancelled parts - dimmed and dashed
+    thickness += 2;
+    strokeDasharray = "8,4";
+    strokeDashoffset = dashOffset.toString();
+    if ((x === x2 && y <= y2) || (x === x2 && y >= y2)) {
+      strokeColor = "rgba(0, 94, 255, 0.3)"; // Dimmed blue for cancelled
+    } else {
+      strokeColor = "rgba(255, 34, 5, 0.3)"; // Dimmed red for cancelled
+    }
+  } else if (isActive) {
     strokeColor = "rgb(251, 0, 71)";
     thickness += 2;
     strokeDasharray = "5,3"; // Add dotted line effect when active
