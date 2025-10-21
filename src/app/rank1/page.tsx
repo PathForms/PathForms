@@ -278,7 +278,7 @@ const Rank1 = () => {
             }}
             onClick={() => router.push("/")}
             >
-            Go to Rank 2
+            Go back to Home
             </button>
         
             {/* <Steps optimalSteps={targetSteps} usedSteps={usedConcatSteps} /> */}
