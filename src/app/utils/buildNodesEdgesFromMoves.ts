@@ -1,7 +1,7 @@
 type Direction = "up" | "down" | "left" | "right";
 
-function buildNodesEdgesFromMoves(moves: Direction[], startNode: string = "0,0") {
-  let newNodes: string[] = [startNode];
+function buildNodesEdgesFromMoves(moves: Direction[]) {
+  let newNodes: string[] = ["0,0"];
   let newEdges: string[] = [];
   for (let i = 0; i < moves.length; i++) {
     const dir = moves[i];
