@@ -1,28 +1,18 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
+import * as Tone from "tone";
 import {
   Direction,
   reduceMoves,
   concatenate,
   invert,
 } from "../utils/NielsenTrans";
-import {
-  initializeSynths,
-  initializeAudio,
-  setSoundEnabled,
-  cleanupSynths,
-  getSoundEnabled,
-  playSuccessSound,
-  playFailSound,
-  playPoofSound,
-} from "../utils/soundManager";
 
 interface CheckNielsenProps {
   movePaths: Direction[][];
   tutorialActive?: boolean;
   tutorialStep?: number;
   onTutorialCheck?: (step: number) => void;
-  soundEnabled?: boolean;
 }
 
 const CheckNielsen: React.FC<CheckNielsenProps> = ({
@@ -30,7 +20,6 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
   tutorialActive = false,
   tutorialStep = 0,
   onTutorialCheck = () => {},
-  soundEnabled = true,
 }) => {
   const [nStatus, setNStatus] = useState<boolean[]>([false, false, false]);
   const [result, setResult] = useState<string>("");
@@ -49,9 +38,7 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
     setNStatus(status);
 
     if (movePaths.length>0&&status.every((x) => x) && !showConfetti) {
-      if (soundEnabled) {
-        playSuccessSound();
-      }
+      playSuccessSound();
       setShowConfetti(true);
     }
 
@@ -64,26 +51,35 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
         onTutorialCheck(0); // Tutorial completed
       }
     }
-  }, [movePaths, tutorialActive, tutorialStep, onTutorialCheck, soundEnabled]);
+  }, [movePaths, tutorialActive, tutorialStep, onTutorialCheck]);
   
   useEffect(() => {
-    // Initialize synths and set sound enabled state
-    const initSound = async () => {
-      await initializeSynths();
-      setSoundEnabled(soundEnabled);
+    const initializeAudio = async () => {
+      // Only initialize once
+      if (!isSoundInitialized) {
+        await Tone.start();
+        console.log("Tone.js initialized");
+        setSoundInitialized(true);
+      }
     };
-    initSound();
 
-    // Clean up function to dispose synths when component unmounts
-    return () => {
-      cleanupSynths();
+    // Add a one-time click listener to the document for initializing audio
+    const handleFirstClick = () => {
+      initializeAudio();
+      document.removeEventListener("click", handleFirstClick);
     };
-  }, [soundEnabled]);
+
+    document.addEventListener("click", handleFirstClick);
+    
+    return () => {
+      document.removeEventListener("click", handleFirstClick);
+    };
+  }, [isSoundInitialized]);
 
   // Watch for paths that disappear (become 1)
   useEffect(() => {
-    // Skip if it's the first render
-    if (previousPathsRef.current.length === 0) {
+    // Skip if no sound or if it's the first render
+    if (!isSoundInitialized || previousPathsRef.current.length === 0) {
       previousPathsRef.current = [...movePaths];
       return;
     }
@@ -96,15 +92,14 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
     prevPaths.forEach((prevPath, index) => {
       // If there was a path before that now is empty
       if (prevPath.length > 0 && 
-          (index >= currentPaths.length || currentPaths[index].length === 0) &&
-          soundEnabled) {
+          (index >= currentPaths.length || currentPaths[index].length === 0)) {
         playPoofSound();
       }
     });
 
     // Update ref for next comparison
     previousPathsRef.current = [...movePaths];
-  }, [movePaths, soundEnabled]);
+  }, [movePaths, isSoundInitialized]);
 
   // Confetti animation setup and cleanup
   useEffect(() => {
@@ -207,7 +202,105 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
     }
   }, [showConfetti]);
 
-  // Sound functions are now imported from soundManager
+  // Function to play success sound
+  const playSuccessSound = () => {
+    // Create a simple synth with happy sounding parameters
+    const synth = new Tone.PolySynth(Tone.Synth).toDestination();
+    
+    // Play a major chord sequence
+    synth.triggerAttackRelease(["C4", "E4", "G4"], "8n", Tone.now());
+    synth.triggerAttackRelease(["D4", "F#4", "A4"], "8n", Tone.now() + 0.2);
+    synth.triggerAttackRelease(["G4", "B4", "D5"], "4n", Tone.now() + 0.4);
+  };
+
+  // Function to play fail sound
+  const playFailSound = () => {
+    // Create a simple synth with sad sounding parameters
+    const synth = new Tone.Synth({
+      oscillator: {
+        type: "triangle"
+      },
+      envelope: {
+        attack: 0.005,
+        decay: 0.1,
+        sustain: 0.3,
+        release: 1
+      }
+    }).toDestination();
+    
+    // Play a descending minor tone
+    synth.triggerAttackRelease("C4", "8n", Tone.now());
+    synth.triggerAttackRelease("A3", "8n", Tone.now() + 0.2);
+  };
+
+  // Function to play poof disappear sound
+  const playPoofSound = () => {
+    if (!isSoundInitialized) return;
+    
+    // Create noise + filter for whoosh effect
+    const noise = new Tone.Noise("white").start();
+    
+    // Filter to shape the noise
+    const filter = new Tone.Filter({
+      type: "bandpass",
+      frequency: 800,
+      Q: 0.5
+    });
+    
+    // Envelope for the filter frequency
+    const filterEnv = new Tone.FrequencyEnvelope({
+      attack: 0.01,
+      decay: 0.2,
+      sustain: 0,
+      release: 0.2,
+      baseFrequency: 800,
+      octaves: 2,
+      exponent: 2
+    });
+    
+    // Volume envelope
+    const ampEnv = new Tone.AmplitudeEnvelope({
+      attack: 0.01,
+      decay: 0.2,
+      sustain: 0,
+      release: 0.2
+    });
+    
+    // Connect everything
+    noise.connect(filter);
+    filter.connect(ampEnv);
+    ampEnv.toDestination();
+    filterEnv.connect(filter.frequency);
+    
+    // Trigger the envelopes
+    ampEnv.triggerAttackRelease(0.4);
+    filterEnv.triggerAttackRelease(0.4);
+    
+    // Stop the noise after the sound is done
+    setTimeout(() => {
+      noise.stop();
+    }, 500);
+    
+    // Add a magical twinkling sound on top
+    const synth = new Tone.PolySynth(Tone.Synth, {
+      oscillator: {
+        type: "sine"
+      },
+      envelope: {
+        attack: 0.01,
+        decay: 0.1,
+        sustain: 0,
+        release: 0.3
+      }
+    }).toDestination();
+    
+    // Play some random high notes in quick succession
+    const notes = ["C6", "E6", "G6", "B6", "D7"];
+    for (let i = 0; i < 5; i++) {
+      const randomNote = notes[Math.floor(Math.random() * notes.length)];
+      synth.triggerAttackRelease(randomNote, "32n", Tone.now() + i * 0.05);
+    }
+  };
 
   function checkNielsenReduced(paths: Direction[][]): boolean[] {
     let result: boolean[] = [];
@@ -324,40 +417,14 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
     return result;
   }
 
-  const handleCheck = async () => {
-    await check();
-    if (tutorialStep === 7 && onTutorialCheck) {
-      onTutorialCheck(8);
-    }
 
-    if (tutorialStep === 8 && onTutorialCheck) {
-      const reducedConditionStatus = checkNielsenReduced(movePaths);
-      const isSuccess = reducedConditionStatus.every((cond) => cond === true);
-      if (isSuccess) {
-        if (soundEnabled) {
-          await playSuccessSound();
-        }
-        setShowConfetti(true);
-        alert("🎉 Congrats! You have successfully reduced the paths!");
-        onTutorialCheck(0);
-      } else {
-        if (soundEnabled) {
-          await playFailSound();
-        }
-      }
-      return;
-    }
-  };
-
-  async function check() {
+  function check() {
     const reducedConditionStatus = checkNielsenReduced(movePaths);
     const isSuccess = reducedConditionStatus.every((condition) => condition === true);
     
     if (isSuccess) {
       setResult("Success: The word list satisfies Nielsen Reduced Form!");
-      if (soundEnabled) {
-        await playSuccessSound();
-      }
+      playSuccessSound();
       setShowConfetti(true);
     } else {
       let resultstatements = "Failure: ";
@@ -372,9 +439,7 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
         resultstatements += " The word list does not satisfy N2.";
       }
       setResult(resultstatements);
-      if (soundEnabled) {
-        await playFailSound();
-      }
+      playFailSound();
     }
   }
 

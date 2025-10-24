@@ -69,21 +69,6 @@ interface CayleyTreeProps {
   edgePaths: string[][];
   edgeThickness: number;
   shape: string;
-  previewPath?: {
-    finalResult: {
-      nodes: string[];
-      edges: string[];
-      moves: string[];
-    };
-    cancelledParts: {
-      nodes: string[];
-      edges: string[];
-      moves: string[];
-    };
-  } | null;
-  isDragging?: boolean;
-  dragFromIndex?: number;
-  dragHoverIndex?: number;
 }
 
 const CayleyTree: React.FC<CayleyTreeProps> = ({
@@ -92,10 +77,6 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
   edgePaths,
   edgeThickness,
   shape,
-  previewPath,
-  isDragging = false,
-  dragFromIndex = -1,
-  dragHoverIndex = -1,
 }) => {
   const [nodes, setNodes] = useState<LayoutNode[]>([]);
   const [links, setLinks] = useState<LayoutLink[]>([]);
@@ -226,67 +207,35 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
       >
         <g ref={gRef}>
           {/* Use a path element so that we can place a marker at the midpoint */}
-          {links.map((lk) => {
-            // Determine if this edge should be highlighted
-            let isActive = false;
-            if (isDragging && dragFromIndex >= 0 && dragHoverIndex >= 0) {
-              // When dragging, only highlight the two paths involved in concatenation
-              isActive = edgePaths[dragFromIndex]?.includes(lk.id) || 
-                        edgePaths[dragHoverIndex]?.includes(lk.id);
-            } else {
-              // Normal display: highlight all paths in pathIndex
-              isActive = pathIndex.length > 0 &&
-                pathIndex.some((index) => edgePaths[index]?.includes(lk.id));
-            }
-            
-            const isFinalResult = Boolean(previewPath && previewPath.finalResult.edges.includes(lk.id));
-            const isCancelledPart = Boolean(previewPath && previewPath.cancelledParts.edges.includes(lk.id));
-            
-            return (
-              <Edge
-                key={lk.id}
-                source={lk.source}
-                target={lk.target}
-                sourceX={lk.sourceX}
-                sourceY={lk.sourceY}
-                targetX={lk.targetX}
-                targetY={lk.targetY}
-                isActive={isActive}
-                isFinalResult={isFinalResult}
-                isCancelledPart={isCancelledPart}
-                edgeThickness={edgeThickness}
-              />
-            );
-          })}
+          {links.map((lk) => (
+            <Edge
+              key={lk.id}
+              source={lk.source}
+              target={lk.target}
+              sourceX={lk.sourceX}
+              sourceY={lk.sourceY}
+              targetX={lk.targetX}
+              targetY={lk.targetY}
+              isActive={
+                pathIndex.length > 0 &&
+                pathIndex.some((index) => edgePaths[index]?.includes(lk.id))
+              }
+              edgeThickness={edgeThickness}
+            />
+          ))}
 
-          {nodes.map((nd) => {
-            // Determine if this node should be highlighted
-            let isActive = false;
-            if (isDragging && dragFromIndex >= 0 && dragHoverIndex >= 0) {
-              // When dragging, only highlight the two paths involved in concatenation
-              isActive = nodePaths[dragFromIndex]?.includes(nd.id) || 
-                        nodePaths[dragHoverIndex]?.includes(nd.id);
-            } else {
-              // Normal display: highlight all paths in pathIndex
-              isActive = pathIndex.length > 0 &&
-                pathIndex.some((index) => nodePaths[index]?.includes(nd.id));
-            }
-            
-            const isFinalResult = Boolean(previewPath && previewPath.finalResult.nodes.includes(nd.id));
-            const isCancelledPart = Boolean(previewPath && previewPath.cancelledParts.nodes.includes(nd.id));
-            
-            return (
-              <Vertex
-                key={nd.id}
-                id={nd.id}
-                x={nd.x}
-                y={nd.y}
-                isActive={isActive}
-                isFinalResult={isFinalResult}
-                isCancelledPart={isCancelledPart}
-              />
-            );
-          })}
+          {nodes.map((nd) => (
+            <Vertex
+              key={nd.id}
+              id={nd.id}
+              x={nd.x}
+              y={nd.y}
+              isActive={
+                pathIndex.length > 0 &&
+                pathIndex.some((index) => nodePaths[index]?.includes(nd.id))
+              }
+            />
+          ))}
         </g>
       </svg>
     </div>
