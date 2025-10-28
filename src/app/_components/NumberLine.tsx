@@ -417,16 +417,18 @@ const NumberLine: React.FC<NumberLineProps> = ({
         
         // Draw arrow heads along the dragged path (larger and more visible)
         const numArrows = Math.abs(draggedPath.exponent);
-        const direction = draggedPath.exponent > 0 ? 1 : -1;
-        
+
         for (let i = 0; i < numArrows; i++) {
-          const arrowX = dragStartX + (i + 0.5) * tickSpacing * direction;
+          // For negative exponents, we need to calculate from the correct end
+          const arrowX = draggedPath.exponent > 0
+            ? dragStartX + (i + 0.5) * tickSpacing
+            : dragEndX - (i + 0.5) * tickSpacing;
           const arrowHeadSize = 14; // Increased from 10
-          
+
           ctx.fillStyle = draggedPath.color;
           ctx.strokeStyle = draggedPath.color;
           ctx.lineWidth = 2.5; // Increased from 2
-          
+
           // Draw arrow always pointing right
           ctx.beginPath();
           ctx.moveTo(arrowX + arrowHeadSize, dragY);
