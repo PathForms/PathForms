@@ -8,9 +8,11 @@ interface VertexProps {
   isHighlighted?: boolean;
   isShined?: boolean;
   isActive?: boolean;
+  isFinalResult?: boolean;
+  isCancelledPart?: boolean;
 }
 
-const Vertex: React.FC<VertexProps> = ({ id, x, y, isActive }) => {
+const Vertex: React.FC<VertexProps> = ({ id, x, y, isActive, isFinalResult = false, isCancelledPart = false }) => {
   //color logic
   const isRoot = id === "0,0";
 
@@ -25,7 +27,21 @@ const Vertex: React.FC<VertexProps> = ({ id, x, y, isActive }) => {
     stroke = "#ffffff";
     strokeW = 0.8;
   }
-  if (isActive) {
+  if (isFinalResult) {
+    // Final result preview - bright
+    stroke = "#ffffff";
+    strokeW = 2;
+    if (!isRoot) {
+      fillColor = "rgba(244, 252, 0, 0.6)"; // Bright for final result
+    }
+  } else if (isCancelledPart) {
+    // Cancelled parts - dimmed
+    stroke = "#ffffff";
+    strokeW = 2;
+    if (!isRoot) {
+      fillColor = "rgba(244, 252, 0, 0.2)"; // Dimmed for cancelled
+    }
+  } else if (isActive) {
     fillColor = "#ffffff";
   }
 
