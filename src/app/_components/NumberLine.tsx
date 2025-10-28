@@ -40,13 +40,19 @@ const NumberLine: React.FC<NumberLineProps> = ({
     const centerX = width / 2;
     const centerY = height / 2;
     const tickSpacing = 60;
-    const pathVerticalSpacing = 60;
-    const pathStartY = centerY - 80;
+    const pathVerticalSpacing = 35; // Reduced spacing to fit more paths
+    const pathStartY = centerY - 175; // Start position for first path (5 paths above = 5 * 35 = 175px)
 
     // Check each path
     for (let i = 0; i < paths.length; i++) {
       const path = paths[i];
-      const yOffset = pathStartY - (i * pathVerticalSpacing);
+      // Position paths: 0-4 above the number line, 5-9 below
+      let yOffset;
+      if (i < 5) {
+        yOffset = pathStartY + (i * pathVerticalSpacing);
+      } else {
+        yOffset = centerY + ((i - 4) * pathVerticalSpacing);
+      }
       
       // Special handling for a^0 (identity element) - check if near the dot
       if (path.exponent === 0) {
@@ -232,12 +238,21 @@ const NumberLine: React.FC<NumberLineProps> = ({
       ctx.fillText(i.toString(), x, centerY + 18);
     }
 
-    // Draw paths stacked vertically above the number line
-    const pathVerticalSpacing = 60; // vertical spacing between paths
-    const pathStartY = centerY - 80; // start drawing paths above the number line
+    // Draw paths stacked vertically above and below the number line
+    const pathVerticalSpacing = 35; // vertical spacing between paths (reduced to fit 10 paths total)
+    const pathStartY = centerY - 175; // start drawing paths above the number line (5 paths above = 5 * 35 = 175px)
     
     paths.forEach((path, pathIndex) => {
-      const yOffset = pathStartY - (pathIndex * pathVerticalSpacing);
+      // Position paths: 0-4 above the number line, 5-9 below
+      // Above: pathIndex 0-4 -> offset from pathStartY
+      // Below: pathIndex 5-9 -> offset from centerY + pathVerticalSpacing
+      let yOffset;
+      if (pathIndex < 5) {
+        yOffset = pathStartY + (pathIndex * pathVerticalSpacing);
+      } else {
+        yOffset = centerY + ((pathIndex - 4) * pathVerticalSpacing);
+      }
+
       const startX = centerX; // always start from 0
       const endX = centerX + path.exponent * tickSpacing;
       
