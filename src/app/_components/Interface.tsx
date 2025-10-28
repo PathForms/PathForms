@@ -16,6 +16,8 @@ import buildNodesEdgesFromMoves from "../utils/buildNodesEdgesFromMoves";
 import next from "next";
 import Steps from "./Steps";
 import { greedyNielsenSteps } from "../utils/greedyNielsen";
+import { useRouter } from "next/navigation";
+
 
 
 type Direction = "up" | "down" | "left" | "right";
@@ -36,6 +38,8 @@ const Interface = () => {
  const [nodePaths, setNodePaths] = useState<string[][]>([]);
  const [edgePaths, setEdgePaths] = useState<string[][]>([]);
  const [moveRecords, setMoveRecords] = useState<Direction[][]>([]);
+ const router = useRouter();
+ 
 
 
  // states for bases;
@@ -1884,6 +1888,23 @@ const Interface = () => {
          }}
        />
        <Steps optimalSteps={targetSteps} usedSteps={usedConcatSteps} />
+       <button
+            className={styles.button}
+            style={{
+                position: "fixed",
+                bottom: 24,
+                right: 24,
+                zIndex: 100,
+                padding: "12px 28px",
+                fontSize: "16px",
+                borderRadius: "8px",
+                cursor: "pointer",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.15)"
+            }}
+            onClick={() => router.push("/")}
+            >
+            Go back to Home
+            </button>
      </div>
    </>
  );
