@@ -46,6 +46,9 @@ const Rank1 = () => {
     // State for Rank 1 paths
     const [rank1Paths, setRank1Paths] = useState<Rank1Path[]>([]);
 
+    // State for custom path input modal
+    const [showCustomPathModal, setShowCustomPathModal] = useState<boolean>(false);
+
     // states for bases;
     const [bases, setBases] = useState<Direction[][]>([]);
     // State for action modes
@@ -111,16 +114,16 @@ const Rank1 = () => {
             alert("You cannot generate paths with random bases right now!");
             return;
         }
-        
+
         // Reset paths
         setRank1Paths([]);
         setOperationMode("normal");
-        
+
         // Ensure we have at least 2 paths
         if (n < 2) {
             n = 2;
         }
-        
+
         // Generate n random paths with different colors
         const colors = [
             "#FF5733", // Red-Orange
@@ -134,25 +137,58 @@ const Rank1 = () => {
             "#33FF8C", // Mint
             "#FF3333", // Red
         ];
-        
+
         const newPaths: Rank1Path[] = [];
-        
+
         for (let i = 0; i < n; i++) {
             // Generate random exponent between -10 and 10 (excluding 0)
             let exponent = Math.floor(Math.random() * 21) - 10;
             if (exponent === 0) {
                 exponent = 1; // Default to 1 if we get 0
             }
-            
+
             // Assign color from palette (cycle through if n > colors.length)
             const color = colors[i % colors.length];
-            
+
             newPaths.push({
                 exponent,
                 color
             });
         }
-        
+
+        setRank1Paths(newPaths);
+    };
+
+    // Generate custom paths from array of exponents
+    const GenerateCustomPaths = (exponents: number[]) => {
+        if (tutorialActive) {
+            alert("You cannot generate paths right now!");
+            return;
+        }
+
+        // Reset paths
+        setRank1Paths([]);
+        setOperationMode("normal");
+
+        // Color palette
+        const colors = [
+            "#FF5733", // Red-Orange
+            "#33FF57", // Green
+            "#3357FF", // Blue
+            "#FF33F5", // Pink
+            "#F5FF33", // Yellow
+            "#33FFF5", // Cyan
+            "#FF8C33", // Orange
+            "#8C33FF", // Purple
+            "#33FF8C", // Mint
+            "#FF3333", // Red
+        ];
+
+        const newPaths: Rank1Path[] = exponents.map((exponent, i) => ({
+            exponent,
+            color: colors[i % colors.length]
+        }));
+
         setRank1Paths(newPaths);
     };
 
@@ -253,6 +289,8 @@ const Rank1 = () => {
             generate_base={GenerateBasedPath}
             addbase={Addbase}
             clearbase={clearBase}
+            generate_custom={GenerateCustomPaths}
+            soundEnabled={true}
             />
 
             <NumberLine

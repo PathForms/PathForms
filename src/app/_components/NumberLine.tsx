@@ -175,32 +175,13 @@ const NumberLine: React.FC<NumberLineProps> = ({
     ctx.lineTo(centerX, height);
     ctx.stroke();
 
-    // Draw horizontal number line
+    // Draw horizontal number line (without arrows)
     ctx.strokeStyle = lineColor;
     ctx.lineWidth = 2.5;
     ctx.beginPath();
     ctx.moveTo(50, centerY);
     ctx.lineTo(width - 50, centerY);
     ctx.stroke();
-
-    // Add arrow heads at both ends
-    const arrowSize = 10;
-    // Right arrow
-    ctx.beginPath();
-    ctx.moveTo(width - 50, centerY);
-    ctx.lineTo(width - 50 - arrowSize, centerY - arrowSize / 2);
-    ctx.lineTo(width - 50 - arrowSize, centerY + arrowSize / 2);
-    ctx.closePath();
-    ctx.fillStyle = lineColor;
-    ctx.fill();
-
-    // Left arrow
-    ctx.beginPath();
-    ctx.moveTo(50, centerY);
-    ctx.lineTo(50 + arrowSize, centerY - arrowSize / 2);
-    ctx.lineTo(50 + arrowSize, centerY + arrowSize / 2);
-    ctx.closePath();
-    ctx.fill();
 
     // Draw tick marks and labels
     const tickSpacing = 60; // pixels between ticks
@@ -214,7 +195,7 @@ const NumberLine: React.FC<NumberLineProps> = ({
 
     for (let i = -numTicks; i <= numTicks; i++) {
       const x = centerX + i * tickSpacing;
-      
+
       if (x < 50 || x > width - 50) continue;
 
       // Draw tick mark
@@ -233,9 +214,17 @@ const NumberLine: React.FC<NumberLineProps> = ({
       ctx.strokeStyle = tickColor;
       ctx.lineWidth = 1.5;
 
-      // Draw label
-      ctx.font = i === 0 ? "bold 18px Arial" : "14px Arial";
-      ctx.fillText(i.toString(), x, centerY + 18);
+      // Draw "a" label between this tick and the next (halfway between ticks)
+      if (i < numTicks) {
+        const midX = x + tickSpacing / 2;
+        if (midX < width - 50) {
+          ctx.font = "16px Arial";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "top";
+          ctx.fillStyle = tickColor;
+          ctx.fillText("a", midX, centerY + 15);
+        }
+      }
     }
 
     // Draw paths stacked vertically above and below the number line
@@ -428,16 +417,18 @@ const NumberLine: React.FC<NumberLineProps> = ({
         
         // Draw arrow heads along the dragged path (larger and more visible)
         const numArrows = Math.abs(draggedPath.exponent);
-        const direction = draggedPath.exponent > 0 ? 1 : -1;
-        
+
         for (let i = 0; i < numArrows; i++) {
-          const arrowX = dragStartX + (i + 0.5) * tickSpacing * direction;
+          // For negative exponents, we need to calculate from the correct end
+          const arrowX = draggedPath.exponent > 0
+            ? dragStartX + (i + 0.5) * tickSpacing
+            : dragEndX - (i + 0.5) * tickSpacing;
           const arrowHeadSize = 14; // Increased from 10
-          
+
           ctx.fillStyle = draggedPath.color;
           ctx.strokeStyle = draggedPath.color;
           ctx.lineWidth = 2.5; // Increased from 2
-          
+
           // Draw arrow always pointing right
           ctx.beginPath();
           ctx.moveTo(arrowX + arrowHeadSize, dragY);
