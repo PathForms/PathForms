@@ -38,6 +38,8 @@ interface ButtonBarProps {
  tutorialStep?: number;
  //sound button:
  soundEnabled: boolean;
+ // Custom path generation:
+ generate_custom?: (exponents: number[]) => void;
 }
 
 
@@ -52,10 +54,15 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
  tutorialStep,
  //sound button:
  soundEnabled,
+ // Custom path generation:
+ generate_custom,
 }) => {
  //input config
  const [inputSize, setInputSize] = useState<string>("");
  const [currBase, setCurrBase] = useState<string>("");
+
+ // Custom path exponents (for rank 1)
+ const [customExponents, setCustomExponents] = useState<number[]>([]);
 
 
  // Initialize synths and set sound enabled state
@@ -97,6 +104,11 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
    await initializeAudio();
    if (soundEnabled) await playGenerateSound();
 
+   // If in rank 1 mode with custom exponents, generate custom paths
+   if (generate_custom && customExponents.length > 0) {
+     generate_custom(customExponents);
+     return;
+   }
 
    let inputNumber = 2; // Make sure to convert the input to a number
    if (inputSize != "") {
@@ -125,6 +137,12 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
    if (soundEnabled) await playButtonSound();
    await initializeAudio();
    if (soundEnabled) await playClearSound();
+
+   // Clear custom exponents if in rank 1 mode
+   if (generate_custom) {
+     setCustomExponents([]);
+   }
+
    clearbase();
  };
 
@@ -142,6 +160,18 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
    if (soundEnabled) await playButtonSound();
    await initializeAudio();
    if (soundEnabled) await playAddSound();
+
+   // Check if we're in rank 1 mode (generate_custom exists) and input is a number
+   if (generate_custom) {
+     const exponent = parseInt(currBase);
+     if (!isNaN(exponent) && customExponents.length < 10) {
+       setCustomExponents([...customExponents, exponent]);
+       setCurrBase("");
+       return;
+     }
+   }
+
+   // Otherwise, use the original addbase functionality
    addbase(currBase);
  };
 
@@ -193,6 +223,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
      generate_rand(2); // Handle invalid number input
    }
  };
+
 
 
  return (
@@ -314,7 +345,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
      </div>
 
 
-     {/* Word List Display */}
+     {/* Word List Display / Custom Paths Display */}
      <div
        style={{
          position: "fixed",
@@ -335,36 +366,63 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
          msOverflowStyle: "none", // for IE/Edge
        }}
      >
-       <div style={{ fontWeight: "bold", color: "white", marginBottom: 4 }}>
-         Generators
-       </div>
-       {bases.length === 0 ? (
-         <div>No specified bases, default generators a,b. </div>
-       ) : (
-         bases.map((path, i) => (
-           <div
-             key={i}
-             style={{
-               whiteSpace: "nowrap",
-               overflowX: "auto",
-               marginBottom: 2,
-             }}
-             onClick={() => {
-               if (soundEnabled) {
-                 playPathSound(path);
-               }
-             }}
-           >
-             <strong>[G{i + 1}]:</strong>{" "}
-             {path.length === 0
-               ? "1"
-               : path
-                   .map(
-                     (node) => translation[node as keyof typeof translation]
-                   )
-                   .join(" ")}
+       {generate_custom ? (
+         <>
+           <div style={{ fontWeight: "bold", color: "white", marginBottom: 4 }}>
+             Custom Paths (Rank 1)
            </div>
-         ))
+           {customExponents.length === 0 ? (
+             <div>No paths added yet. Enter exponents and click Add.</div>
+           ) : (
+             customExponents.map((exp, i) => (
+               <div
+                 key={i}
+                 style={{
+                   whiteSpace: "nowrap",
+                   overflowX: "auto",
+                   marginBottom: 2,
+                 }}
+               >
+                 <strong>[Path {i + 1}]:</strong> a^{exp}{" "}
+                 {exp === 1 ? "(a)" : exp === -1 ? "(a⁻¹)" : exp === 0 ? "(identity)" : ""}
+               </div>
+             ))
+           )}
+         </>
+       ) : (
+         <>
+           <div style={{ fontWeight: "bold", color: "white", marginBottom: 4 }}>
+             Generators
+           </div>
+           {bases.length === 0 ? (
+             <div>No specified bases, default generators a,b. </div>
+           ) : (
+             bases.map((path, i) => (
+               <div
+                 key={i}
+                 style={{
+                   whiteSpace: "nowrap",
+                   overflowX: "auto",
+                   marginBottom: 2,
+                 }}
+                 onClick={() => {
+                   if (soundEnabled) {
+                     playPathSound(path);
+                   }
+                 }}
+               >
+                 <strong>[G{i + 1}]:</strong>{" "}
+                 {path.length === 0
+                   ? "1"
+                   : path
+                       .map(
+                         (node) => translation[node as keyof typeof translation]
+                       )
+                       .join(" ")}
+               </div>
+             ))
+           )}
+         </>
        )}
      </div>
    </>
