@@ -2,450 +2,376 @@
 import React, { useEffect, useState } from "react";
 import "./components.module.css";
 import styles from "./components.module.css";
-import * as Tone from "tone";
+import {
+ initializeSynths,
+ initializeAudio,
+ playButtonSound,
+ playAddSound,
+ playClearSound,
+ playGenerateSound,
+ playPathSound,
+ setSoundEnabled,
+ cleanupSynths,
+} from "../utils/soundManager";
+
 
 type Direction = "up" | "down" | "left" | "right";
 const translation: Record<Direction, string> = {
-  up: "a",
-  down: "a\u207B\u00B9", // a^-1
-  right: "b",
-  left: "b\u207B\u00B9",
+ up: "a",
+ down: "a\u207B\u00B9", // a^-1
+ right: "b",
+ left: "b\u207B\u00B9",
 };
 
-// Sound related constants
-const NOTES = ["C4", "D4", "E4", "G4", "A4"]; // Pentatonic scale notes
-const DIRECTION_NOTES = {
-  up: "C5",
-  down: "G4",
-  left: "E4",
-  right: "A4",
-};
+
+// Sound related constants are now imported from soundManager
+
 
 interface ButtonBarProps {
-  bases: Direction[][];
-  generate: (size: number) => void;
-  generate_rand: (size: number) => void;
-  generate_base: (size: number, b: Direction[][]) => void;
-  addbase: (input: string) => void;
-  clearbase: () => void;
-  setGen: () => void;
-  tutorialStep?: number;
+ bases: Direction[][];
+ generate: (size: number) => void;
+ generate_rand: (size: number) => void;
+ generate_base: (size: number, b: Direction[][]) => void;
+ addbase: (input: string) => void;
+ clearbase: () => void;
+ setGen: () => void;
+ tutorialStep?: number;
+ //sound button:
+ soundEnabled: boolean;
 }
 
+
 const ButtonBar: React.FC<ButtonBarProps> = ({
-  bases,
-  generate,
-  generate_rand,
-  generate_base,
-  addbase,
-  clearbase,
-  setGen,
-  tutorialStep,
+ bases,
+ generate,
+ generate_rand,
+ generate_base,
+ addbase,
+ clearbase,
+ setGen,
+ tutorialStep,
+ //sound button:
+ soundEnabled,
 }) => {
-  //input config
-  const [inputSize, setInputSize] = useState<string>("");
-  const [currBase, setCurrBase] = useState<string>("");
-  const [isSoundInitialized, setSoundInitialized] = useState<boolean>(false);
-  const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
+ //input config
+ const [inputSize, setInputSize] = useState<string>("");
+ const [currBase, setCurrBase] = useState<string>("");
 
-  // Initialize Tone.js on first user interaction
-  useEffect(() => {
-    // Create the sound objects but don't start audio context yet
-    setupSynths();
-  }, []);
 
-  // Sound related functions
-  const setupSynths = () => {
-    // We'll set up our synths when needed
-  };
+ // Initialize synths and set sound enabled state
+ useEffect(() => {
+   const initSound = async () => {
+     await initializeSynths();
+     setSoundEnabled(soundEnabled);
+   };
+   initSound();
+ }, [soundEnabled]);
 
-  const initializeAudio = async () => {
-    if (!isSoundInitialized) {
-      await Tone.start();
-      setSoundInitialized(true);
-      console.log("Audio is ready");
-    }
-  };
 
-  const playButtonSound = () => {
-    if (!isSoundInitialized || !soundEnabled) return;
+ // Cleanup on unmount
+ useEffect(() => {
+   return () => {
+     cleanupSynths();
+   };
+ }, []);
 
-    const synth = new Tone.Synth({
-      oscillator: {
-        type: "triangle",
-      },
-      envelope: {
-        attack: 0.005,
-        decay: 0.1,
-        sustain: 0.3,
-        release: 0.2,
-      },
-    }).toDestination();
 
-    synth.triggerAttackRelease("C5", "16n");
-  };
+ // Sound functions are now imported from soundManager
 
-  const playAddSound = () => {
-    if (!isSoundInitialized || !soundEnabled) return;
 
-    const synth = new Tone.Synth({
-      oscillator: {
-        type: "sine",
-      },
-      envelope: {
-        attack: 0.01,
-        decay: 0.1,
-        sustain: 0.5,
-        release: 0.4,
-      },
-    }).toDestination();
+ // Function to handle input change
+ const handleSizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+   setInputSize(event.target.value);
+ };
 
-    synth.triggerAttackRelease("E5", "16n");
-  };
 
-  const playClearSound = () => {
-    if (!isSoundInitialized || !soundEnabled) return;
+ // Function to handle input change
+ const handleBaseChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+   setCurrBase(event.target.value);
+ };
 
-    const synth = new Tone.Synth({
-      oscillator: {
-        type: "square",
-      },
-      envelope: {
-        attack: 0.01,
-        decay: 0.2,
-        sustain: 0.2,
-        release: 0.3,
-      },
-    }).toDestination();
 
-    synth.triggerAttackRelease("A3", "8n");
-  };
+ const handlebaseClick = async () => {
+   //sound button:
+   if (soundEnabled) await playButtonSound();
+   await initializeAudio();
+   if (soundEnabled) await playGenerateSound();
 
-  const playGenerateSound = () => {
-    if (!isSoundInitialized || !soundEnabled) return;
 
-    // Create a polyphonic synth
-    const synth = new Tone.PolySynth(Tone.Synth).toDestination();
+   let inputNumber = 2; // Make sure to convert the input to a number
+   if (inputSize != "") {
+     inputNumber = Number(inputSize);
+   }
+   if (!isNaN(inputNumber)) {
+     generate_base(inputNumber, bases); // Pass the number to the generate function
+   } else {
+     generate_base(2, bases); // Handle invalid number input
+   }
 
-    // Play a chord
-    synth.triggerAttackRelease(["C4", "E4", "G4"], "8n");
 
-    // Play an arpeggio after generating
-    setTimeout(() => {
-      const notes = ["C4", "E4", "G4", "C5"];
-      notes.forEach((note, i) => {
-        setTimeout(() => {
-          synth.triggerAttackRelease(note, "16n");
-        }, i * 100);
-      });
-    }, 200);
-  };
+   // Play sounds for each path
+   setTimeout(() => {
+     bases.forEach((path, i) => {
+       setTimeout(() => {
+         if (soundEnabled) playPathSound(path);
+       }, i * 300);
+     });
+   }, 500);
+ };
 
-  // Play a unique sound for each path generated
-  const playPathSound = (path: Direction[]) => {
-    if (!isSoundInitialized || path.length === 0 || !soundEnabled) return;
 
-    const synth = new Tone.Synth({
-      oscillator: {
-        type: "sine",
-      },
-      envelope: {
-        attack: 0.01,
-        decay: 0.1,
-        sustain: 0.3,
-        release: 0.4,
-      },
-    }).toDestination();
+ const handlebaseremove = async () => {
+   //sound button:
+   if (soundEnabled) await playButtonSound();
+   await initializeAudio();
+   if (soundEnabled) await playClearSound();
+   clearbase();
+ };
 
-    // Play notes sequentially based on the path
-    path.forEach((direction, i) => {
-      const note = DIRECTION_NOTES[direction] || "C4";
-      setTimeout(() => {
-        synth.triggerAttackRelease(note, "16n");
-      }, i * 150);
-    });
-  };
 
-  // Function to handle input change
-  const handleSizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setInputSize(event.target.value);
-  };
+ // Function to handle the submit (not being used here, but left for context)
+ const handleSubmit = async (event: React.FormEvent) => {
+   //sound button:
+   if (soundEnabled) await playButtonSound();
+   event.preventDefault();
+ };
 
-  // Function to handle input change
-  const handleBaseChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setCurrBase(event.target.value);
-  };
 
-  const handlebaseClick = async () => {
-    await initializeAudio();
-    playGenerateSound();
+ const handleAddBase = async () => {
+   //sound button:
+   if (soundEnabled) await playButtonSound();
+   await initializeAudio();
+   if (soundEnabled) await playAddSound();
+   addbase(currBase);
+ };
 
-    let inputNumber = 2; // Make sure to convert the input to a number
-    if (inputSize != "") {
-      inputNumber = Number(inputSize);
-    }
-    if (!isNaN(inputNumber)) {
-      generate_base(inputNumber, bases); // Pass the number to the generate function
-    } else {
-      generate_base(2, bases); // Handle invalid number input
-    }
 
-    // Play sounds for each path
-    setTimeout(() => {
-      bases.forEach((path, i) => {
-        setTimeout(() => {
-          playPathSound(path);
-        }, i * 300);
-      });
-    }, 500);
-  };
+ // Function to be called when the button is clicked
+ const handleClick = async () => {
+   //sound button:
+   if (soundEnabled) await playButtonSound();
+   await initializeAudio();
 
-  const handlebaseremove = async () => {
-    await initializeAudio();
-    playClearSound();
-    clearbase();
-  };
 
-  // Function to handle the submit (not being used here, but left for context)
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-  };
+   // Convert inputValue to a number and pass it to generate
+   let inputNumber = 2; // Make sure to convert the input to a number
+   if (inputSize != "") {
+     inputNumber = Number(inputSize);
+   }
+   if (!isNaN(inputNumber)) {
+     generate(inputNumber); // Pass the number to the generate function
+     // Play generate sound after paths are generated
+     setTimeout(() => {
+       if (soundEnabled) playGenerateSound();
+     }, 100);
+   } else {
+     generate(2); // Handle invalid number input
+     // Play generate sound after paths are generated
+     setTimeout(() => {
+       if (soundEnabled) playGenerateSound();
+     }, 100);
+   }
+ };
 
-  const handleAddBase = async () => {
-    await initializeAudio();
-    playAddSound();
-    addbase(currBase);
-  };
 
-  // Function to be called when the button is clicked
-  const handleClick = async () => {
-    await initializeAudio();
-    playButtonSound();
+ // Function to be called when the button is clicked
+ const handleClickRand = async () => {
+   //sound button:
+   if (soundEnabled) await playButtonSound();
+   await initializeAudio();
+   if (soundEnabled) await playGenerateSound();
 
-    // Convert inputValue to a number and pass it to generate
-    let inputNumber = 2; // Make sure to convert the input to a number
-    if (inputSize != "") {
-      inputNumber = Number(inputSize);
-    }
-    if (!isNaN(inputNumber)) {
-      generate(inputNumber); // Pass the number to the generate function
-      // Play generate sound after paths are generated
-      setTimeout(() => {
-        playGenerateSound();
-      }, 100);
-    } else {
-      generate(2); // Handle invalid number input
-      // Play generate sound after paths are generated
-      setTimeout(() => {
-        playGenerateSound();
-      }, 100);
-    }
-  };
 
-  // Function to be called when the button is clicked
-  const handleClickRand = async () => {
-    await initializeAudio();
-    playGenerateSound();
+   // Convert inputValue to a number and pass it to generate
+   let inputNumber = 2; // Make sure to convert the input to a number
+   if (inputSize != "") {
+     inputNumber = Number(inputSize);
+   }
+   if (!isNaN(inputNumber)) {
+     generate_rand(inputNumber); // Pass the number to the generate function
+   } else {
+     generate_rand(2); // Handle invalid number input
+   }
+ };
 
-    // Convert inputValue to a number and pass it to generate
-    let inputNumber = 2; // Make sure to convert the input to a number
-    if (inputSize != "") {
-      inputNumber = Number(inputSize);
-    }
-    if (!isNaN(inputNumber)) {
-      generate_rand(inputNumber); // Pass the number to the generate function
-    } else {
-      generate_rand(2); // Handle invalid number input
-    }
-  };
 
-  return (
-    <>
-      <div
-        style={{
-          position: "fixed",
-          bottom: 140,
-          left: 10,
-          // transform: "translateX(-50%)",
-          background: "rgba(47,47,47,0.5)",
-          padding: 12,
-          borderRadius: 10,
-          zIndex: 10,
-          display: "flex",
-          flexDirection: "column",
-          gap: 8,
-          alignItems: "left",
-        }}
-      >
-        {/* Row 1: Size Input */}
-        <div style={{ display: "flex", gap: 8 }}>
-          <label>Number of Paths:</label>
-          <input
-            size={10}
-            value={inputSize}
-            onChange={handleSizeChange}
-            placeholder="2"
-          />
-        </div>
+ return (
+   <>
+     <div
+       style={{
+         position: "fixed",
+         bottom: 140,
+         left: 10,
+         // transform: "translateX(-50%)",
+         background: "rgba(47,47,47,0.5)",
+         padding: 12,
+         borderRadius: 10,
+         zIndex: 10,
+         display: "flex",
+         flexDirection: "column",
+         gap: 8,
+         alignItems: "left",
+       }}
+     >
+       {/* Row 1: Size Input */}
+       <div style={{ display: "flex", gap: 8 }}>
+         <label>Number of Paths:</label>
+         <input
+           size={10}
+           value={inputSize}
+           onChange={handleSizeChange}
+           placeholder="2"
+         />
+       </div>
 
-        {/* Row 2: Base Input and Add Base Button */}
-        <div style={{ display: "flex", gap: 8 }}>
-          <input
-            size={10}
-            value={currBase}
-            onChange={handleBaseChange}
-            placeholder="Add Generator"
-          />
-          <button
-            style={{
-              width: 70,
-              height: 28,
-              fontSize: 13,
-              backgroundColor: "transparent",
-              border: "2px solid rgb(13, 255, 0)",
-              color: "rgb(13, 255, 0)",
-              cursor: "pointer",
-              borderRadius: 4,
-              transition: "0.3s",
-            }}
-            onClick={handleAddBase}
-          >
-            Add
-          </button>
-          <button
-            style={{
-              width: 70,
-              height: 28,
-              fontSize: 13,
-              backgroundColor: "transparent",
-              border: "2px solid rgb(13, 255, 0)",
-              color: "rgb(13, 255, 0)",
-              cursor: "pointer",
-              borderRadius: 4,
-              transition: "0.3s",
-            }}
-            onClick={handlebaseremove}
-          >
-            Clear
-          </button>
-        </div>
 
-        {/* Row 3: Generate Buttons */}
-        <div
-          style={{
-            display: "flex",
-            gap: 8,
-            flexWrap: "wrap",
-            justifyContent: "left",
-          }}
-        >
-          <button
-            style={{
-              width: 140,
-              height: 28,
-              fontSize: 13,
-              backgroundColor: "transparent",
-              border: "2px solid rgb(13, 255, 0)",
-              color: "rgb(13, 255, 0)",
-              cursor: "pointer",
-              borderRadius: 4,
-              transition: "0.3s",
-            }}
-            onClick={handleClickRand}
-          >
-            Generate Rand
-          </button>
-          <button
-            className={`${tutorialStep === 1 ? styles.highlight : ""}`}
-            style={{
-              width: 140,
-              height: 28,
-              fontSize: 13,
-              backgroundColor: "transparent",
-              border: "2px solid rgb(13, 255, 0)",
-              color: "rgb(13, 255, 0)",
-              cursor: "pointer",
-              borderRadius: 4,
-              transition: "0.3s",
-            }}
-            onClick={handlebaseClick}
-          >
-            Generate Paths
-          </button>
-          <button
-            style={{
-              width: 140,
-              height: 28,
-              fontSize: 13,
-              backgroundColor: "transparent",
-              border: "2px solid rgb(13, 255, 0)",
-              color: "rgb(13, 255, 0)",
-              cursor: "pointer",
-              borderRadius: 4,
-              transition: "0.3s",
-            }}
-            onClick={() => setSoundEnabled(!soundEnabled)}
-          >
-            {soundEnabled ? "Sound On" : "Sound Off"}
-          </button>
-        </div>
-      </div>
+       {/* Row 2: Base Input and Add Base Button */}
+       <div style={{ display: "flex", gap: 8 }}>
+         <input
+           size={10}
+           value={currBase}
+           onChange={handleBaseChange}
+           placeholder="Add Generator"
+         />
+         <button
+           style={{
+             width: 70,
+             height: 28,
+             fontSize: 13,
+             backgroundColor: "transparent",
+             border: "2px solid rgb(13, 255, 0)",
+             color: "rgb(13, 255, 0)",
+             cursor: "pointer",
+             borderRadius: 4,
+             transition: "0.3s",
+           }}
+           onClick={handleAddBase}
+         >
+           Add
+         </button>
+         <button
+           style={{
+             width: 70,
+             height: 28,
+             fontSize: 13,
+             backgroundColor: "transparent",
+             border: "2px solid rgb(13, 255, 0)",
+             color: "rgb(13, 255, 0)",
+             cursor: "pointer",
+             borderRadius: 4,
+             transition: "0.3s",
+           }}
+           onClick={handlebaseremove}
+         >
+           Clear
+         </button>
+       </div>
 
-      {/* Word List Display */}
-      <div
-        style={{
-          position: "fixed",
-          bottom: 5,
-          left: 10,
-          // transform: "translateX(-50%)",
-          background: "rgba(47,47,47,0.5)",
-          color: "yellow",
-          fontSize: 12,
-          padding: 10,
-          borderRadius: 8,
-          height: 105, // <- fixed height
-          overflowY: "scroll", // scroll when overflow
-          zIndex: 10,
-          width: "90%",
-          maxWidth: 360,
-          scrollbarWidth: "none", // for Firefox
-          msOverflowStyle: "none", // for IE/Edge
-        }}
-      >
-        <div style={{ fontWeight: "bold", color: "white", marginBottom: 4 }}>
-          Generators
-        </div>
-        {bases.length === 0 ? (
-          <div>No specified bases, default generators a,b. </div>
-        ) : (
-          bases.map((path, i) => (
-            <div
-              key={i}
-              style={{
-                whiteSpace: "nowrap",
-                overflowX: "auto",
-                marginBottom: 2,
-              }}
-              onClick={() => {
-                if (isSoundInitialized) {
-                  playPathSound(path);
-                }
-              }}
-            >
-              <strong>[G{i + 1}]:</strong>{" "}
-              {path.length === 0
-                ? "1"
-                : path
-                    .map(
-                      (node) => translation[node as keyof typeof translation]
-                    )
-                    .join(" ")}
-            </div>
-          ))
-        )}
-      </div>
-    </>
-  );
+
+       {/* Row 3: Generate Buttons */}
+       <div
+         style={{
+           display: "flex",
+           gap: 8,
+           flexWrap: "wrap",
+           justifyContent: "left",
+         }}
+       >
+         <button
+           style={{
+             width: 140,
+             height: 28,
+             fontSize: 13,
+             backgroundColor: "transparent",
+             border: "2px solid rgb(13, 255, 0)",
+             color: "rgb(13, 255, 0)",
+             cursor: "pointer",
+             borderRadius: 4,
+             transition: "0.3s",
+           }}
+           onClick={handleClickRand}
+         >
+           Generate Rand
+         </button>
+         <button
+           className={`${tutorialStep === 1 ? styles.highlight : ""}`}
+           style={{
+             width: 140,
+             height: 28,
+             fontSize: 13,
+             backgroundColor: "transparent",
+             border: "2px solid rgb(13, 255, 0)",
+             color: "rgb(13, 255, 0)",
+             cursor: "pointer",
+             borderRadius: 4,
+             transition: "0.3s",
+           }}
+           onClick={handlebaseClick}
+         >
+           Generate Paths
+         </button>
+       </div>
+     </div>
+
+
+     {/* Word List Display */}
+     <div
+       style={{
+         position: "fixed",
+         bottom: 5,
+         left: 10,
+         // transform: "translateX(-50%)",
+         background: "rgba(47,47,47,0.5)",
+         color: "yellow",
+         fontSize: 12,
+         padding: 10,
+         borderRadius: 8,
+         height: 105, // <- fixed height
+         overflowY: "scroll", // scroll when overflow
+         zIndex: 10,
+         width: "90%",
+         maxWidth: 360,
+         scrollbarWidth: "none", // for Firefox
+         msOverflowStyle: "none", // for IE/Edge
+       }}
+     >
+       <div style={{ fontWeight: "bold", color: "white", marginBottom: 4 }}>
+         Generators
+       </div>
+       {bases.length === 0 ? (
+         <div>No specified bases, default generators a,b. </div>
+       ) : (
+         bases.map((path, i) => (
+           <div
+             key={i}
+             style={{
+               whiteSpace: "nowrap",
+               overflowX: "auto",
+               marginBottom: 2,
+             }}
+             onClick={() => {
+               if (soundEnabled) {
+                 playPathSound(path);
+               }
+             }}
+           >
+             <strong>[G{i + 1}]:</strong>{" "}
+             {path.length === 0
+               ? "1"
+               : path
+                   .map(
+                     (node) => translation[node as keyof typeof translation]
+                   )
+                   .join(" ")}
+           </div>
+         ))
+       )}
+     </div>
+   </>
+ );
 };
 
+
 export default ButtonBar;
+
+
