@@ -17,6 +17,10 @@ interface HeadbarProps {
   //sound button:
   soundEnabled: boolean;
   setSoundEnabled: (value: boolean) => void;
+
+  // make some buttons optional for Rank 1
+  hideEdgeThickness?: boolean;
+  hideShape?: boolean;
 }
 
 //function for return
@@ -34,6 +38,8 @@ const Headbar: React.FC<HeadbarProps> = ({
   //sound button
   soundEnabled,
   setSoundEnabled,
+  hideEdgeThickness,
+  hideShape
 }) => {
   const colors = [
     "rgb(255, 50, 91)",
@@ -96,18 +102,20 @@ const Headbar: React.FC<HeadbarProps> = ({
             </select>
           </div>
 
-          <div>
-            <label>Edge Thickness:</label>
-            <input
-              type="range"
-              min="0.7"
-              max="10"
-              step="0.1"
-              value={edgeThickness}
-              onChange={handleEdgeThicknessChange}
-            />
-            <span>{edgeThickness}</span>
-          </div>
+          {!hideEdgeThickness && (
+            <div>
+              <label>Edge Thickness:</label>
+              <input
+                type="range"
+                min="0.7"
+                max="10"
+                step="0.1"
+                value={edgeThickness}
+                onChange={handleEdgeThicknessChange}
+              />
+              <span>{edgeThickness}</span>
+            </div>
+          )}
           <div>
             <label>Theme:</label>
             <select value={theme} onChange={handleThemeChange}>
@@ -115,14 +123,16 @@ const Headbar: React.FC<HeadbarProps> = ({
               <option value="dark">Dark</option>
             </select>
           </div>
-          <div>
-            {/* <button onClick={() => handleshape()}>shape</button> */}
-            <label>Shape:</label>
-            <select value={shape} onChange={handleshape}>
-              <option value="circle">circle</option>
-              <option value="rect">rectangle</option>
-            </select>
-          </div>
+          {!hideShape && (
+            <div>
+              {/* <button onClick={() => handleshape()}>shape</button> */}
+              <label>Shape:</label>
+              <select value={shape} onChange={handleshape}>
+                <option value="circle">circle</option>
+                <option value="rect">rectangle</option>
+              </select>
+            </div>
+          )}
 
           <button onClick={toggleSettings}>Close</button>
         </div>
