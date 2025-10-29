@@ -24,6 +24,7 @@ import buildNodesEdgesFromMoves from "../utils/buildNodesEdgesFromMoves";
 import next from "next";
 import Steps from "../_components/Steps";
 import { greedyNielsenSteps } from "../utils/greedyNielsen";
+import { playSuccessSound } from "../utils/soundManager";
 
 type Direction = "up" | "down" | "left" | "right";
 
@@ -42,6 +43,13 @@ const Rank1 = () => {
     const [nodePaths, setNodePaths] = useState<string[][]>([]);
     const [edgePaths, setEdgePaths] = useState<string[][]>([]);
     const [moveRecords, setMoveRecords] = useState<Direction[][]>([]);
+
+    const [showConfetti, setShowConfetti] = useState<boolean>(false);
+    const confettiCanvas = useRef<HTMLCanvasElement>(null);
+    const confettiAnimationRef = useRef<number | null>(null);
+    const [soundEnabled, setSoundEnabled] = useState(true);
+
+    
 
     // State for Rank 1 paths
     const [rank1Paths, setRank1Paths] = useState<Rank1Path[]>([]);
@@ -243,14 +251,105 @@ const Rank1 = () => {
                 // Keep result as 0 to represent identity element (a^0 = 1)
                 // This will be rendered as a dot instead of a line
             }
+            const nonZeroPaths = newPaths.filter(path => path.exponent !== 0);
+            const success = nonZeroPaths.length === 1;
+            if (success) {
+                setShowConfetti(true);
+                if (soundEnabled) playSuccessSound();
+            }
             return newPaths;
         });
     };
 
-  //
-  //
-  //
-  //
+    useEffect(() => {
+        if (!showConfetti || !confettiCanvas.current) return;
+
+        const canvas = confettiCanvas.current;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        interface Particle {
+            x: number;
+            y: number;
+            size: number;
+            color: string;
+            speed: number;
+            angle: number;
+            rotation: number;
+            rotationSpeed: number;
+        }
+
+        const confettiCount = 300;
+        const particles: Particle[] = [];
+        const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', 
+                      '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4CAF50',
+                      '#8BC34A', '#CDDC39', '#FFEB3B', '#FFC107', '#FF9800', '#FF5722'];
+        
+
+        for (let i = 0; i < confettiCount; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: -20 - Math.random() * 100, // Start above screen
+                size: Math.random() * 10 + 5,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                speed: Math.random() * 3 + 2,
+                angle: Math.random() * Math.PI * 2,
+                rotation: Math.random() * Math.PI * 2,
+                rotationSpeed: (Math.random() - 0.5) * 0.2
+            });
+        }
+
+        const animate = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            let particlesActive = false;
+            particles.forEach(p => {
+            // If particle is still on screen, consider animation active
+            if (p.y < canvas.height + 100) {
+                particlesActive = true;
+            }
+            
+            // Update particle position
+            p.y += p.speed;
+            p.x += Math.sin(p.angle) * 1.5;
+            p.rotation += p.rotationSpeed;
+            p.angle += 0.01;
+            
+            // Draw particle
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.rotation);
+            ctx.fillStyle = p.color;
+            ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+            ctx.restore();
+            });
+            
+            if (particlesActive) {
+            confettiAnimationRef.current = requestAnimationFrame(animate);
+            } else {
+            setShowConfetti(false);
+            }
+        };
+
+        confettiAnimationRef.current = requestAnimationFrame(animate);
+
+        const handleResize = () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        };
+        window.addEventListener("resize", handleResize);
+
+        return () => {
+            if (confettiAnimationRef.current) {
+                cancelAnimationFrame(confettiAnimationRef.current);
+            }
+            window.removeEventListener('resize', handleResize);
+        };
+    }, [showConfetti]);
+
+
     return (
         <>
         {showWelcome && (
@@ -267,6 +366,21 @@ const Rank1 = () => {
             }}
             />
         )}
+        {showConfetti && (
+            <canvas
+                ref={confettiCanvas}
+                style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    pointerEvents: "none",
+                    zIndex: 1000,
+                }}
+            />
+        )}
+
 
         <div className={`${styles.container} ${theme}`}>
             <Headbar
