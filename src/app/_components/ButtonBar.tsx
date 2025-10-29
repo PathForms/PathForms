@@ -13,6 +13,7 @@ import {
  setSoundEnabled,
  cleanupSynths,
 } from "../utils/soundManager";
+import { formatExponent } from "../utils/formatExponent";
 
 
 type Direction = "up" | "down" | "left" | "right";
@@ -406,7 +407,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
                    marginBottom: 2,
                  }}
                >
-                 <strong>[Path {i + 1}]:</strong> a^{exp}{" "}
+                 <strong>[Path {i + 1}]:</strong> {formatExponent(exp)}{" "}
                  {exp === 1 ? "(a)" : exp === -1 ? "(a⁻¹)" : exp === 0 ? "(identity)" : ""}
                </div>
              ))
