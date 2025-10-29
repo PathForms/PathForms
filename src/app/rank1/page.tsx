@@ -398,6 +398,10 @@ const Rank1 = () => {
             handleThemeChange={handleThemeChange}
             shape={shape}
             handleshape={handleshape}
+            soundEnabled={soundEnabled} 
+            setSoundEnabled={setSoundEnabled}
+            hideEdgeThickness={true}
+            hideShape={true}
             />
 
             <ButtonBar
