@@ -13,6 +13,7 @@ import {
  setSoundEnabled,
  cleanupSynths,
 } from "../utils/soundManager";
+import { formatExponent } from "../utils/formatExponent";
 
 
 type Direction = "up" | "down" | "left" | "right";
@@ -88,7 +89,11 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
 
  // Function to handle input change
  const handleSizeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-   setInputSize(event.target.value);
+   const value = event.target.value;
+   // Allow empty string or limit to max 10
+   if (value === "" || (Number(value) >= 0 && Number(value) <= 10)) {
+     setInputSize(value);
+   }
  };
 
 
@@ -115,6 +120,8 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
      inputNumber = Number(inputSize);
    }
    if (!isNaN(inputNumber)) {
+     // Clamp the value to max 10
+     inputNumber = Math.min(Math.max(inputNumber, 0), 10);
      generate_base(inputNumber, bases); // Pass the number to the generate function
    } else {
      generate_base(2, bases); // Handle invalid number input
@@ -164,11 +171,21 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
    // Check if we're in rank 1 mode (generate_custom exists) and input is a number
    if (generate_custom) {
      const exponent = parseInt(currBase);
-     if (!isNaN(exponent) && customExponents.length < 10) {
+     if (!isNaN(exponent)) {
+       if (customExponents.length >= 10) {
+         alert("Maximum of 10 custom paths allowed");
+         return;
+       }
        setCustomExponents([...customExponents, exponent]);
        setCurrBase("");
        return;
      }
+   }
+
+   // Check if we've reached the limit for rank 2 custom generators
+   if (bases.length >= 10) {
+     alert("Maximum of 10 custom generators allowed");
+     return;
    }
 
    // Otherwise, use the original addbase functionality
@@ -189,6 +206,8 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
      inputNumber = Number(inputSize);
    }
    if (!isNaN(inputNumber)) {
+     // Clamp the value to max 10
+     inputNumber = Math.min(Math.max(inputNumber, 0), 10);
      generate(inputNumber); // Pass the number to the generate function
      // Play generate sound after paths are generated
      setTimeout(() => {
@@ -218,6 +237,8 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
      inputNumber = Number(inputSize);
    }
    if (!isNaN(inputNumber)) {
+     // Clamp the value to max 10
+     inputNumber = Math.min(Math.max(inputNumber, 0), 10);
      generate_rand(inputNumber); // Pass the number to the generate function
    } else {
      generate_rand(2); // Handle invalid number input
@@ -248,6 +269,9 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
        <div style={{ display: "flex", gap: 8 }}>
          <label>Number of Paths:</label>
          <input
+           type="number"
+           min="0"
+           max="10"
            size={10}
            value={inputSize}
            onChange={handleSizeChange}
@@ -383,7 +407,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
                    marginBottom: 2,
                  }}
                >
-                 <strong>[Path {i + 1}]:</strong> a^{exp}{" "}
+                 <strong>[Path {i + 1}]:</strong> {formatExponent(exp)}{" "}
                  {exp === 1 ? "(a)" : exp === -1 ? "(a⁻¹)" : exp === 0 ? "(identity)" : ""}
                </div>
              ))

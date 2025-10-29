@@ -147,10 +147,16 @@ const Rank1 = () => {
         ];
 
         const newPaths: Rank1Path[] = [];
-
+        const exponentSet = new Set<number>();
+        
         for (let i = 0; i < n; i++) {
             // Generate random exponent between -10 and 10 (excluding 0)
-            let exponent = Math.floor(Math.random() * 21) - 10;
+            let exponent;
+            do {
+                exponent = Math.floor(Math.random() * 21) - 10;
+                console.log("Generated repeated exponent:", exponent);
+            } while (exponentSet.has(exponent));
+            exponentSet.add(exponent);
             if (exponent === 0) {
                 exponent = 1; // Default to 1 if we get 0
             }

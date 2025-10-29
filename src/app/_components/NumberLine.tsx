@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useRef } from "react";
+import { formatExponent } from "../utils/formatExponent";
 
 export interface Rank1Path {
   exponent: number; // a^exponent (positive = right, negative = left)
@@ -277,7 +278,7 @@ const NumberLine: React.FC<NumberLineProps> = ({
         ctx.font = "bold 16px Arial";
         ctx.textAlign = "left";
         ctx.textBaseline = "middle";
-        ctx.fillText("a⁰", startX + 15, yOffset);
+        ctx.fillText(formatExponent(0), startX + 15, yOffset);
         
         return; // Skip the rest of the rendering for this path
       }
@@ -338,10 +339,7 @@ const NumberLine: React.FC<NumberLineProps> = ({
       ctx.font = "bold 16px Arial";
       ctx.textAlign = "left";
       ctx.textBaseline = "middle";
-      const label = path.exponent === 1 ? "a" : 
-                   path.exponent === -1 ? "a⁻¹" :
-                   path.exponent > 0 ? `a^${path.exponent}` :
-                   `a^${path.exponent}`;
+      const label = formatExponent(path.exponent);
       ctx.fillText(label, Math.max(startX, endX) + 15, yOffset);
     });
 
@@ -380,7 +378,7 @@ const NumberLine: React.FC<NumberLineProps> = ({
         ctx.font = "bold 16px Arial";
         ctx.textAlign = "center";
         ctx.textBaseline = "top";
-        ctx.fillText("a⁰", dragX, dragY + 20);
+        ctx.fillText(formatExponent(0), dragX, dragY + 20);
         
       } else {
         // Regular path rendering
@@ -443,10 +441,7 @@ const NumberLine: React.FC<NumberLineProps> = ({
         ctx.font = "bold 16px Arial";
         ctx.textAlign = "center";
         ctx.textBaseline = "top";
-        const dragLabel = draggedPath.exponent === 1 ? "a" : 
-                          draggedPath.exponent === -1 ? "a⁻¹" :
-                          draggedPath.exponent > 0 ? `a^${draggedPath.exponent}` :
-                          `a^${draggedPath.exponent}`;
+        const dragLabel = formatExponent(draggedPath.exponent);
         ctx.fillText(dragLabel, dragX, dragY + 15);
       }
     }
