@@ -43,6 +43,14 @@ const Rank1 = () => {
     const [edgePaths, setEdgePaths] = useState<string[][]>([]);
     const [moveRecords, setMoveRecords] = useState<Direction[][]>([]);
 
+    //ADD RANK1 TUTORIAL
+    const rank1TutorialSteps = [
+        "Click the 'Generate Rand' button to create some random paths.", 
+        "Each path is a power of 'a'. Now, double-click any path to invert its exponent (e.g., a³ becomes a⁻³).", 
+        "Great! Now, drag one path onto another to add their exponents (e.g., dragging a² onto a³ makes a⁵).", 
+        "Try to make all paths 'a⁰' (the dot at the center)!" 
+    ];
+
     // State for Rank 1 paths
     const [rank1Paths, setRank1Paths] = useState<Rank1Path[]>([]);
 
@@ -75,7 +83,6 @@ const Rank1 = () => {
     const [targetSteps, setTargetSteps] = useState(0);
     const [usedConcatSteps, setUsedConcatSteps] = useState<number>(0);
 
-
     ////////////// GeneratePath for Game //////////////////////
     const moveRecordsRef = useRef<Direction[][]>([["up"], ["right"]]);
     const nodePathsRef = useRef<string[][]>([]);
@@ -86,6 +93,23 @@ const Rank1 = () => {
     const toggleSettings = () => {
         setShowSettings((prev) => !prev);
     };
+
+
+    //ADD RANK1 TUTORIAL
+    useEffect(() => {
+        // Only check if we are on the final tutorial step and paths exist
+        if (tutorialActive && tutorialStep === 4 && rank1Paths.length > 0) {
+            
+            // Check if ALL path exponents are 0
+            const allReduced = rank1Paths.some(path => path.exponent === 0);
+            
+            if (allReduced) {
+                // This will trigger the "Congratulations" message in Tutorial.tsx
+                setTutorialCompleted(true);
+            }
+        }
+        // Run this check every time the paths change
+    }, [rank1Paths, tutorialActive, tutorialStep]);
 
 
     // Handle theme change
@@ -104,11 +128,12 @@ const Rank1 = () => {
         // This function signature matches Headbar's expectation
         // Shape changes are handled via the select element directly
     };
-
+    
+    // EDIT RANK1 TUTORIAL
     // Generate random paths for Rank 1
     const GenerateRandomPath = (n: number) => {
-        if (tutorialActive) {
-            alert("You cannot generate paths with random bases right now!");
+        if (tutorialActive && tutorialStep !== 1) {
+            alert("Please follow the current tutorial step!"); // More helpful message
             return;
         }
         
@@ -154,6 +179,11 @@ const Rank1 = () => {
         }
         
         setRank1Paths(newPaths);
+
+        if (tutorialActive && tutorialStep === 1) {
+            setTutorialStep(s => s + 1);
+        }
+
     };
 
     // Dummy functions for ButtonBar compatibility
@@ -178,7 +208,13 @@ const Rank1 = () => {
     };
 
     // Handle path inversion (double-click)
+    //EDIT RANK1 TUTORIAL
     const handlePathInvert = (index: number) => {
+        if (tutorialActive && tutorialStep !== 2 && tutorialStep !== 4) {
+            alert("Please follow the current tutorial step!");
+            return;
+        }
+
         setRank1Paths(prevPaths => {
             const newPaths = [...prevPaths];
             if (newPaths[index]) {
@@ -190,10 +226,20 @@ const Rank1 = () => {
             }
             return newPaths;
         });
+
+        if (tutorialActive && tutorialStep === 2) {
+            setTutorialStep(s => s + 1);
+        }
     };
 
     // Handle path concatenation (drag and drop)
+    //EDIT RANK1 TUTORIAL
     const handlePathConcatenate = (draggedIndex: number, targetIndex: number) => {
+        if (tutorialActive && tutorialStep !== 3 && tutorialStep !== 4) {
+            alert("Please follow the current tutorial step!");
+            return;
+        }
+
         setRank1Paths(prevPaths => {
             const newPaths = [...prevPaths];
             if (newPaths[draggedIndex] && newPaths[targetIndex]) {
@@ -209,6 +255,10 @@ const Rank1 = () => {
             }
             return newPaths;
         });
+
+        if (tutorialActive && tutorialStep === 3) {
+            setTutorialStep(s => s + 1);
+        }
     };
 
   //
@@ -282,6 +332,18 @@ const Rank1 = () => {
             </button>
         
             {/* <Steps optimalSteps={targetSteps} usedSteps={usedConcatSteps} /> */}
+
+            <Tutorial
+                step={tutorialStep}
+                isActive={tutorialActive}
+                isCompleted={tutorialCompleted}
+                onNext={() => setTutorialStep(s => s + 1)} 
+                onSkip={() => {
+                    setTutorialActive(false);
+                    setTutorialStep(0);
+                }}
+                steps={rank1TutorialSteps} // <-- PASS THE NEW STEPS
+            />
         </div>
         </>
     );

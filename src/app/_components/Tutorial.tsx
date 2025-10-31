@@ -10,9 +10,11 @@ interface TutorialProps {
   isCompleted?: boolean;
   onNext: () => void;
   onSkip: () => void;
+  steps? : string[]; // ADD RANK1
 }
 
-const tutorialSteps = [
+//EDIT RANK1
+const defaultTutorialSteps = [
   "Click the 'Generate Paths' button to generate paths.",
   "Long press a path in the Word List to hide it.",
   "Long press again to show it back.",
@@ -28,8 +30,10 @@ const Tutorial: React.FC<TutorialProps> = ({
   isCompleted = false,
   onNext,
   onSkip,
+  steps, //ADD RANK1
 }) => {
   // Create refs for sound synths
+  const tutorialSteps = steps || defaultTutorialSteps; //ADD RANK1
   const clickSynthRef = useRef<Tone.Synth | null>(null);
   const hoverSynthRef = useRef<Tone.Synth | null>(null);
   const isToneInitialized = useRef<boolean>(false);
