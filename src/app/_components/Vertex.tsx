@@ -10,9 +10,10 @@ interface VertexProps {
   isActive?: boolean;
   isFinalResult?: boolean;
   isCancelledPart?: boolean;
+  isHoveredTarget?: boolean;
 }
 
-const Vertex: React.FC<VertexProps> = ({ id, x, y, isActive, isFinalResult = false, isCancelledPart = false }) => {
+const Vertex: React.FC<VertexProps> = ({ id, x, y, isActive, isFinalResult = false, isCancelledPart = false, isHoveredTarget = false }) => {
   //color logic
   const isRoot = id === "0,0";
 
@@ -41,6 +42,12 @@ const Vertex: React.FC<VertexProps> = ({ id, x, y, isActive, isFinalResult = fal
     if (!isRoot) {
       fillColor = "rgba(244, 252, 0, 0.2)"; // Dimmed for cancelled
     }
+  } else if (isHoveredTarget) {
+    // Highlight the hovered target path with brighter color and thicker stroke
+    fillColor = "#ffffff";
+    radius = 5;
+    stroke = "#87ceeb"; // Light blue stroke
+    strokeW = 3;
   } else if (isActive) {
     fillColor = "#ffffff";
   }
