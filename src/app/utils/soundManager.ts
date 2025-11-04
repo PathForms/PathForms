@@ -173,6 +173,11 @@ export const playGenerateSound = async () => {
   if (!soundEnabled) return;
   await initializeAudio();
   
+  // Ensure synths are initialized before playing
+  if (!generateSynth) {
+    await initializeSynths();
+  }
+  
   if (generateSynth) {
     // Play a chord
     generateSynth.triggerAttackRelease(["C4", "E4", "G4"], "8n");
@@ -263,6 +268,29 @@ export const playFailSound = async () => {
   // Play a descending minor tone
   synth.triggerAttackRelease("C4", "8n", Tone.now());
   synth.triggerAttackRelease("A3", "8n", Tone.now() + 0.2);
+};
+
+export const playReductionSound = async () => {
+  if (!soundEnabled) return;
+  await initializeAudio();
+
+  // Create a quick, pleasant "ding" sound for path reduction
+  const synth = new Tone.Synth({
+    oscillator: {
+      type: "sine"
+    },
+    envelope: {
+      attack: 0.001,
+      decay: 0.15,
+      sustain: 0,
+      release: 0.15
+    },
+    volume: -8
+  }).toDestination();
+
+  // Play a quick ascending note
+  synth.triggerAttackRelease("G5", "16n", Tone.now());
+  synth.triggerAttackRelease("C6", "16n", Tone.now() + 0.05);
 };
 
 export const playPoofSound = async () => {
