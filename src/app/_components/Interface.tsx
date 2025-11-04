@@ -32,7 +32,11 @@ const oppositeMoves: Record<Direction, Direction> = {
 };
 
 
-const Interface = () => {
+interface InterfaceProps {
+  defaultShape?: string;
+}
+
+const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
  // State for storing historical paths & cayley graph rendering
  const [pathIndex, setPathIndex] = useState<number[]>([]); // index of paths to show on the Cayley graph;
  const [nodePaths, setNodePaths] = useState<string[][]>([]);
@@ -52,7 +56,7 @@ const Interface = () => {
 
 
  //States for Cayley graph visualization;
- const [shape, setShape] = useState<string>("circle");
+ const [shape, setShape] = useState<string>(defaultShape);
  // // State for the current path showing on the screen (nodes, moves, and edges)
  // const [nodes, setNodes] = useState<string[]>(["0,0"]);
  // const [moves, setMoves] = useState<Direction[]>([]);

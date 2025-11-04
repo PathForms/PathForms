@@ -6,7 +6,7 @@ import Interface from "../_components/Interface";
 const Rank2 = () => {
   return (
     <div className="cayley">
-      <Interface />
+      <Interface defaultShape="rect" />
     </div>
   );
 };
