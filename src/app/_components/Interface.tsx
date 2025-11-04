@@ -17,6 +17,7 @@ import next from "next";
 import Steps from "./Steps";
 import { greedyNielsenSteps } from "../utils/greedyNielsen";
 import { useRouter } from "next/navigation";
+import { setSoundEnabled as setSoundEnabledGlobal } from "../utils/soundManager";
 
 
 
@@ -63,6 +64,12 @@ const Interface = () => {
  const [edgeThickness, setEdgeThickness] = useState<number>(0.7);
  const [theme, setTheme] = useState<"dark" | "light">("dark");
  const [showSettings, setShowSettings] = useState<boolean>(false);
+ const [soundEnabled, setSoundEnabled] = useState<boolean>(false);
+
+ // Sync soundEnabled state with soundManager
+ useEffect(() => {
+   setSoundEnabledGlobal(soundEnabled);
+ }, [soundEnabled]);
 
 
  //Welcome screen state
@@ -1612,6 +1619,12 @@ const Interface = () => {
  const clearBase = () => {
    setBases([]);
  };
+
+ const removeBase = (index: number) => {
+   if (index >= 0 && index < bases.length) {
+     setBases((prev) => prev.filter((_, i) => i !== index));
+   }
+ };
  //
  //
  //
@@ -1775,6 +1788,7 @@ const Interface = () => {
            setTutorialStep(0);
            setShowWelcome(false);
          }}
+         soundEnabled={soundEnabled}
        />
      )}
 
@@ -1789,6 +1803,8 @@ const Interface = () => {
          handleThemeChange={handleThemeChange}
          shape={shape}
          handleshape={handleshape}
+         soundEnabled={soundEnabled}
+         setSoundEnabled={setSoundEnabled}
        />
 
 
@@ -1801,6 +1817,8 @@ const Interface = () => {
          generate_base={GenerateBasedPath}
          addbase={Addbase}
          clearbase={clearBase}
+         removebase={removeBase}
+         soundEnabled={soundEnabled}
        />
        <Pathterminal
          pathIndex={pathIndex}
@@ -1866,6 +1884,7 @@ const Interface = () => {
              setTutorialStep(nextStep);
            }
          }}
+         soundEnabled={soundEnabled}
        />
        {/*        
        <Pathbar
@@ -1890,6 +1909,7 @@ const Interface = () => {
            setTutorialStep(0);
            setTutorialCompleted(false);
          }}
+         soundEnabled={soundEnabled}
        />
        <Steps optimalSteps={targetSteps} usedSteps={usedConcatSteps} />
        <button
