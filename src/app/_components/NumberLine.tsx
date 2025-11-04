@@ -303,19 +303,21 @@ const NumberLine: React.FC<NumberLineProps> = ({
       ctx.stroke();
       ctx.globalAlpha = 1;
       
-      // Draw circles at start and end
+      // Draw circles at every integer increment along the path
       ctx.fillStyle = path.color;
       const circleRadius = isDragged ? 7 : isHovered ? 6 : 5;
-      ctx.beginPath();
-      ctx.arc(startX, yOffset, circleRadius, 0, 2 * Math.PI);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(endX, yOffset, circleRadius, 0, 2 * Math.PI);
-      ctx.fill();
-      
+      const numPoints = Math.abs(path.exponent) + 1; // +1 to include both start and end
+      const direction = path.exponent > 0 ? 1 : -1;
+
+      for (let i = 0; i < numPoints; i++) {
+        const pointX = startX + i * tickSpacing * direction;
+        ctx.beginPath();
+        ctx.arc(pointX, yOffset, circleRadius, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+
       // Draw arrow heads along the path (larger and more visible)
       const numArrows = Math.abs(path.exponent);
-      const direction = path.exponent > 0 ? 1 : -1;
       
       for (let i = 0; i < numArrows; i++) {
         const arrowX = startX + (i + 0.5) * tickSpacing * direction;
@@ -404,14 +406,18 @@ const NumberLine: React.FC<NumberLineProps> = ({
         ctx.shadowBlur = 0;
         ctx.globalAlpha = 1;
         
-        // Draw circles at start and end
+        // Draw circles at every integer increment along the dragged path
         ctx.fillStyle = draggedPath.color;
-        ctx.beginPath();
-        ctx.arc(dragStartX, dragY, 6, 0, 2 * Math.PI);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(dragEndX, dragY, 6, 0, 2 * Math.PI);
-        ctx.fill();
+        const dragNumPoints = Math.abs(draggedPath.exponent) + 1;
+
+        for (let i = 0; i < dragNumPoints; i++) {
+          const pointX = draggedPath.exponent > 0
+            ? dragStartX + i * tickSpacing
+            : dragEndX - i * tickSpacing;
+          ctx.beginPath();
+          ctx.arc(pointX, dragY, 6, 0, 2 * Math.PI);
+          ctx.fill();
+        }
         
         // Draw arrow heads along the dragged path (larger and more visible)
         const numArrows = Math.abs(draggedPath.exponent);
