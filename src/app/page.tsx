@@ -29,19 +29,23 @@ const Home = () => {
         alignItems: "center",
         justifyContent: "center",
         minHeight: "100vh",
+        height: "100vh",
+        width: "100vw",
+        overflow: "auto",
         backgroundColor: "#0a0a0a", // Dark theme background from globals.css
         padding: "20px",
+        boxSizing: "border-box",
       }}
     >
-      <div style={{ marginBottom: "60px", textAlign: "center" }}>
-        <h1 style={{ fontSize: "48px", fontWeight: "bold", marginBottom: "10px" }}>
+      <div style={{ marginBottom: "clamp(20px, 5vh, 60px)", textAlign: "center" }}>
+        <h1 style={{ fontSize: "clamp(32px, 6vw, 48px)", fontWeight: "bold", marginBottom: "10px" }}>
           {text.split("").map((char, index) => (
             <span key={index} style={{ color: colors[index % colors.length] }}>
               {char}
             </span>
           ))}
         </h1>
-        <p style={{ fontSize: "20px", color: "#ededed" }}>
+        <p style={{ fontSize: "clamp(16px, 2.5vw, 20px)", color: "#ededed" }}>
           Explore Free Group Visualizations
         </p>
       </div>
@@ -58,8 +62,10 @@ const Home = () => {
         {/* Rank 1 Button */}
         <button
           style={{
-            width: "500px",
-            height: "500px",
+            width: "min(500px, 45vw, calc(100vw - 40px))",
+            height: "min(500px, 45vw, 60vh)",
+            maxWidth: "500px",
+            maxHeight: "500px",
             borderRadius: "16px",
             backgroundColor: "#1a1a1a",
             border:
@@ -104,13 +110,13 @@ const Home = () => {
                 alt="Rank 1 Preview"
                 width={480}
                 height={380}
-                style={{ objectFit: "contain" }}
+                style={{ objectFit: "contain", width: "100%", height: "100%" }}
                 unoptimized
               />
             </div>
             <div
               style={{
-                height: "80px",
+                height: "clamp(60px, 15%, 80px)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -123,7 +129,7 @@ const Home = () => {
             >
               <span
                 style={{
-                  fontSize: "24px",
+                  fontSize: "clamp(18px, 3vw, 24px)",
                   fontWeight: "bold",
                   color: "white",
                 }}
@@ -137,8 +143,10 @@ const Home = () => {
         {/* Rank 2 Button */}
         <button
           style={{
-            width: "500px",
-            height: "500px",
+            width: "min(500px, 45vw, calc(100vw - 40px))",
+            height: "min(500px, 45vw, 60vh)",
+            maxWidth: "500px",
+            maxHeight: "500px",
             borderRadius: "16px",
             backgroundColor: "#1a1a1a",
             border:
@@ -183,13 +191,13 @@ const Home = () => {
                 alt="Rank 2 Preview"
                 width={480}
                 height={380}
-                style={{ objectFit: "contain" }}
+                style={{ objectFit: "contain", width: "100%", height: "100%" }}
                 unoptimized
               />
             </div>
             <div
               style={{
-                height: "80px",
+                height: "clamp(60px, 15%, 80px)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -202,7 +210,7 @@ const Home = () => {
             >
               <span
                 style={{
-                  fontSize: "24px",
+                  fontSize: "clamp(18px, 3vw, 24px)",
                   fontWeight: "bold",
                   color: "white",
                 }}
@@ -214,8 +222,8 @@ const Home = () => {
         </button>
       </div>
 
-      <div style={{ marginTop: "48px", textAlign: "center" }}>
-        <p style={{ color: "#666", fontSize: "14px" }}>
+      <div style={{ marginTop: "clamp(20px, 4vh, 48px)", textAlign: "center" }}>
+        <p style={{ color: "#666", fontSize: "clamp(12px, 1.5vw, 14px)" }}>
           Click on a card to explore
         </p>
       </div>

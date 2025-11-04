@@ -2,7 +2,14 @@
 
 import React, { useEffect, useRef } from "react";
 import styles from "./components.module.css";
-import * as Tone from 'tone';
+import {
+  initializeSynths,
+  playClickSound,
+  playHoverSound,
+  playStepTransitionSound,
+  setSoundEnabled,
+  cleanupSynths,
+} from "../utils/soundManager";
 
 interface TutorialProps {
   step: number;
@@ -10,11 +17,11 @@ interface TutorialProps {
   isCompleted?: boolean;
   onNext: () => void;
   onSkip: () => void;
-  steps? : string[]; // ADD RANK1
+  soundEnabled: boolean;
+  steps?: string[]; //Rank1Tutorial
 }
 
-//EDIT RANK1
-const defaultTutorialSteps = [
+const defaultTutorialSteps = [ //Rank1Tutorial
   "Click the 'Generate Paths' button to generate paths.",
   "Long press a path in the Word List to hide it.",
   "Long press again to show it back.",
@@ -30,114 +37,40 @@ const Tutorial: React.FC<TutorialProps> = ({
   isCompleted = false,
   onNext,
   onSkip,
-  steps, //ADD RANK1
+  soundEnabled,
+  steps,//Rank1Tutorial 
 }) => {
-  // Create refs for sound synths
-  const tutorialSteps = steps || defaultTutorialSteps; //ADD RANK1
-  const clickSynthRef = useRef<Tone.Synth | null>(null);
-  const hoverSynthRef = useRef<Tone.Synth | null>(null);
-  const isToneInitialized = useRef<boolean>(false);
-  
-  // Add ref for step transition sound
-  const stepTransitionSynthRef = useRef<Tone.Synth | null>(null);
-  
   // Track previous step to detect transitions
   const prevStepRef = useRef<number>(step);
 
-  useEffect(() => {
-    // Initialize Tone.js synths
-    clickSynthRef.current = new Tone.Synth({
-      oscillator: {
-        type: "triangle"
-      },
-      envelope: {
-        attack: 0.005,
-        decay: 0.1,
-        sustain: 0,
-        release: 0.1
-      }
-    }).toDestination();
+  const tutorialSteps = steps || defaultTutorialSteps;
 
-    hoverSynthRef.current = new Tone.Synth({
-      oscillator: {
-        type: "sine"
-      },
-      envelope: {
-        attack: 0.01,
-        decay: 0.1,
-        sustain: 0,
-        release: 0.1
-      },
-      volume: -10 // Quieter than the click sound
-    }).toDestination();
-    
-    // Add synth for step transition sound - different from other sounds
-    stepTransitionSynthRef.current = new Tone.Synth({
-      oscillator: {
-        type: "sine8" // More complex oscillator type for distinct sound
-      },
-      envelope: {
-        attack: 0.01,
-        decay: 0.3,
-        sustain: 0.1,
-        release: 0.5
-      },
-      volume: -5
-    }).toDestination();
+  useEffect(() => {
+    // Initialize synths and set sound enabled state
+    const initSound = async () => {
+      await initializeSynths();
+      setSoundEnabled(soundEnabled);
+    };
+    initSound();
 
     // Clean up function to dispose synths when component unmounts
     return () => {
-      if (clickSynthRef.current) {
-        clickSynthRef.current.dispose();
-        clickSynthRef.current = null;
-      }
-      if (hoverSynthRef.current) {
-        hoverSynthRef.current.dispose();
-        hoverSynthRef.current = null;
-      }
-      if (stepTransitionSynthRef.current) {
-        stepTransitionSynthRef.current.dispose();
-        stepTransitionSynthRef.current = null;
-      }
+      cleanupSynths();
     };
-  }, []);
+  }, [soundEnabled]);
 
   // Effect to play sound when step changes
   useEffect(() => {
-    if (isActive && step !== prevStepRef.current && step > 0 && step <= tutorialSteps.length) {
+    if (
+      isActive &&
+      step !== prevStepRef.current &&
+      step > 0 &&
+      step <= tutorialSteps.length
+    ) {
       playStepTransitionSound();
       prevStepRef.current = step;
     }
-  }, [step, isActive]);
-
-  const initializeTone = async () => {
-    if (!isToneInitialized.current) {
-      await Tone.start();
-      isToneInitialized.current = true;
-    }
-  };
-
-  const playClickSound = async () => {
-    await initializeTone();
-    if (clickSynthRef.current) {
-      clickSynthRef.current.triggerAttackRelease("C5", "32n");
-    }
-  };
-
-  const playHoverSound = async () => {
-    await initializeTone();
-    if (hoverSynthRef.current) {
-      hoverSynthRef.current.triggerAttackRelease("G4", "32n");
-    }
-  };
-  
-  const playStepTransitionSound = async () => {
-    await initializeTone();
-    if (stepTransitionSynthRef.current) {
-      // Play a pleasant "ding" sound
-      stepTransitionSynthRef.current.triggerAttackRelease("E5", "8n");
-    }
-  };
+  }, [step, isActive, tutorialSteps]);
 
   const handleSkip = async () => {
     await playClickSound();

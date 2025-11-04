@@ -11,6 +11,20 @@ const translation: Record<Direction, string> = {
   left: "b\u207B\u00B9",
 };
 
+// Color mapping to match CayleyTree colors
+const getDirectionColor = (direction: Direction): string => {
+  switch (direction) {
+    case "up":
+    case "down":
+      return "rgb(0, 140, 255)"; // Blue for a/a^-1
+    case "left":
+    case "right":
+      return "rgb(251, 0, 71)"; // Red for b/b^-1
+    default:
+      return "rgb(64, 73, 65)"; // Default color
+  }
+};
+
 interface PathlistProps {
   mode: string;
   nodePaths: string[][];
@@ -22,6 +36,13 @@ interface PathlistProps {
   invert: (index: number) => void;
   removePath: (index: number) => void;
   tutorialStep?: number;
+  onDragStart?: (fromIndex: number) => void;
+  onDragEnd?: () => void;
+  onDragHover?: (toIndex: number) => void;
+  onDragLeave?: () => void;
+  isDragging?: boolean;
+  dragFromIndex?: number;
+  dragHoverIndex?: number;
 }
 
 const CLICK_INTERVAL = 250;
@@ -38,6 +59,13 @@ const Pathlist: React.FC<PathlistProps> = ({
   invert,
   removePath,
   tutorialStep,
+  onDragStart,
+  onDragEnd,
+  onDragHover,
+  onDragLeave,
+  isDragging = false,
+  dragFromIndex = -1,
+  dragHoverIndex = -1,
 }) => {
   const singleClickTimer = useRef<NodeJS.Timeout | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -54,6 +82,7 @@ const Pathlist: React.FC<PathlistProps> = ({
     e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.setData("text/plain", String(fromIndex));
     e.currentTarget.classList.add(styles.dragging);
+    onDragStart?.(fromIndex);
   };
 
   const handleDragEnd = (e: React.DragEvent<HTMLParagraphElement>) => {
@@ -62,16 +91,19 @@ const Pathlist: React.FC<PathlistProps> = ({
       clearTimeout(timerRef.current);
       timerRef.current = null;
     }
+    onDragEnd?.();
   };
 
-  const handleDragOver = (e: React.DragEvent<HTMLParagraphElement>) => {
+  const handleDragOver = (e: React.DragEvent<HTMLParagraphElement>, toIndex: number) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
     e.currentTarget.classList.add(styles.dragOver);
+    onDragHover?.(toIndex);
   };
 
   const handleDragLeave = (e: React.DragEvent<HTMLParagraphElement>) => {
     e.currentTarget.classList.remove(styles.dragOver);
+    onDragLeave?.();
   };
 
   const handleDrop = (
@@ -162,7 +194,15 @@ const Pathlist: React.FC<PathlistProps> = ({
         ) : (
           movePaths.map((path, rowIndex) => {
             const isActive = pathIndex.includes(rowIndex);
-            const textColor = isActive ? "rgb(255, 255, 0)" : "rgb(64, 73, 65)";
+            const isDraggingFrom = isDragging && dragFromIndex === rowIndex;
+            const isHoveredForDrop = isDragging && dragHoverIndex === rowIndex;
+            
+            let textColor = isActive ? "rgb(255, 255, 0)" : "rgb(64, 73, 65)";
+            if (isDraggingFrom) {
+              textColor = "rgba(255, 255, 0, 0.5)"; // Dimmed when dragging
+            } else if (isHoveredForDrop) {
+              textColor = "rgb(255, 255, 0)"; // Highlight when hovered for drop
+            }
 
             return (
               <p
@@ -183,7 +223,7 @@ const Pathlist: React.FC<PathlistProps> = ({
                 draggable
                 onDragStart={(e) => handleDragStart(e, rowIndex)}
                 onDragEnd={handleDragEnd}
-                onDragOver={handleDragOver}
+                onDragOver={(e) => handleDragOver(e, rowIndex)}
                 onDragLeave={handleDragLeave}
                 onDrop={(e) => handleDrop(e, rowIndex)}
                 style={{
@@ -195,6 +235,9 @@ const Pathlist: React.FC<PathlistProps> = ({
                   overflowX: "auto",
                   padding: "2px",
                   margin: "0",
+                  opacity: isDraggingFrom ? 0.5 : 1,
+                  backgroundColor: isHoveredForDrop ? "rgba(255, 255, 0, 0.2)" : "transparent",
+                  transition: "all 0.2s ease",
                 }}
                 onMouseDown={() => handleMouseDown(rowIndex)}
                 onMouseUp={() => handleMouseUp(rowIndex)}
@@ -204,11 +247,19 @@ const Pathlist: React.FC<PathlistProps> = ({
                 {`[P${rowIndex + 1}]: `}{" "}
                 {path.length === 0
                   ? "1"
-                  : path
-                      .map(
-                        (node) => translation[node as keyof typeof translation]
-                      )
-                      .join(" ")}
+                  : path.map((node, nodeIndex) => {
+                      const direction = node as Direction;
+                      const letter = translation[direction];
+                      const color = getDirectionColor(direction);
+                      return (
+                        <React.Fragment key={nodeIndex}>
+                          {nodeIndex > 0 && <span style={{ color: "rgb(64, 73, 65)" }}> </span>}
+                          <span style={{ color: color }}>
+                            {letter}
+                          </span>
+                        </React.Fragment>
+                      );
+                    })}
               </p>
             );
           })

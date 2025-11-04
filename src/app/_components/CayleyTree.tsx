@@ -34,7 +34,7 @@ function buildCayleyTreeData(
 
   for (const [dirName, info] of Object.entries(directions) as [
     DirKey,
-    { dx: number; dy: number; opposite: string }
+    { dx: number; dy: number; opposite: string },
   ][]) {
     if (fromDir && info.opposite === fromDir) continue;
 
@@ -69,6 +69,21 @@ interface CayleyTreeProps {
   edgePaths: string[][];
   edgeThickness: number;
   shape: string;
+  previewPath?: {
+    finalResult: {
+      nodes: string[];
+      edges: string[];
+      moves: string[];
+    };
+    cancelledParts: {
+      nodes: string[];
+      edges: string[];
+      moves: string[];
+    };
+  } | null;
+  isDragging?: boolean;
+  dragFromIndex?: number;
+  dragHoverIndex?: number;
 }
 
 const CayleyTree: React.FC<CayleyTreeProps> = ({
@@ -77,6 +92,10 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
   edgePaths,
   edgeThickness,
   shape,
+  previewPath,
+  isDragging = false,
+  dragFromIndex = -1,
+  dragHoverIndex = -1,
 }) => {
   const [nodes, setNodes] = useState<LayoutNode[]>([]);
   const [links, setLinks] = useState<LayoutLink[]>([]);
@@ -207,35 +226,87 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
       >
         <g ref={gRef}>
           {/* Use a path element so that we can place a marker at the midpoint */}
-          {links.map((lk) => (
-            <Edge
-              key={lk.id}
-              source={lk.source}
-              target={lk.target}
-              sourceX={lk.sourceX}
-              sourceY={lk.sourceY}
-              targetX={lk.targetX}
-              targetY={lk.targetY}
-              isActive={
+          {links.map((lk) => {
+            // Determine if this edge should be highlighted
+            let isActive = false;
+            let isHoveredTarget = false;
+            if (isDragging && dragFromIndex >= 0 && dragHoverIndex >= 0) {
+              // When dragging, show both paths but highlight the dragged path
+              const isFromPath = edgePaths[dragFromIndex]?.includes(lk.id);
+              const isHoverPath = edgePaths[dragHoverIndex]?.includes(lk.id);
+              isActive = isFromPath || isHoverPath;
+              // Specifically mark the dragged path for special highlighting
+              isHoveredTarget = isFromPath;
+            } else {
+              // Normal display: highlight all paths in pathIndex
+              isActive =
                 pathIndex.length > 0 &&
-                pathIndex.some((index) => edgePaths[index]?.includes(lk.id))
-              }
-              edgeThickness={edgeThickness}
-            />
-          ))}
+                pathIndex.some((index) => edgePaths[index]?.includes(lk.id));
+            }
 
-          {nodes.map((nd) => (
-            <Vertex
-              key={nd.id}
-              id={nd.id}
-              x={nd.x}
-              y={nd.y}
-              isActive={
+            const isFinalResult = Boolean(
+              previewPath && previewPath.finalResult.edges.includes(lk.id)
+            );
+            const isCancelledPart = Boolean(
+              previewPath && previewPath.cancelledParts.edges.includes(lk.id)
+            );
+
+            return (
+              <Edge
+                key={lk.id}
+                source={lk.source}
+                target={lk.target}
+                sourceX={lk.sourceX}
+                sourceY={lk.sourceY}
+                targetX={lk.targetX}
+                targetY={lk.targetY}
+                isActive={isActive}
+                isFinalResult={isFinalResult}
+                isCancelledPart={isCancelledPart}
+                isHoveredTarget={isHoveredTarget}
+                edgeThickness={edgeThickness}
+              />
+            );
+          })}
+
+          {nodes.map((nd) => {
+            // Determine if this node should be highlighted
+            let isActive = false;
+            let isHoveredTarget = false;
+            if (isDragging && dragFromIndex >= 0 && dragHoverIndex >= 0) {
+              // When dragging, show both paths but highlight the dragged path
+              const isFromPath = nodePaths[dragFromIndex]?.includes(nd.id);
+              const isHoverPath = nodePaths[dragHoverIndex]?.includes(nd.id);
+              isActive = isFromPath || isHoverPath;
+              // Specifically mark the dragged path for special highlighting
+              isHoveredTarget = isFromPath;
+            } else {
+              // Normal display: highlight all paths in pathIndex
+              isActive =
                 pathIndex.length > 0 &&
-                pathIndex.some((index) => nodePaths[index]?.includes(nd.id))
-              }
-            />
-          ))}
+                pathIndex.some((index) => nodePaths[index]?.includes(nd.id));
+            }
+
+            const isFinalResult = Boolean(
+              previewPath && previewPath.finalResult.nodes.includes(nd.id)
+            );
+            const isCancelledPart = Boolean(
+              previewPath && previewPath.cancelledParts.nodes.includes(nd.id)
+            );
+
+            return (
+              <Vertex
+                key={nd.id}
+                id={nd.id}
+                x={nd.x}
+                y={nd.y}
+                isActive={isActive}
+                isFinalResult={isFinalResult}
+                isCancelledPart={isCancelledPart}
+                isHoveredTarget={isHoveredTarget}
+              />
+            );
+          })}
         </g>
       </svg>
     </div>
