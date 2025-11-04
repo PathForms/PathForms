@@ -48,9 +48,7 @@ const Rank1 = () => {
     const confettiCanvas = useRef<HTMLCanvasElement>(null);
     const confettiAnimationRef = useRef<number | null>(null);
     const [soundEnabled, setSoundEnabled] = useState(true);
-
     
-
     // State for Rank 1 paths
     const [rank1Paths, setRank1Paths] = useState<Rank1Path[]>([]);
 
@@ -77,10 +75,18 @@ const Rank1 = () => {
     //Welcome screen state
     const [showWelcome, setShowWelcome] = useState(true);
 
-    // Tutorial state
-    const [tutorialStep, setTutorialStep] = useState<number>(1);
-    const [tutorialActive, setTutorialActive] = useState<boolean>(false);
-    const [tutorialCompleted, setTutorialCompleted] = useState<boolean>(false);
+    // Tutorial state 
+    //Rank1Tutorial
+    const [tutorialStep, setTutorialStep] = useState(0);
+    const [tutorialActive, setTutorialActive] = useState(false);
+    const [tutorialCompleted, setTutorialCompleted] = useState(false);
+
+    const rank1TutorialSteps = [
+        "Click the 'Generate Paths' button to create some random paths.",
+        "Each path is a power of 'a'. Now, double-click any path to invert its exponent (e.g., a³ becomes a⁻³).",
+        "Great! Now, drag one path onto another** to add their exponents (e.g., dragging a² onto a³ makes a⁵).",
+        "Try to make all paths 'a⁰' (the dot at the center)!"
+    ];
 
     // Steps state
     const [targetSteps, setTargetSteps] = useState(0);
@@ -207,8 +213,25 @@ const Rank1 = () => {
     };
 
     // Dummy functions for ButtonBar compatibility
-    const GeneratePath = (size: number) => {
-        // Not used in Rank 1
+    //Rank1Tutorial
+    const GeneratePath = () => {
+        // Block if tutorial is active BUT NOT on step 1
+        if (tutorialActive && tutorialStep !== 1) {
+            alert("Please follow the current tutorial step!");
+            return;
+        }
+
+        // Generate two simple paths for the tutorial
+        const newPaths = [
+            { exponent: 3, color: "green" },
+            { exponent: -2, color: "orange" },
+        ];
+        setRank1Paths(newPaths);
+
+        // If we're on step 1, advance to step 2
+        if (tutorialActive && tutorialStep === 1) {
+            setTutorialStep(s => s + 1);
+        }
     };
 
     const GenerateBasedPath = (size: number, b: Direction[][]) => {
@@ -228,11 +251,17 @@ const Rank1 = () => {
     };
 
     // Handle path inversion (double-click)
+    //Rank1Tutorial
     const handlePathInvert = (index: number) => {
+        // Block if tutorial is active BUT NOT on step 2 (invert) or 4 (free play)
+        if (tutorialActive && tutorialStep !== 2 && tutorialStep !== 4) {
+            alert("Please follow the current tutorial step!");
+            return;
+        }
+
         setRank1Paths(prevPaths => {
             const newPaths = [...prevPaths];
             if (newPaths[index]) {
-                // Invert the exponent: a^4 becomes a^-4
                 newPaths[index] = {
                     ...newPaths[index],
                     exponent: -newPaths[index].exponent
@@ -240,10 +269,33 @@ const Rank1 = () => {
             }
             return newPaths;
         });
+
+        // If we are on step 2, advance to step 3
+        if (tutorialActive && tutorialStep === 2) {
+            setTutorialStep(s => s + 1);
+        }
     };
+
+    //Rank1Tutorial
+    useEffect(() => {
+        // Check for tutorial completion
+        if (tutorialActive && tutorialStep === 4 && rank1Paths.length > 0) {
+            // Check if AT LEAST ONE path exponent is 0
+            const oneReduced = rank1Paths.some(path => path.exponent === 0);
+            
+            if (oneReduced) {
+                setTutorialCompleted(true);
+                playSuccessSound(); // Play sound
+            }
+        }
+    }, [rank1Paths, tutorialActive, tutorialStep]);
 
     // Handle path concatenation (drag and drop)
     const handlePathConcatenate = (draggedIndex: number, targetIndex: number) => {
+        if (tutorialActive && tutorialStep !== 3 && tutorialStep !== 4) {
+            alert("Please follow the current tutorial step!");
+            return;
+        }
         setRank1Paths(prevPaths => {
             const newPaths = [...prevPaths];
             if (newPaths[draggedIndex] && newPaths[targetIndex]) {
@@ -265,6 +317,10 @@ const Rank1 = () => {
             }
             return newPaths;
         });
+        if (tutorialActive && tutorialStep === 3) {
+            setTutorialStep(s => s + 1);
+            if (soundEnabled) playSuccessSound(); // Play sound for tutorial step
+        }
     };
 
     useEffect(() => {
@@ -423,6 +479,19 @@ const Rank1 = () => {
             paths={rank1Paths}
             onPathInvert={handlePathInvert}
             onPathConcatenate={handlePathConcatenate}
+            />
+
+            <Tutorial
+                step={tutorialStep}
+                isActive={tutorialActive}
+                isCompleted={tutorialCompleted}
+                onNext={() => setTutorialStep(s => s + 1)} 
+                onSkip={() => {
+                    setTutorialActive(false);
+                    setTutorialStep(0);
+                }}
+                steps={rank1TutorialSteps}
+                soundEnabled={soundEnabled}
             />
 
             <button
