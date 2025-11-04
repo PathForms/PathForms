@@ -18,9 +18,10 @@ interface TutorialProps {
   onNext: () => void;
   onSkip: () => void;
   soundEnabled: boolean;
+  steps?: string[]; //Rank1Tutorial
 }
 
-const tutorialSteps = [
+const defaultTutorialSteps = [ //Rank1Tutorial
   "Click the 'Generate Paths' button to generate paths.",
   "Long press a path in the Word List to hide it.",
   "Long press again to show it back.",
@@ -37,9 +38,12 @@ const Tutorial: React.FC<TutorialProps> = ({
   onNext,
   onSkip,
   soundEnabled,
+  steps,//Rank1Tutorial 
 }) => {
   // Track previous step to detect transitions
   const prevStepRef = useRef<number>(step);
+
+  const tutorialSteps = steps || defaultTutorialSteps;
 
   useEffect(() => {
     // Initialize synths and set sound enabled state
@@ -66,7 +70,7 @@ const Tutorial: React.FC<TutorialProps> = ({
       playStepTransitionSound();
       prevStepRef.current = step;
     }
-  }, [step, isActive]);
+  }, [step, isActive, tutorialSteps]);
 
   const handleSkip = async () => {
     await playClickSound();

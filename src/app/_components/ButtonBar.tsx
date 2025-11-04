@@ -102,8 +102,15 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
    setCurrBase(event.target.value);
  };
 
-
+//Rank1Tutorial
  const handlebaseClick = async () => {
+  if (tutorialStep === 1) {
+     if (soundEnabled) await playButtonSound();
+     await initializeAudio();
+     if (soundEnabled) await playGenerateSound();
+     generate(0); 
+     return; 
+   }
    //sound button:
    if (soundEnabled) await playButtonSound();
    await initializeAudio();
