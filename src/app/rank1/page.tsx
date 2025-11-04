@@ -24,7 +24,7 @@ import buildNodesEdgesFromMoves from "../utils/buildNodesEdgesFromMoves";
 import next from "next";
 import Steps from "../_components/Steps";
 import { greedyNielsenSteps } from "../utils/greedyNielsen";
-import { playSuccessSound } from "../utils/soundManager";
+import { playSuccessSound, playPoofSound, playReductionSound } from "../utils/soundManager";
 
 type Direction = "up" | "down" | "left" | "right";
 
@@ -48,7 +48,19 @@ const Rank1 = () => {
     const confettiCanvas = useRef<HTMLCanvasElement>(null);
     const confettiAnimationRef = useRef<number | null>(null);
     const [soundEnabled, setSoundEnabled] = useState(true);
+
+    // Explosion effect state
+    const [explosionPosition, setExplosionPosition] = useState<{ x: number; y: number; color: string } | null>(null);
+    const explosionCanvas = useRef<HTMLCanvasElement>(null);
+    const explosionAnimationRef = useRef<number | null>(null);
+
+    // Sparkle effect state (for path reduction)
+    const [sparklePosition, setSparklePosition] = useState<{ x: number; y: number; color: string } | null>(null);
+    const sparkleCanvas = useRef<HTMLCanvasElement>(null);
+    const sparkleAnimationRef = useRef<number | null>(null);
+
     
+
     // State for Rank 1 paths
     const [rank1Paths, setRank1Paths] = useState<Rank1Path[]>([]);
 
@@ -299,23 +311,55 @@ const Rank1 = () => {
         setRank1Paths(prevPaths => {
             const newPaths = [...prevPaths];
             if (newPaths[draggedIndex] && newPaths[targetIndex]) {
-                // Concatenate: a^m * a^n = a^(m+n)
                 const draggedExponent = newPaths[draggedIndex].exponent;
+                const targetExponent = newPaths[targetIndex].exponent;
+                const oldAbsSum = Math.abs(draggedExponent) + Math.abs(targetExponent);
+
+                // Concatenate: a^m * a^n = a^(m+n)
+                const newExponent = targetExponent + draggedExponent;
                 newPaths[targetIndex] = {
                     ...newPaths[targetIndex],
-                    exponent: newPaths[targetIndex].exponent + draggedExponent
+                    exponent: newExponent
                 };
-                
-                // Keep result as 0 to represent identity element (a^0 = 1)
-                // This will be rendered as a dot instead of a line
+
+                const newAbsValue = Math.abs(newExponent);
+
+                // Check if path was shortened (reduction occurred)
+                const wasShortened = newAbsValue < oldAbsSum;
+
+                // If resulting path is zero (identity), trigger explosion effect
+                if (newExponent === 0) {
+                    if (soundEnabled) playPoofSound();
+
+                    // Trigger explosion at target path position
+                    setExplosionPosition({
+                        x: 0, // Will be calculated based on path position
+                        y: targetIndex, // Use index to determine y position
+                        color: newPaths[targetIndex].color
+                    });
+                } else if (wasShortened) {
+                    // If path was shortened but not zero, trigger sparkle effect
+                    if (soundEnabled) playReductionSound();
+
+                    // Trigger sparkle at target path position
+                    setSparklePosition({
+                        x: 0,
+                        y: targetIndex,
+                        color: newPaths[targetIndex].color
+                    });
+                }
             }
-            const nonZeroPaths = newPaths.filter(path => path.exponent !== 0);
-            const success = nonZeroPaths.length === 1;
+
+            // Remove paths with zero exponent completely
+            const filteredPaths = newPaths.filter(path => path.exponent !== 0);
+
+            // Check if we've reached Nielsen reduced form (only 1 non-zero path)
+            const success = filteredPaths.length === 1;
             if (success) {
                 setShowConfetti(true);
                 if (soundEnabled) playSuccessSound();
             }
-            return newPaths;
+            return filteredPaths;
         });
         if (tutorialActive && tutorialStep === 3) {
             setTutorialStep(s => s + 1);
@@ -411,11 +455,257 @@ const Rank1 = () => {
         };
     }, [showConfetti]);
 
+    // Explosion effect
+    useEffect(() => {
+        if (!explosionPosition || !explosionCanvas.current) return;
+
+        const canvas = explosionCanvas.current;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Calculate explosion center based on path index
+        const pathVerticalSpacing = 35;
+        const canvasHeight = 500; // NumberLine max height
+        const centerY = canvasHeight / 2;
+        const pathStartY = centerY - 175;
+
+        let yOffset;
+        if (explosionPosition.y < 5) {
+            yOffset = pathStartY + (explosionPosition.y * pathVerticalSpacing);
+        } else {
+            yOffset = centerY + ((explosionPosition.y - 4) * pathVerticalSpacing);
+        }
+
+        // Calculate x position (center of the viewport for the NumberLine)
+        const centerX = window.innerWidth / 2;
+
+        interface ExplosionParticle {
+            x: number;
+            y: number;
+            vx: number;
+            vy: number;
+            size: number;
+            color: string;
+            life: number;
+            maxLife: number;
+        }
+
+        const particles: ExplosionParticle[] = [];
+        const particleCount = 100;
+
+        // Create particles in all directions
+        for (let i = 0; i < particleCount; i++) {
+            const angle = (Math.PI * 2 * i) / particleCount + Math.random() * 0.5;
+            const speed = Math.random() * 8 + 4;
+            const vx = Math.cos(angle) * speed;
+            const vy = Math.sin(angle) * speed;
+
+            particles.push({
+                x: centerX,
+                y: yOffset + 100, // Offset for the header
+                vx,
+                vy,
+                size: Math.random() * 6 + 3,
+                color: explosionPosition.color,
+                life: 1,
+                maxLife: Math.random() * 30 + 30
+            });
+        }
+
+        let frameCount = 0;
+
+        const animate = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            let particlesAlive = false;
+
+            particles.forEach(p => {
+                if (p.life > 0) {
+                    particlesAlive = true;
+
+                    // Update position
+                    p.x += p.vx;
+                    p.y += p.vy;
+
+                    // Apply gravity
+                    p.vy += 0.3;
+
+                    // Slow down
+                    p.vx *= 0.98;
+                    p.vy *= 0.98;
+
+                    // Decrease life
+                    p.life = Math.max(0, 1 - frameCount / p.maxLife);
+
+                    // Draw particle
+                    ctx.save();
+                    ctx.globalAlpha = p.life;
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+            });
+
+            frameCount++;
+
+            if (particlesAlive && frameCount < 120) {
+                explosionAnimationRef.current = requestAnimationFrame(animate);
+            } else {
+                setExplosionPosition(null);
+            }
+        };
+
+        explosionAnimationRef.current = requestAnimationFrame(animate);
+
+        return () => {
+            if (explosionAnimationRef.current) {
+                cancelAnimationFrame(explosionAnimationRef.current);
+            }
+        };
+    }, [explosionPosition]);
+
+    // Sparkle effect for path reduction
+    useEffect(() => {
+        if (!sparklePosition || !sparkleCanvas.current) return;
+
+        const canvas = sparkleCanvas.current;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Calculate sparkle center based on path index
+        const pathVerticalSpacing = 35;
+        const canvasHeight = 500; // NumberLine max height
+        const centerY = canvasHeight / 2;
+        const pathStartY = centerY - 175;
+
+        let yOffset;
+        if (sparklePosition.y < 5) {
+            yOffset = pathStartY + (sparklePosition.y * pathVerticalSpacing);
+        } else {
+            yOffset = centerY + ((sparklePosition.y - 4) * pathVerticalSpacing);
+        }
+
+        const centerX = window.innerWidth / 2;
+
+        interface SparkleParticle {
+            x: number;
+            y: number;
+            vx: number;
+            vy: number;
+            size: number;
+            color: string;
+            life: number;
+            maxLife: number;
+            alpha: number;
+        }
+
+        const particles: SparkleParticle[] = [];
+        const particleCount = 30; // Fewer particles than explosion
+
+        // Create particles in a more compact burst
+        for (let i = 0; i < particleCount; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = Math.random() * 4 + 2; // Slower than explosion
+            const vx = Math.cos(angle) * speed;
+            const vy = Math.sin(angle) * speed - 2; // Slight upward bias
+
+            particles.push({
+                x: centerX + (Math.random() - 0.5) * 40, // Start in small area
+                y: yOffset + 100 + (Math.random() - 0.5) * 40,
+                vx,
+                vy,
+                size: Math.random() * 4 + 2, // Smaller particles
+                color: sparklePosition.color,
+                life: 1,
+                maxLife: Math.random() * 15 + 15, // Shorter life
+                alpha: 1
+            });
+        }
+
+        let frameCount = 0;
+
+        const animate = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            let particlesAlive = false;
+
+            particles.forEach(p => {
+                if (p.life > 0) {
+                    particlesAlive = true;
+
+                    // Update position
+                    p.x += p.vx;
+                    p.y += p.vy;
+
+                    // Gentle gravity
+                    p.vy += 0.15;
+
+                    // Slow down faster
+                    p.vx *= 0.95;
+                    p.vy *= 0.95;
+
+                    // Decrease life
+                    p.life = Math.max(0, 1 - frameCount / p.maxLife);
+
+                    // Draw star-shaped sparkle
+                    ctx.save();
+                    ctx.globalAlpha = p.life;
+                    ctx.fillStyle = p.color;
+
+                    // Draw a star
+                    ctx.beginPath();
+                    for (let i = 0; i < 5; i++) {
+                        const angle = (i * 4 * Math.PI) / 5 - Math.PI / 2;
+                        const radius = i % 2 === 0 ? p.size : p.size / 2;
+                        const x = p.x + Math.cos(angle) * radius;
+                        const y = p.y + Math.sin(angle) * radius;
+                        if (i === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    }
+                    ctx.closePath();
+                    ctx.fill();
+
+                    // Add a glow effect
+                    ctx.globalAlpha = p.life * 0.5;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size * 1.5, 0, Math.PI * 2);
+                    ctx.fillStyle = p.color;
+                    ctx.fill();
+
+                    ctx.restore();
+                }
+            });
+
+            frameCount++;
+
+            if (particlesAlive && frameCount < 60) { // Shorter duration than explosion
+                sparkleAnimationRef.current = requestAnimationFrame(animate);
+            } else {
+                setSparklePosition(null);
+            }
+        };
+
+        sparkleAnimationRef.current = requestAnimationFrame(animate);
+
+        return () => {
+            if (sparkleAnimationRef.current) {
+                cancelAnimationFrame(sparkleAnimationRef.current);
+            }
+        };
+    }, [sparklePosition]);
+
 
     return (
         <>
         {showWelcome && (
             <WelcomeScreen
+            soundEnabled={soundEnabled}
             onStartTutorial={() => {
                 setShowWelcome(false);
                 setTutorialStep(1);
@@ -439,6 +729,34 @@ const Rank1 = () => {
                     height: "100%",
                     pointerEvents: "none",
                     zIndex: 1000,
+                }}
+            />
+        )}
+        {explosionPosition && (
+            <canvas
+                ref={explosionCanvas}
+                style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    pointerEvents: "none",
+                    zIndex: 999,
+                }}
+            />
+        )}
+        {sparklePosition && (
+            <canvas
+                ref={sparkleCanvas}
+                style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    pointerEvents: "none",
+                    zIndex: 998,
                 }}
             />
         )}
