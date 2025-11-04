@@ -1828,6 +1828,10 @@ const Interface = () => {
          isDragging={isDragging}
          dragFromIndex={dragFromIndex}
          dragHoverIndex={dragHoverIndex}
+         onPathMouseDown={handleDragStart}
+         onDragHover={handleDragHover}
+         onDragEnd={handleDragEnd}
+         concatenate={concatenate}
        />
 
 
