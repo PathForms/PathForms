@@ -200,10 +200,11 @@
   width: 100vw;
   height: 100vh;
   background-color: rgba(0, 0, 0, 0.6);
-  z-index: 999;
+  z-index: 10000;
   display: flex;
   justify-content: center;
   align-items: center;
+  pointer-events: auto;
 }
 
 .welcomeBox {
@@ -214,6 +215,9 @@
   text-align: center;
   box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
   color: black;
+  pointer-events: auto;
+  position: relative;
+  z-index: 10001;
 }
 
 .buttonRow {
@@ -231,6 +235,9 @@
   background-color: #f5f5f5;
   cursor: pointer;
   transition: 0.3s;
+  pointer-events: auto;
+  position: relative;
+  z-index: 10002;
 }
 
 .buttonRow button:hover {

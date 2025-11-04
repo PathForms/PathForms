@@ -49,12 +49,20 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   }, []);
 
   const handleStartTutorial = async () => {
-    await playClickSound();
+    try {
+      await playClickSound();
+    } catch (error) {
+      console.error("Error playing click sound:", error);
+    }
     onStartTutorial();
   };
 
   const handleSkipTutorial = async () => {
-    await playClickSound();
+    try {
+      await playClickSound();
+    } catch (error) {
+      console.error("Error playing click sound:", error);
+    }
     onSkipTutorial();
   };
 

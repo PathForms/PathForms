@@ -37,8 +37,16 @@ const Home = () => {
         boxSizing: "border-box",
       }}
     >
-      <div style={{ marginBottom: "clamp(20px, 5vh, 60px)", textAlign: "center" }}>
-        <h1 style={{ fontSize: "clamp(32px, 6vw, 48px)", fontWeight: "bold", marginBottom: "10px" }}>
+      <div
+        style={{ marginBottom: "clamp(20px, 5vh, 60px)", textAlign: "center" }}
+      >
+        <h1
+          style={{
+            fontSize: "clamp(32px, 6vw, 48px)",
+            fontWeight: "bold",
+            marginBottom: "10px",
+          }}
+        >
           {text.split("").map((char, index) => (
             <span key={index} style={{ color: colors[index % colors.length] }}>
               {char}
@@ -216,6 +224,94 @@ const Home = () => {
                 }}
               >
                 Rank 2
+              </span>
+            </div>
+          </div>
+        </button>
+
+        {/* Rank 3 Button */}
+        <button
+          style={{
+            width: "min(500px, 45vw, calc(100vw - 40px))",
+            height: "min(500px, 45vw, 60vh)",
+            maxWidth: "500px",
+            maxHeight: "500px",
+            borderRadius: "16px",
+            backgroundColor: "#1a1a1a",
+            border:
+              hoveredButton === "rank3"
+                ? "4px solid #800080"
+                : "4px solid #2a2a2a",
+            boxShadow:
+              hoveredButton === "rank3"
+                ? "0 20px 25px -5px rgba(128, 0, 128, 0.3), 0 10px 10px -5px rgba(128, 0, 128, 0.2)"
+                : "0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2)",
+            cursor: "pointer",
+            transition: "all 0.3s ease",
+            transform: hoveredButton === "rank3" ? "scale(1.05)" : "scale(1)",
+            overflow: "hidden",
+            padding: 0,
+          }}
+          onClick={() => router.push("/rank3")}
+          onMouseEnter={() => setHoveredButton("rank3")}
+          onMouseLeave={() => setHoveredButton(null)}
+        >
+          <div
+            style={{
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <div
+              style={{
+                flex: 1,
+                position: "relative",
+                backgroundColor: "#0a0a0a",
+                overflow: "hidden",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {/* Placeholder for rank3 preview - can be replaced with actual preview image later */}
+              <div
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#800080",
+                  fontSize: "clamp(48px, 8vw, 72px)",
+                  fontWeight: "bold",
+                }}
+              >
+                Rank 3
+              </div>
+            </div>
+            <div
+              style={{
+                height: "clamp(60px, 15%, 80px)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background:
+                  hoveredButton === "rank3"
+                    ? "linear-gradient(to right, #6a0080, #5a0070)"
+                    : "linear-gradient(to right, #800080, #6a0080)",
+                transition: "background 0.3s ease",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: "clamp(18px, 3vw, 24px)",
+                  fontWeight: "bold",
+                  color: "white",
+                }}
+              >
+                Rank 3
               </span>
             </div>
           </div>
