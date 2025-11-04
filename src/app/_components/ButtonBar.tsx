@@ -393,7 +393,8 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
        {generate_custom ? (
          <>
            <div style={{ fontWeight: "bold", color: "white", marginBottom: 4 }}>
-             Custom Paths (Rank 1)
+             Custom Paths (Rank 1) <div></div>
+             Press on a path to remove it.
            </div>
            {customExponents.length === 0 ? (
              <div>No paths added yet. Enter exponents and click Add.</div>
@@ -405,6 +406,18 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
                    whiteSpace: "nowrap",
                    overflowX: "auto",
                    marginBottom: 2,
+                   cursor: "pointer",
+                   transition: "opacity 0.2s",
+                 }}
+                 onClick={async () => {
+                   if (soundEnabled) await playButtonSound();
+                   setCustomExponents(customExponents.filter((_, idx) => idx !== i));
+                 }}
+                 onMouseEnter={(e) => {
+                   e.currentTarget.style.opacity = "0.6";
+                 }}
+                 onMouseLeave={(e) => {
+                   e.currentTarget.style.opacity = "1";
                  }}
                >
                  <strong>[Path {i + 1}]:</strong> {formatExponent(exp)}{" "}
