@@ -3,8 +3,11 @@ import { useEffect, useRef, useState } from "react";
 import { Terminal } from "@xterm/xterm";
 import "@xterm/xterm/css/xterm.css";
 import styles from "./components.module.css";
+import { Direction3 } from "../utils/buildNodesEdgesFromMoves3";
 
-type Direction = "up" | "down" | "left" | "right";
+// Support both rank 2 and rank 3
+type Direction2 = "up" | "down" | "left" | "right";
+type Direction = Direction2 | Direction3;
 
 interface PathterminalProps {
   // States

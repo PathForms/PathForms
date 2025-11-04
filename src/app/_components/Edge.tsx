@@ -14,6 +14,8 @@ interface EdgeProps {
  isCancelledPart?: boolean;
  isHoveredTarget?: boolean;
  edgeThickness?: number;
+ edgeColor?: string;
+ shape?: string;
 }
 
 
@@ -29,6 +31,8 @@ const Edge: React.FC<EdgeProps> = ({
  isCancelledPart = false,
  isHoveredTarget = false,
  edgeThickness,
+ edgeColor,
+ shape,
 }) => {
  const [x, y] = source.split(",").map(Number);
  const [x2, y2] = target.split(",").map(Number);
@@ -62,8 +66,23 @@ const Edge: React.FC<EdgeProps> = ({
  }, [isActive, isHoveredTarget]);
 
 
+ // For hexagon layout (rank 3), use the edgeColor from the tree
+ // For other layouts, use direction-based colors
  let strokeColor = "rgba(255, 34, 5, 0.2)";
- if ((x === x2 && y <= y2) || (x === x2 && y >= y2)) {
+ if (shape === "hexagon" && edgeColor) {
+   // Use the edge color from the tree, with reduced opacity for inactive edges
+   const opacity = isActive ? "0.8" : "0.3";
+   strokeColor = edgeColor + opacity.replace("0x", "").padStart(2, "0");
+   // Convert hex to rgba format
+   if (edgeColor.startsWith("#")) {
+     const r = parseInt(edgeColor.slice(1, 3), 16);
+     const g = parseInt(edgeColor.slice(3, 5), 16);
+     const b = parseInt(edgeColor.slice(5, 7), 16);
+     strokeColor = isActive 
+       ? `rgba(${r}, ${g}, ${b}, 0.8)` 
+       : `rgba(${r}, ${g}, ${b}, 0.3)`;
+   }
+ } else if ((x === x2 && y <= y2) || (x === x2 && y >= y2)) {
    strokeColor = "rgba(0, 94, 255, 0.23)";
  }
 
@@ -71,12 +90,21 @@ const Edge: React.FC<EdgeProps> = ({
  let thickness = edgeThickness ?? 1;
  let strokeDasharray = "none";
  let strokeDashoffset = "0";
+ 
   if (isFinalResult) {
    // Final result preview - bright and dashed
    thickness += 2;
    strokeDasharray = "8,4";
    strokeDashoffset = dashOffset.toString();
-   if ((x === x2 && y <= y2) || (x === x2 && y >= y2)) {
+   if (shape === "hexagon" && edgeColor) {
+     // Use edge color with high opacity for final result
+     if (edgeColor.startsWith("#")) {
+       const r = parseInt(edgeColor.slice(1, 3), 16);
+       const g = parseInt(edgeColor.slice(3, 5), 16);
+       const b = parseInt(edgeColor.slice(5, 7), 16);
+       strokeColor = `rgba(${r}, ${g}, ${b}, 0.9)`;
+     }
+   } else if ((x === x2 && y <= y2) || (x === x2 && y >= y2)) {
      strokeColor = "rgba(0, 94, 255, 0.8)"; // Bright blue for final result
    } else {
      strokeColor = "rgba(255, 34, 5, 0.8)"; // Bright red for final result
@@ -86,7 +114,15 @@ const Edge: React.FC<EdgeProps> = ({
    thickness += 2;
    strokeDasharray = "8,4";
    strokeDashoffset = dashOffset.toString();
-   if ((x === x2 && y <= y2) || (x === x2 && y >= y2)) {
+   if (shape === "hexagon" && edgeColor) {
+     // Use edge color with low opacity for cancelled parts
+     if (edgeColor.startsWith("#")) {
+       const r = parseInt(edgeColor.slice(1, 3), 16);
+       const g = parseInt(edgeColor.slice(3, 5), 16);
+       const b = parseInt(edgeColor.slice(5, 7), 16);
+       strokeColor = `rgba(${r}, ${g}, ${b}, 0.2)`;
+     }
+   } else if ((x === x2 && y <= y2) || (x === x2 && y >= y2)) {
      strokeColor = "rgba(0, 94, 255, 0.3)"; // Dimmed blue for cancelled
    } else {
      strokeColor = "rgba(255, 34, 5, 0.3)"; // Dimmed red for cancelled
@@ -96,19 +132,41 @@ const Edge: React.FC<EdgeProps> = ({
    thickness += 4;
    strokeDasharray = "6,3";
    strokeDashoffset = dashOffset.toString();
-   if ((x == x2 && y <= y2) || (x == x2 && y >= y2)) {
+   if (shape === "hexagon" && edgeColor) {
+     // Use edge color with high brightness for hovered target
+     if (edgeColor.startsWith("#")) {
+       const r = parseInt(edgeColor.slice(1, 3), 16);
+       const g = parseInt(edgeColor.slice(3, 5), 16);
+       const b = parseInt(edgeColor.slice(5, 7), 16);
+       // Lighten the color
+       const lightR = Math.min(255, r + 60);
+       const lightG = Math.min(255, g + 60);
+       const lightB = Math.min(255, b + 60);
+       strokeColor = `rgb(${lightR}, ${lightG}, ${lightB})`;
+     }
+   } else if ((x == x2 && y <= y2) || (x == x2 && y >= y2)) {
      strokeColor = "rgb(135, 206, 250)"; // Light blue for hovered target
    } else {
      strokeColor = "rgb(255, 99, 132)"; // Light red/pink for hovered target
    }
  } else if (isActive) {
-   strokeColor = "rgb(251, 0, 71)";
    thickness += 2;
    strokeDasharray = "5,3"; // Add dotted line effect when active
    strokeDashoffset = dashOffset.toString();
-  
-   if ((x == x2 && y <= y2) || (x == x2 && y >= y2)) {
-     strokeColor = "rgb(0, 140, 255)";
+   
+   if (shape === "hexagon" && edgeColor) {
+     // Use edge color with high opacity for active edges
+     if (edgeColor.startsWith("#")) {
+       const r = parseInt(edgeColor.slice(1, 3), 16);
+       const g = parseInt(edgeColor.slice(3, 5), 16);
+       const b = parseInt(edgeColor.slice(5, 7), 16);
+       strokeColor = `rgba(${r}, ${g}, ${b}, 0.9)`;
+     }
+   } else {
+     strokeColor = "rgb(251, 0, 71)";
+     if ((x == x2 && y <= y2) || (x == x2 && y >= y2)) {
+       strokeColor = "rgb(0, 140, 255)";
+     }
    }
  }
 

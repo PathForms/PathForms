@@ -41,6 +41,8 @@ interface ButtonBarProps {
  soundEnabled: boolean;
  // Custom path generation:
  generate_custom?: (exponents: number[]) => void;
+ // Default generators text (for rank 3)
+ defaultGeneratorsText?: string;
 }
 
 
@@ -57,6 +59,8 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
  soundEnabled,
  // Custom path generation:
  generate_custom,
+ // Default generators text
+ defaultGeneratorsText = "No specified bases, default generators a,b.",
 }) => {
  //input config
  const [inputSize, setInputSize] = useState<string>("");
@@ -419,7 +423,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
              Generators
            </div>
            {bases.length === 0 ? (
-             <div>No specified bases, default generators a,b. </div>
+             <div>{defaultGeneratorsText}</div>
            ) : (
              bases.map((path, i) => (
                <div
