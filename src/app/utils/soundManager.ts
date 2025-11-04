@@ -173,6 +173,11 @@ export const playGenerateSound = async () => {
   if (!soundEnabled) return;
   await initializeAudio();
   
+  // Ensure synths are initialized before playing
+  if (!generateSynth) {
+    await initializeSynths();
+  }
+  
   if (generateSynth) {
     // Play a chord
     generateSynth.triggerAttackRelease(["C4", "E4", "G4"], "8n");
