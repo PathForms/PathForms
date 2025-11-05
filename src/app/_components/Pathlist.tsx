@@ -2,17 +2,35 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import styles from "./components.module.css";
+import { Direction3 } from "../utils/buildNodesEdgesFromMoves3";
 
-type Direction = "up" | "down" | "left" | "right";
-const translation: Record<Direction, string> = {
+// Support both rank 2 and rank 3
+type Direction2 = "up" | "down" | "left" | "right";
+type Direction = Direction2 | Direction3;
+
+// Helper to detect rank from direction type
+const isRank3Direction = (dir: string): dir is Direction3 => {
+  return dir === "right-up" || dir === "left-down" || dir === "right-down" || dir === "left-up";
+};
+
+const translation2: Record<Direction2, string> = {
   up: "a",
   down: "a\u207B\u00B9", // a^-1
   right: "b",
   left: "b\u207B\u00B9",
 };
 
+const translation3: Record<Direction3, string> = {
+  up: "a",
+  down: "a\u207B\u00B9", // a^-1
+  "right-up": "b",
+  "left-down": "b\u207B\u00B9",
+  "right-down": "c",
+  "left-up": "c\u207B\u00B9",
+};
+
 // Color mapping to match CayleyTree colors
-const getDirectionColor = (direction: Direction): string => {
+const getDirectionColor2 = (direction: Direction2): string => {
   switch (direction) {
     case "up":
     case "down":
@@ -20,6 +38,22 @@ const getDirectionColor = (direction: Direction): string => {
     case "left":
     case "right":
       return "rgb(251, 0, 71)"; // Red for b/b^-1
+    default:
+      return "rgb(64, 73, 65)"; // Default color
+  }
+};
+
+const getDirectionColor3 = (direction: Direction3): string => {
+  switch (direction) {
+    case "up":
+    case "down":
+      return "#ff0000"; // Red for a/a^-1
+    case "right-up":
+    case "left-down":
+      return "#00ff00"; // Green for b/b^-1
+    case "right-down":
+    case "left-up":
+      return "#800080"; // Purple for c/c^-1
     default:
       return "rgb(64, 73, 65)"; // Default color
   }
@@ -249,8 +283,13 @@ const Pathlist: React.FC<PathlistProps> = ({
                   ? "1"
                   : path.map((node, nodeIndex) => {
                       const direction = node as Direction;
-                      const letter = translation[direction];
-                      const color = getDirectionColor(direction);
+                      const isRank3 = isRank3Direction(direction);
+                      const letter = isRank3 
+                        ? translation3[direction as Direction3]
+                        : translation2[direction as Direction2];
+                      const color = isRank3
+                        ? getDirectionColor3(direction as Direction3)
+                        : getDirectionColor2(direction as Direction2);
                       return (
                         <React.Fragment key={nodeIndex}>
                           {nodeIndex > 0 && <span style={{ color: "rgb(64, 73, 65)" }}> </span>}
