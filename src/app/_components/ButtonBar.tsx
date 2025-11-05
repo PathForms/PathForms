@@ -35,12 +35,15 @@ interface ButtonBarProps {
  generate_base: (size: number, b: Direction[][]) => void;
  addbase: (input: string) => void;
  clearbase: () => void;
+ removebase?: (index: number) => void;
  setGen: () => void;
  tutorialStep?: number;
  //sound button:
  soundEnabled: boolean;
  // Custom path generation:
  generate_custom?: (exponents: number[]) => void;
+ // Default generators text (for rank 3)
+ defaultGeneratorsText?: string;
 }
 
 
@@ -51,16 +54,20 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
  generate_base,
  addbase,
  clearbase,
+ removebase,
  setGen,
  tutorialStep,
  //sound button:
  soundEnabled,
  // Custom path generation:
  generate_custom,
+ // Default generators text
+ defaultGeneratorsText = "No specified bases, default generators a,b.",
 }) => {
  //input config
  const [inputSize, setInputSize] = useState<string>("");
  const [currBase, setCurrBase] = useState<string>("");
+ const [removeIndex, setRemoveIndex] = useState<string>("");
 
  // Custom path exponents (for rank 1)
  const [customExponents, setCustomExponents] = useState<number[]>([]);
@@ -102,7 +109,35 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
    setCurrBase(event.target.value);
  };
 
-//Rank1Tutorial
+ // Function to handle remove index change
+ const handleRemoveIndexChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+   setRemoveIndex(event.target.value);
+ };
+
+ const handleRemoveBase = async (index?: number) => {
+   //sound button:
+   if (soundEnabled) await playButtonSound();
+   await initializeAudio();
+   if (soundEnabled) await playClearSound();
+   
+   // Use provided index or the one from input
+   let targetIndex = index;
+   if (targetIndex === undefined && removebase) {
+     const inputNumber = Number(removeIndex);
+     if (isNaN(inputNumber) || inputNumber < 1 || inputNumber > bases.length) {
+       alert(`Please enter a valid generator number (1-${bases.length})`);
+       return;
+     }
+     targetIndex = inputNumber - 1; // Convert to 0-based index
+   }
+   
+   if (removebase && targetIndex !== undefined) {
+     removebase(targetIndex);
+     setRemoveIndex(""); // Clear the input after successful removal
+   }
+ };
+
+
  const handlebaseClick = async () => {
   if (tutorialStep === 1) {
      if (soundEnabled) await playButtonSound();
@@ -329,8 +364,35 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
          </button>
        </div>
 
+       {/* Row 3: Remove Input and Remove Button */}
+       {removebase && (
+         <div style={{ display: "flex", gap: 8 }}>
+           <input
+             size={10}
+             value={removeIndex}
+             onChange={handleRemoveIndexChange}
+             placeholder="Remove G#"
+           />
+           <button
+             style={{
+               width: 70,
+               height: 28,
+               fontSize: 13,
+               backgroundColor: "transparent",
+               border: "2px solid rgb(255, 100, 100)",
+               color: "rgb(255, 100, 100)",
+               cursor: "pointer",
+               borderRadius: 4,
+               transition: "0.3s",
+             }}
+             onClick={() => handleRemoveBase()}
+           >
+             Remove
+           </button>
+         </div>
+       )}
 
-       {/* Row 3: Generate Buttons */}
+       {/* Row 4: Generate Buttons */}
        <div
          style={{
            display: "flex",
@@ -439,7 +501,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
              Generators
            </div>
            {bases.length === 0 ? (
-             <div>No specified bases, default generators a,b. </div>
+             <div>{defaultGeneratorsText}</div>
            ) : (
              bases.map((path, i) => (
                <div
@@ -448,12 +510,19 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
                    whiteSpace: "nowrap",
                    overflowX: "auto",
                    marginBottom: 2,
+                   cursor: removebase ? "pointer" : "default",
                  }}
                  onClick={() => {
                    if (soundEnabled) {
                      playPathSound(path);
                    }
                  }}
+                 onDoubleClick={() => {
+                   if (removebase) {
+                     handleRemoveBase(i);
+                   }
+                 }}
+                 title={removebase ? "Click to play sound, double-click to remove" : undefined}
                >
                  <strong>[G{i + 1}]:</strong>{" "}
                  {path.length === 0
