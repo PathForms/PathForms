@@ -96,8 +96,8 @@ const Rank1 = () => {
     const rank1TutorialSteps = [
         "Click the 'Generate Paths' button to create some random paths.",
         "Each path is a power of 'a'. Now, double-click any path to invert its exponent (e.g., a³ becomes a⁻³).",
-        "Great! Now, drag one path onto another** to add their exponents (e.g., dragging a² onto a³ makes a⁵).",
-        "Try to make all paths 'a⁰' (the dot at the center)!"
+        "Great! Now, drag one path onto another to add their exponents (e.g., dragging a² onto a³ makes a⁵).",
+        "Try to make all paths a⁰ (the dot at the center)!"
     ];
 
     // Steps state
@@ -369,16 +369,18 @@ const Rank1 = () => {
             }
 
             // Remove paths with zero exponent completely
-            const filteredPaths = newPaths.filter(path => path.exponent !== 0);
+            const filteredPaths = newPaths;
 
             // Check if we've reached Nielsen reduced form (only 1 non-zero path)
-            const success = filteredPaths.length === 1;
+            const nonZeroPaths = filteredPaths.filter(path => path.exponent !== 0);
+            const success = nonZeroPaths.length === 1;
             if (success) {
                 setShowConfetti(true);
                 if (soundEnabled) playSuccessSound();
             }
             return filteredPaths;
         });
+
         if (tutorialActive && tutorialStep === 3) {
             setTutorialStep(s => s + 1);
             if (soundEnabled) playSuccessSound(); // Play sound for tutorial step
