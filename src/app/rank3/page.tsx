@@ -3,12 +3,13 @@ import React from "react";
 
 import Interface from "../_components/Interface";
 
-const Rank2 = () => {
+const Rank3 = () => {
   return (
     <div className="cayley">
-      <Interface defaultShape="rect" />
+      <Interface defaultShape="hexagon" />
     </div>
   );
 };
 
-export default Rank2;
+export default Rank3;
+

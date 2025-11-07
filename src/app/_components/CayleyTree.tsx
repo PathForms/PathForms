@@ -3,6 +3,7 @@ import React, { useEffect, useState, useRef } from "react";
 import * as d3 from "d3";
 import Edge from "./Edge";
 import Vertex from "./Vertex";
+import { buildCayleyTreeData3 } from "../utils/buildCayleyData";
 
 const directions = {
   up: { dx: 0, dy: 1, opposite: "down" },
@@ -15,6 +16,7 @@ type DirKey = keyof typeof directions;
 interface TreeNode {
   name: string;
   children?: TreeNode[];
+  edgeColor?: string;
 }
 
 function buildCayleyTreeData(
@@ -61,6 +63,7 @@ interface LayoutLink {
   sourceY: number;
   targetX: number;
   targetY: number;
+  edgeColor?: string;
 }
 
 interface CayleyTreeProps {
@@ -104,7 +107,13 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
   const gRef = useRef<SVGGElement | null>(null);
 
   useEffect(() => {
-    const rootData = buildCayleyTreeData(0, 0, 0, 7, null, 100);
+    // Use smaller depth for hexagon (rank 3) to avoid performance issues
+    // Rank 3 has 6 directions, so the tree grows much faster
+    const maxDepth = shape === "hexagon" ? 5 : 7;
+    const rootData =
+      shape === "hexagon"
+        ? buildCayleyTreeData3(0, 0, 0, maxDepth, null, 100)
+        : buildCayleyTreeData(0, 0, 0, maxDepth, null, 100);
     const root = d3.hierarchy<TreeNode>(rootData);
     const screenW = 1024;
     const screenH = 768;
@@ -159,14 +168,22 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
         .size([screenW - 200, screenH - 200]);
       treeLayout(root);
 
-      const allNodes: LayoutNode[] = root.descendants().map((d) => {
-        // Extract coordinates from the name field of the node
+      // Use a Map to ensure unique nodes
+      const nodeMap = new Map<string, LayoutNode>();
+      root.descendants().forEach((d) => {
         const [x_, y_] = d.data.name.split(",").map(Number) || [0, 0];
-        const node = { id: d.data.name, x: 2.5 * x_, y: 2.5 * y_ };
-        console.log("Rect Node:", node);
-        return node;
+        if (!nodeMap.has(d.data.name)) {
+          nodeMap.set(d.data.name, {
+            id: d.data.name,
+            x: 2.5 * x_,
+            y: 2.5 * y_,
+          });
+        }
       });
+      const allNodes: LayoutNode[] = Array.from(nodeMap.values());
 
+      // Use a Set to ensure unique links
+      const linkSet = new Set<string>();
       const allLinks: LayoutLink[] = [];
       root.descendants().forEach((d) => {
         if (d.parent) {
@@ -177,16 +194,70 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
           // Extract coordinates for the child node
           const [childX, childY] = d.data.name.split(",").map(Number) || [0, 0];
 
-          // Create the link with proper coordinates
-          allLinks.push({
-            id: `${d.parent.data.name}->${d.data.name}`,
-            source: d.parent.data.name,
-            target: d.data.name,
-            sourceX: 2.5 * parentX,
-            sourceY: 2.5 * parentY,
-            targetX: 2.5 * childX,
-            targetY: 2.5 * childY,
+          const linkId = `${d.parent.data.name}->${d.data.name}`;
+          // Only add if not already present
+          if (!linkSet.has(linkId)) {
+            linkSet.add(linkId);
+            allLinks.push({
+              id: linkId,
+              source: d.parent.data.name,
+              target: d.data.name,
+              sourceX: 2.5 * parentX,
+              sourceY: 2.5 * parentY,
+              targetX: 2.5 * childX,
+              targetY: 2.5 * childY,
+              edgeColor: d.data.edgeColor, // Store edge color for rect layout
+            });
+          }
+        }
+      });
+
+      setNodes(allNodes);
+      setLinks(allLinks);
+    } else if (shape === "hexagon") {
+      // Hexagon layout: use the coordinates directly from node names
+      // Similar to rect but with hexagon coordinate system
+      // Use a Map to ensure unique nodes (same coordinates = same node)
+      const nodeMap = new Map<string, LayoutNode>();
+      root.descendants().forEach((d) => {
+        const [x_, y_] = d.data.name.split(",").map(Number) || [0, 0];
+        if (!nodeMap.has(d.data.name)) {
+          nodeMap.set(d.data.name, {
+            id: d.data.name,
+            x: 2.5 * x_,
+            y: 2.5 * y_,
           });
+        }
+      });
+      const allNodes: LayoutNode[] = Array.from(nodeMap.values());
+
+      // Use a Set to ensure unique links
+      const linkSet = new Set<string>();
+      const allLinks: LayoutLink[] = [];
+      root.descendants().forEach((d) => {
+        if (d.parent) {
+          // Extract coordinates for the parent node
+          const [parentX, parentY] = d.parent.data.name
+            .split(",")
+            .map(Number) || [0, 0];
+          // Extract coordinates for the child node
+          const [childX, childY] = d.data.name.split(",").map(Number) || [0, 0];
+
+          const linkId = `${d.parent.data.name}->${d.data.name}`;
+          // Only add if not already present
+          if (!linkSet.has(linkId)) {
+            linkSet.add(linkId);
+            allLinks.push({
+              id: linkId,
+              source: d.parent.data.name,
+              target: d.data.name,
+              sourceX: 2.5 * parentX,
+              sourceY: 2.5 * parentY,
+              targetX: 2.5 * childX,
+              targetY: 2.5 * childY,
+              edgeColor: d.data.edgeColor, // Store edge color for hexagon layout
+            });
+          }
         }
       });
 
@@ -265,6 +336,8 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
                 isCancelledPart={isCancelledPart}
                 isHoveredTarget={isHoveredTarget}
                 edgeThickness={edgeThickness}
+                edgeColor={lk.edgeColor}
+                shape={shape}
               />
             );
           })}

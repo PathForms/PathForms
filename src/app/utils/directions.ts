@@ -18,3 +18,14 @@ export function buildDirections2(): DirectionDef[] {
     { label: "b^-", opposite: "b", color: "#ff7f0e" },
   ];
 }
+
+export function buildDirections3(): DirectionDef[] {
+  return [
+    { label: "a", opposite: "a^-", color: "#ff0000" }, // red
+    { label: "b", opposite: "b^-", color: "#00ff00" }, // green
+    { label: "c", opposite: "c^-", color: "#800080" }, // purple
+    { label: "a^-", opposite: "a", color: "#ff0000" }, // red
+    { label: "b^-", opposite: "b", color: "#00ff00" }, // green
+    { label: "c^-", opposite: "c", color: "#800080" }, // purple
+  ];
+}
