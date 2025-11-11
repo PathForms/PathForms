@@ -274,7 +274,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
 
 
    // Convert inputValue to a number and pass it to generate
-   let inputNumber = 5; // Make sure to convert the input to a number
+   let inputNumber = 2; // Make sure to convert the input to a number
    if (inputSize != "") {
      inputNumber = Number(inputSize);
    }
