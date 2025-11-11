@@ -106,6 +106,18 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
   const [tutorialActive, setTutorialActive] = useState<boolean>(false);
   const [tutorialCompleted, setTutorialCompleted] = useState<boolean>(false);
 
+  // ========== RANK3 TUTORIAL: Define tutorial steps for Rank 3 ==========
+  // Rank 3 Tutorial Steps (6 steps total)
+  const rank3TutorialSteps = [
+    "Click the 'Generate Paths' button to create 3 paths.",
+    "Long press Path 1 in the Word List to hide it.",
+    "Long press Path 1 again to show it back.",
+    "Double-click Path 3 to invert it.",
+    "Drag Path 3 and put it on Path 2 to concatenate Path 3 after Path 2.",
+    "Now try to reduce all paths to their simplest form using invert and concatenate operations!"
+  ];
+  // ========== END RANK3 TUTORIAL STEPS ==========
+
   // Steps state
   const [targetSteps, setTargetSteps] = useState(0);
   const [usedConcatSteps, setUsedConcatSteps] = useState<number>(0);
@@ -255,7 +267,7 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
   }
 
   ////////////////////////////////////////
-  // 可选：回退操作 (若你想要真正回退到之前的 moves)
+  // Optional: Revert operation (if you want to truly revert to previous moves)
   ////////////////////////////////////////
   function revertConcat(
     originalA: Direction[],
@@ -264,8 +276,8 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
     indexB: number
   ) {
     alert("Concat failed. Reverting to previous state!");
-    // 你需要恢复 moveRecords[indexA], moveRecords[indexB]
-    // 这里演示将 moveRecords 重置为 original
+    // You need to restore moveRecords[indexA], moveRecords[indexB]
+    // Here we demonstrate resetting moveRecords to original
     setMoveRecords((prev) => {
       const newRec = [...prev];
       newRec[indexA] = originalA;
@@ -310,12 +322,58 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
       return;
     }
 
-    // 备份：以便失败时 revert
+    // Backup: for reverting on failure
     const originalA = [...moveRecords[index1]];
     const originalB = [...moveRecords[index2]];
 
-    // ========== Step5: path0 => a, path1 => a^-1b^-1 ==========
-    if (tutorialActive && tutorialStep === 5) {
+    // ========== RANK3 TUTORIAL: Step 5 - Concatenate path3 onto path2 ==========
+    if (isRank3 && tutorialActive && tutorialStep === 5) {
+      // For rank 3, allow concatenating path 3 (index 2) onto path 2 (index 1)
+      if (index1 !== 1 || index2 !== 2) {
+        alert("In this step, you must drag Path 3 onto Path 2!");
+        return;
+      }
+
+      const originalA = [...moveRecords[index1]];
+      const originalB = [...moveRecords[index2]];
+      const newMoves = doConcat(originalA, originalB);
+
+      setMoveRecords((prev) => {
+        const newRec = [...prev];
+        newRec[index1] = newMoves;
+        return newRec;
+      });
+      setUsedConcatSteps((prev) => prev + 1);
+
+      const { newNodes, newEdges } = buildNodesEdges(newMoves as any);
+      setNodePaths((prev) => {
+        const nextPaths = [...prev];
+        nextPaths[index1] = newNodes;
+        return nextPaths;
+      });
+      setEdgePaths((prev) => {
+        const nextEdges = [...prev];
+        nextEdges[index1] = newEdges;
+        return nextEdges;
+      });
+
+      // ========== RANK3 TUTORIAL: Clear drag state immediately after concatenate ==========
+      // Clear drag state to stop flashing animation
+      // This must happen BEFORE setTutorialStep to prevent state conflicts
+      setIsDragging(false);
+      setDragFromIndex(-1);
+      setDragHoverIndex(-1);
+      setPreviewPath(null);
+      // ========== END RANK3 TUTORIAL: Clear drag state ==========
+
+      // Move to step 6 (free play)
+      setTutorialStep(6);
+      return;
+    }
+    // ========== END RANK3 TUTORIAL: Step 5 ==========
+
+    // ========== Rank 2 Step5: path0 => a, path1 => a^-1b^-1 ==========
+    if (!isRank3 && tutorialActive && tutorialStep === 5) {
       const originalA = [...moveRecords[index1]];
       const originalB = [...moveRecords[index2]];
       const newMoves = doConcat(originalA, originalB);
@@ -353,8 +411,8 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
       });
     }
 
-    // ========== Step6: path0 => b^-1, path1 => a^-1b^-1 ==========
-    if (tutorialActive && tutorialStep === 6) {
+    // ========== Rank 2 Step6: path0 => b^-1, path1 => a^-1b^-1 ==========
+    if (!isRank3 && tutorialActive && tutorialStep === 6) {
       if (index1 !== 0 || index2 !== 1) {
         alert("In this step, you must select path1 then path2 again!");
         return;
@@ -401,14 +459,18 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
       return;
     }
 
-    // ---------- 如果在 tutorial 模式但 step != 5,6,7,8 => 提示并撤销 ----------
-    else if (tutorialActive && ![5, 6, 7, 8].includes(tutorialStep)) {
+    // ========== RANK3 TUTORIAL: Block concatenate for other tutorial steps ==========
+    // For rank 3, allow concatenate in steps 5 and 6 (free play)
+    // For rank 2, allow concatenate in steps 5, 6, 7, 8
+    const allowedSteps = isRank3 ? [5, 6] : [5, 6, 7, 8];
+    if (tutorialActive && !allowedSteps.includes(tutorialStep)) {
       alert(` Concatenate isn't expected right now!`);
-      // 不做任何更新就行，撤销操作
+      // No update needed, just cancel the operation
       return;
     }
+    // ========== END RANK3 TUTORIAL: Concatenate blocking ==========
 
-    // ---------- 非 tutorial 模式 或 tutorialStep=8 正常 concat ----------
+    // ---------- Normal concat mode (non-tutorial or tutorialStep=8) ----------
     const newMoves = doConcat(originalA, originalB);
     setMoveRecords((prev) => {
       const newRec = [...prev];
@@ -657,12 +719,45 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
       return;
     }
 
-    if (tutorialActive && ![4, 7, 8].includes(tutorialStep)) {
-      alert("you cannot invert the path right now!");
+    // ========== RANK3 TUTORIAL: Step 4 - Invert path 3 ==========
+    if (isRank3 && tutorialActive && tutorialStep === 4) {
+      if (index !== 2) {
+        alert("You must double-click Path 3 (index=2) to invert it");
+        return;
+      }
+      let currentMoves = [...moveRecords[index]];
+      const invertedMoves: Direction[] = [];
+      for (let i = currentMoves.length - 1; i >= 0; i--) {
+        invertedMoves.push(
+          oppositeMoves[currentMoves[i] as string] as Direction
+        );
+      }
+
+      setMoveRecords((prev) => {
+        const newRec = [...prev];
+        newRec[index] = invertedMoves;
+        return newRec;
+      });
+
+      const { newNodes, newEdges } = buildNodesEdges(invertedMoves as any);
+      setNodePaths((prev) => {
+        const newPaths = [...prev];
+        newPaths[index] = newNodes;
+        return newPaths;
+      });
+      setEdgePaths((prev) => {
+        const newEdgesList = [...prev];
+        newEdgesList[index] = newEdges;
+        return newEdgesList;
+      });
+
+      setTutorialStep(5);
       return;
     }
+    // ========== END RANK3 TUTORIAL: Step 4 ==========
 
-    if (tutorialActive && tutorialStep === 4) {
+    // Rank 2 tutorial step 4 (invert)
+    if (!isRank3 && tutorialActive && tutorialStep === 4) {
       if (index !== 1) {
         alert("You must double-click the SECOND path (index=1) to invert it");
         return;
@@ -693,18 +788,26 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
         return newEdgesList;
       });
 
-      const expectedInverted = isRank3
-        ? ["down", "left-down"]
-        : ["down", "left"];
+      const expectedInverted = ["down", "left"];
       if (JSON.stringify(invertedMoves) === JSON.stringify(expectedInverted)) {
         setTutorialStep(5);
       } else {
         alert(
-          `It's inverted, but not exactly ${isRank3 ? "a^-1 b^-1" : "a^-1 b^-1"}. Let's proceed anyway.`
+          `It's inverted, but not exactly a^-1 b^-1. Let's proceed anyway.`
         );
       }
       return;
     }
+
+    // ========== RANK3 TUTORIAL: Block invert for other tutorial steps ==========
+    // For rank 3, allow invert in steps 4, 5, 6 (free play)
+    // For rank 2, allow invert in steps 4, 7, 8
+    const allowedInvertSteps = isRank3 ? [4, 5, 6] : [4, 7, 8];
+    if (tutorialActive && !allowedInvertSteps.includes(tutorialStep)) {
+      alert("you cannot invert the path right now!");
+      return;
+    }
+    // ========== END RANK3 TUTORIAL: Invert blocking ==========
     let currentMoves = [...moveRecords[index]];
     const invertedMoves: Direction[] = [];
     for (let i = currentMoves.length - 1; i >= 0; i--) {
@@ -912,11 +1015,13 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
   };
 
   const GeneratePath = (n: number) => {
+    // ========== RANK3 TUTORIAL: Step 1 - Generate 3 paths ==========
     if (tutorialActive && tutorialStep === 1) {
       const newMoveRecords: Direction[][] = isRank3
         ? [
-            ["up", "right-up", "up"], // aba
-            ["right-up", "up"], // ba
+            ["up", "right-up", "up"], // Path 1: aba
+            ["right-up", "up", "right-down"], // Path 2: bac
+            ["right-down"], // Path 3: c
           ]
         : [
             ["up", "right", "up"], // aba
@@ -929,7 +1034,8 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
       setTargetSteps(greedyNielsenStepsFunc(newMoveRecords as any));
       setUsedConcatSteps(0);
       setOperationMode("normal");
-      setPathIndex([0, 1]);
+      // For rank 3, show all 3 paths initially
+      setPathIndex(isRank3 ? [0, 1, 2] : [0, 1]);
 
       const newNodePaths: string[][] = [];
       const newEdgePaths: string[][] = [];
@@ -946,6 +1052,7 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
       setTutorialStep(2);
       return;
     }
+    // ========== END RANK3 TUTORIAL: Step 1 ==========
 
     if (tutorialActive && tutorialStep !== 1) {
       alert("You cannot generate paths right now!");
@@ -1465,7 +1572,8 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
       return;
     }
 
-    if (tutorialStep === 2) {
+    // ========== RANK3 TUTORIAL: Step 2 - Hide path ==========
+    if (isRank3 && tutorialStep === 2) {
       if (index === 0) {
         // hide path0
         if (pathIndex.includes(0)) {
@@ -1477,7 +1585,12 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
       } else {
         alert("Wrong action! You must long press Path1 to hide it!");
       }
-    } else if (tutorialStep === 3) {
+      return;
+    }
+    // ========== END RANK3 TUTORIAL: Step 2 ==========
+
+    // ========== RANK3 TUTORIAL: Step 3 - Show path ==========
+    if (isRank3 && tutorialStep === 3) {
       if (index === 0) {
         if (!pathIndex.includes(0)) {
           setPathIndex((prev) => [...prev, 0]);
@@ -1488,13 +1601,46 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
       } else {
         alert("Wrong action! You must long press Path1 to show it again!");
       }
-    } else {
-      setPathIndex((prevIndexes) =>
-        prevIndexes.includes(index)
-          ? prevIndexes.filter((i) => i !== index)
-          : [...prevIndexes, index]
-      );
+      return;
     }
+    // ========== END RANK3 TUTORIAL: Step 3 ==========
+
+    // Rank 2 tutorial steps 2 and 3 (hide/show)
+    if (!isRank3 && tutorialStep === 2) {
+      if (index === 0) {
+        // hide path0
+        if (pathIndex.includes(0)) {
+          setPathIndex((prev) => prev.filter((i) => i !== 0));
+          setTutorialStep(3);
+        } else {
+          alert("Path1 is already hidden? Try again.");
+        }
+      } else {
+        alert("Wrong action! You must long press Path1 to hide it!");
+      }
+      return;
+    }
+
+    if (!isRank3 && tutorialStep === 3) {
+      if (index === 0) {
+        if (!pathIndex.includes(0)) {
+          setPathIndex((prev) => [...prev, 0]);
+          setTutorialStep(4);
+        } else {
+          alert("Path1 is already shown? Try again!");
+        }
+      } else {
+        alert("Wrong action! You must long press Path1 to show it again!");
+      }
+      return;
+    }
+
+    // For other tutorial steps or non-tutorial mode
+    setPathIndex((prevIndexes) =>
+      prevIndexes.includes(index)
+        ? prevIndexes.filter((i) => i !== index)
+        : [...prevIndexes, index]
+    );
   };
 
   const removePath = (idx: number) => {
@@ -1640,10 +1786,12 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
           dragFromIndex={dragFromIndex}
           dragHoverIndex={dragHoverIndex}
         />
+        {/* ========== RANK3 TUTORIAL: Pass isRank3 to CheckNielsen ========== */}
         <CheckNielsen
           movePaths={moveRecords as any}
           tutorialActive={tutorialActive}
           tutorialStep={tutorialStep}
+          isRank3={isRank3}
           onTutorialCheck={(nextStep) => {
             if (nextStep === 0) {
               setTutorialCompleted(true);
@@ -1653,6 +1801,7 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
             }
           }}
         />
+        {/* ========== END RANK3 TUTORIAL: CheckNielsen ========== */}
         {/*        
  const [pathIndex, setPathIndex] = useState<number[]>([]); // index of paths to show on the Cayley graph;
  const [nodePaths, setNodePaths] = useState<string[][]>([]);
@@ -1864,7 +2013,7 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
 
 
  ////////////////////////////////////////
- // 可选：回退操作 (若你想要真正回退到之前的 moves)
+ // Optional: Revert operation (if you want to truly revert to previous moves)
  ////////////////////////////////////////
  function revertConcat(
    originalA: Direction[],
@@ -1873,8 +2022,8 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
    indexB: number
  ) {
    alert("Concat failed. Reverting to previous state!");
-   // 你需要恢复 moveRecords[indexA], moveRecords[indexB]
-   // 这里演示将 moveRecords 重置为 original
+   // You need to restore moveRecords[indexA], moveRecords[indexB]
+   // Here we demonstrate resetting moveRecords to original
    setMoveRecords((prev) => {
      const newRec = [...prev];
      newRec[indexA] = originalA;
@@ -1921,7 +2070,7 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
    }
 
 
-   // 备份：以便失败时 revert
+   // Backup: for reverting on failure
    const originalA = [...moveRecords[index1]];
    const originalB = [...moveRecords[index2]];
 
@@ -2025,15 +2174,15 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
    }
 
 
-   // ---------- 如果在 tutorial 模式但 step != 5,6,7,8 => 提示并撤销 ----------
+   // ---------- If in tutorial mode but step != 5,6,7,8 => alert and cancel ----------
    else if (tutorialActive && ![5, 6, 7, 8].includes(tutorialStep)) {
      alert(` Concatenate isn't expected right now!`);
-     // 不做任何更新就行，撤销操作
+     // No update needed, just cancel the operation
      return;
    }
 
 
-   // ---------- 非 tutorial 模式 或 tutorialStep=8 正常 concat ----------
+   // ---------- Normal concat mode (non-tutorial or tutorialStep=8) ----------
    const newMoves = doConcat(originalA, originalB);
    setMoveRecords((prev) => {
      const newRec = [...prev];
@@ -3491,10 +3640,12 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
          dragFromIndex={dragFromIndex}
          dragHoverIndex={dragHoverIndex}
        />
+       {/* ========== RANK3 TUTORIAL: Pass isRank3 to CheckNielsen (duplicate component) ========== */}
        <CheckNielsen
          movePaths={moveRecords}
          tutorialActive={tutorialActive}
          tutorialStep={tutorialStep}
+         isRank3={isRank3}
          onTutorialCheck={(nextStep) => {
            if (nextStep === 0) {
              setTutorialCompleted(true);
@@ -3505,6 +3656,7 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
          }}
         soundEnabled={soundEnabled}
       />
+      {/* ========== END RANK3 TUTORIAL: CheckNielsen (duplicate) ========== */}
       {/*        
        <Pathbar
          mode={operationMode}
@@ -3518,6 +3670,7 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
          concatenate={concatenate}
          invert={invertPath}
        /> */}
+        {/* ========== RANK3 TUTORIAL: Pass rank3 tutorial steps to Tutorial component ========== */}
         <Tutorial
           step={tutorialStep}
           isActive={tutorialActive}
@@ -3529,7 +3682,9 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
             setTutorialCompleted(false);
           }}
           soundEnabled={soundEnabled}
+          steps={isRank3 ? rank3TutorialSteps : undefined}
         />
+        {/* ========== END RANK3 TUTORIAL: Tutorial component ========== */}
         <Steps optimalSteps={targetSteps} usedSteps={usedConcatSteps} />
         <button
           className={styles.button}

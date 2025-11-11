@@ -243,7 +243,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
 
 
    // Convert inputValue to a number and pass it to generate
-   let inputNumber = 2; // Make sure to convert the input to a number
+   let inputNumber = 5; // Make sure to convert the input to a number
    if (inputSize != "") {
      inputNumber = Number(inputSize);
    }
@@ -256,7 +256,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
        if (soundEnabled) playGenerateSound();
      }, 100);
    } else {
-     generate(2); // Handle invalid number input
+     generate(5); // Handle invalid number input
      // Play generate sound after paths are generated
      setTimeout(() => {
        if (soundEnabled) playGenerateSound();
@@ -274,7 +274,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
 
 
    // Convert inputValue to a number and pass it to generate
-   let inputNumber = 2; // Make sure to convert the input to a number
+   let inputNumber = 5; // Make sure to convert the input to a number
    if (inputSize != "") {
      inputNumber = Number(inputSize);
    }
@@ -283,7 +283,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
      inputNumber = Math.min(Math.max(inputNumber, 0), 10);
      generate_rand(inputNumber); // Pass the number to the generate function
    } else {
-     generate_rand(2); // Handle invalid number input
+     generate_rand(5); // Handle invalid number input
    }
  };
 

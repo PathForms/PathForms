@@ -104,7 +104,7 @@ const Headbar: React.FC<HeadbarProps> = ({
 
           {!hideEdgeThickness && (
             <div>
-              <label>Edge Thickness:</label>
+              <label>Edge thickness:</label>
               <input
                 type="range"
                 min="0.7"
