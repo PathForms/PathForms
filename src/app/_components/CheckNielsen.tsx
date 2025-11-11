@@ -6,6 +6,7 @@ import {
   concatenate,
   invert,
 } from "../utils/NielsenTrans";
+// ========== RANK3 TUTORIAL: reduceMoves is already imported ==========
 import {
   initializeSynths,
   initializeAudio,
@@ -23,6 +24,7 @@ interface CheckNielsenProps {
   tutorialStep?: number;
   onTutorialCheck?: (step: number) => void;
   soundEnabled?: boolean;
+  isRank3?: boolean; // ========== RANK3 TUTORIAL: Add isRank3 prop ==========
 }
 
 const CheckNielsen: React.FC<CheckNielsenProps> = ({
@@ -31,6 +33,7 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
   tutorialStep = 0,
   onTutorialCheck = () => {},
   soundEnabled = true,
+  isRank3 = false, // ========== RANK3 TUTORIAL: Add isRank3 prop ==========
 }) => {
   const [nStatus, setNStatus] = useState<boolean[]>([false, false, false]);
   const [result, setResult] = useState<string>("");
@@ -55,16 +58,40 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
       setShowConfetti(true);
     }
 
-    // Auto-check for tutorial completion
-    if (tutorialActive && (tutorialStep === 7 || tutorialStep === 8)) {
+    // ========== RANK3 TUTORIAL: Auto-check for tutorial completion ==========
+    // For rank 3, check completion at step 6 (free play)
+    // For rank 2, check completion at steps 7 or 8
+    const shouldCheckCompletion = isRank3 
+      ? (tutorialStep === 6)
+      : (tutorialStep === 7 || tutorialStep === 8);
+    
+    if (tutorialActive && shouldCheckCompletion) {
       const isSuccess = status.every((cond) => cond === true);
+      // ========== RANK3 TUTORIAL: Debug log for completion check ==========
+      // Debug: log status for rank3
+      if (isRank3) {
+        const reducedPaths = movePaths.map((p) => reduceMoves(p));
+        console.log("RANK3 Tutorial Step 6 - Check completion:", {
+          status,
+          isSuccess,
+          N0: status[0],
+          N1: status[1],
+          N2: status[2],
+          movePaths: movePaths.map(p => p.join(",")),
+          reducedPaths: reducedPaths.map(p => p.join(",")),
+          pathLengths: reducedPaths.map(p => p.length),
+          tutorialStep
+        });
+      }
+      // ========== END RANK3 TUTORIAL: Debug log ==========
       if (isSuccess && onTutorialCheck) {
         playSuccessSound();
         setShowConfetti(true);
         onTutorialCheck(0); // Tutorial completed
       }
     }
-  }, [movePaths, tutorialActive, tutorialStep, onTutorialCheck, soundEnabled]);
+    // ========== END RANK3 TUTORIAL: Completion check ==========
+  }, [movePaths, tutorialActive, tutorialStep, onTutorialCheck, soundEnabled, isRank3]);
   
   useEffect(() => {
     // Initialize synths and set sound enabled state
@@ -412,7 +439,7 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
           
         }}
       >
-        {/* N0：空路径数 & 颜色 */}
+        {/* N0: Number of empty paths & color */}
         <div
         className="tip-row"
         title="Condition (N0) is : All paths must be non-empty."
@@ -423,7 +450,7 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
           (N0)&nbsp;number&nbsp;of&nbsp;empty&nbsp;paths:&nbsp;{emptyCnt}
         </div>
 
-        {/* N1：总长度 & 颜色 */}
+        {/* N1: Total length & color */}
         <div
         className="tip-row"
         title="Condition (N1) is : For any two distinct paths u and v, the concatenations uv, u v⁻¹, u⁻¹v must not be shorter than either u or v."
@@ -431,7 +458,7 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
           (N1)&nbsp;{nStatus[1] ? "satisfied" : "not satisfied"};total&nbsp;path&nbsp;length:&nbsp;{totalLen}
         </div>
 
-        {/* N2 单独一行 */}
+        {/* N2: Displayed on a separate line */}
         <div
         className="tip-row"
         title = "Condition (N2) is : For any three pairwise distinct paths u, v, w, every concatenation of the form u± v± w± must not be shorter than u."
