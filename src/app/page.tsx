@@ -275,21 +275,14 @@ const Home = () => {
                 justifyContent: "center",
               }}
             >
-              {/* Placeholder for rank3 preview - can be replaced with actual preview image later */}
-              <div
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "#800080",
-                  fontSize: "clamp(48px, 8vw, 72px)",
-                  fontWeight: "bold",
-                }}
-              >
-                Rank 3
-              </div>
+              <Image
+                src="/rank3.gif"
+                alt="Rank 3 Preview"
+                width={480}
+                height={380}
+                style={{ objectFit: "contain", width: "100%", height: "100%" }}
+                unoptimized
+              />
             </div>
             <div
               style={{
@@ -319,8 +312,8 @@ const Home = () => {
       </div>
 
       <div style={{ marginTop: "clamp(20px, 4vh, 48px)", textAlign: "center" }}>
-        <p style={{ color: "#666", fontSize: "clamp(12px, 1.5vw, 14px)" }}>
-          Click on a card to explore
+        <p style={{ color: "#e0e0e0", fontSize: "clamp(14px, 1.8vw, 18px)" }}>
+          Click on a rank to start exploring!
         </p>
       </div>
     </div>

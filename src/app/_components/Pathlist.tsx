@@ -202,7 +202,7 @@ const Pathlist: React.FC<PathlistProps> = ({
           }
         `}
       </style>
-      <h2 style={{ margin: "0 0 8px 0", fontSize: "18px" }}>Path List</h2>
+      <h2 style={{ margin: "0 0 8px 0", fontSize: "18px" }}>Path list</h2>
       <div
         style={{
           display: "flex",
@@ -223,7 +223,7 @@ const Pathlist: React.FC<PathlistProps> = ({
               margin: "0",
             }}
           >
-            No Data
+            No data
           </p>
         ) : (
           movePaths.map((path, rowIndex) => {
