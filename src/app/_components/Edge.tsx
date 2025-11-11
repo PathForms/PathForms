@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 
 interface EdgeProps {
   sourceX: number;
@@ -61,24 +61,33 @@ const Edge: React.FC<EdgeProps> = ({
   };
 
   // Animation effect for the dotted line when active
-  useEffect(() => {
-    if (!isActive && !isHoveredTarget) return;
+  // Use useRef to store offset to prevent infinite loop
+  const offsetRef = useRef(0);
+  const animationFrameIdRef = useRef<number | null>(null);
 
-    let animationFrameId: number;
-    let offset = 0;
+  useEffect(() => {
+    if (!isActive && !isHoveredTarget) {
+      // Reset offset when not active
+      offsetRef.current = 0;
+      setDashOffset(0);
+      return;
+    }
 
     const animate = () => {
       // Slower animation speed (0.2 instead of 0.5)
       // Negative value to make it move in the opposite direction
-      offset = (offset - 0.2) % 16;
-      setDashOffset(offset);
-      animationFrameId = requestAnimationFrame(animate);
+      offsetRef.current = (offsetRef.current - 0.2) % 16;
+      setDashOffset(offsetRef.current);
+      animationFrameIdRef.current = requestAnimationFrame(animate);
     };
 
-    animationFrameId = requestAnimationFrame(animate);
+    animationFrameIdRef.current = requestAnimationFrame(animate);
 
     return () => {
-      cancelAnimationFrame(animationFrameId);
+      if (animationFrameIdRef.current !== null) {
+        cancelAnimationFrame(animationFrameIdRef.current);
+        animationFrameIdRef.current = null;
+      }
     };
   }, [isActive, isHoveredTarget]);
 
