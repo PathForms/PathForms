@@ -1,5 +1,5 @@
-import { reduceMoves, concatenate, invert } from "./NielsenTrans3";
-export type Direction3 = "up" | "down" | "left-up" | "right-down" | "left-down" | "right-up";
+import { Direction3, reduceMoves, concatenate, invert } from "./NielsenTrans";
+export type { Direction3 };
 
 /**
  * Computes the greedy Nielsen reduction step count for rank 3 (6 directions).
@@ -13,7 +13,7 @@ export type Direction3 = "up" | "down" | "left-up" | "right-down" | "left-down" 
  */
 export function greedyNielsenSteps3(initialPaths: Direction3[][]): number {
   // Copy inputs to avoid mutating original arrays
-  let paths = initialPaths.map(path => [...path]);
+  let paths = initialPaths.map((path) => [...path]);
   let steps = 0;
 
   while (true) {
@@ -35,11 +35,13 @@ export function greedyNielsenSteps3(initialPaths: Direction3[][]): number {
           concatenate(paths[i], paths[j]),
           concatenate(invert(paths[i]), paths[j]),
           concatenate(paths[i], invert(paths[j])),
-          concatenate(invert(paths[i]), invert(paths[j]))
+          concatenate(invert(paths[i]), invert(paths[j])),
         ];
 
         // Choose the shortest result among variants
-        let candidate = variants.reduce((a, b) => a.length <= b.length ? a : b);
+        let candidate = variants.reduce((a, b) =>
+          a.length <= b.length ? a : b
+        );
         const delta = paths[i].length - candidate.length;
 
         if (delta > bestDelta) {
@@ -60,4 +62,3 @@ export function greedyNielsenSteps3(initialPaths: Direction3[][]): number {
 
   return steps;
 }
-
