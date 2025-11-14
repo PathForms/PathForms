@@ -114,7 +114,7 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
     "Long press Path 1 again to show it back.",
     "Double-click Path 3 to invert it.",
     "Drag Path 3 and put it on Path 2 to concatenate Path 3 after Path 2.",
-    "Now try to reduce all paths to their simplest form using invert and concatenate operations!"
+    "Now try to reduce all paths to their simplest form using invert and concatenate operations!",
   ];
   // ========== END RANK3 TUTORIAL STEPS ==========
 
@@ -1480,6 +1480,17 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
     //the input is a string like aba, a , a, a-, b-, a-b, a-b-aba, ... (for rank 2)
     //or aba, a, a-, b-, c-, a-b-c, etc. (for rank 3)
     //we need to translate them into directions and store them in bases;
+
+    // For rank 3, only allow "a" and "a-" as generators
+    if (isRank3) {
+      // Check if input contains 'b' or 'c' (case-insensitive)
+      const lowerInput = b.toLowerCase();
+      if (lowerInput.includes("b") || lowerInput.includes("c")) {
+        alert("For rank 3, only 'a' and 'a-' are allowed as generators.");
+        return;
+      }
+    }
+
     const newbase: Direction[] = [];
     let i = 0;
     while (i < b.length) {
@@ -3641,23 +3652,23 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
          dragHoverIndex={dragHoverIndex}
        />
        {/* ========== RANK3 TUTORIAL: Pass isRank3 to CheckNielsen (duplicate component) ========== */}
-       <CheckNielsen
-         movePaths={moveRecords}
-         tutorialActive={tutorialActive}
-         tutorialStep={tutorialStep}
-         isRank3={isRank3}
-         onTutorialCheck={(nextStep) => {
-           if (nextStep === 0) {
-             setTutorialCompleted(true);
-             // Keep tutorial active to show completion message
-           } else {
-             setTutorialStep(nextStep);
-           }
-         }}
-        soundEnabled={soundEnabled}
-      />
-      {/* ========== END RANK3 TUTORIAL: CheckNielsen (duplicate) ========== */}
-      {/*        
+        <CheckNielsen
+          movePaths={moveRecords}
+          tutorialActive={tutorialActive}
+          tutorialStep={tutorialStep}
+          isRank3={isRank3}
+          onTutorialCheck={(nextStep) => {
+            if (nextStep === 0) {
+              setTutorialCompleted(true);
+              // Keep tutorial active to show completion message
+            } else {
+              setTutorialStep(nextStep);
+            }
+          }}
+          soundEnabled={soundEnabled}
+        />
+        {/* ========== END RANK3 TUTORIAL: CheckNielsen (duplicate) ========== */}
+        {/*        
        <Pathbar
          mode={operationMode}
          setInvert={setInvert}
