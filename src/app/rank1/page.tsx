@@ -862,6 +862,7 @@ const Rank1 = () => {
                     setTutorialStep(0);
                 }}
                 steps={rank1TutorialSteps} // <-- PASS THE NEW STEPS
+                soundEnabled={soundEnabled}
             />
         </div>
         </>
