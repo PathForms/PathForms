@@ -215,8 +215,6 @@ const Rank1 = () => {
             return;
         }
 
-        // Reset paths
-        setRank1Paths([]);
         setOperationMode("normal");
 
         // Color palette
@@ -233,12 +231,27 @@ const Rank1 = () => {
             "#FF3333", // Red
         ];
 
-        const newPaths: Rank1Path[] = exponents.map((exponent, i) => ({
-            exponent,
-            color: colors[i % colors.length]
-        }));
+        // Get existing exponents to avoid duplicates
+        const existingExponents = new Set(rank1Paths.map(p => p.exponent));
+        
+        // Filter out exponents that already exist and create new paths
+        const newPathsToAdd: Rank1Path[] = exponents
+            .filter(exp => !existingExponents.has(exp))
+            .map((exponent, i) => ({
+                exponent,
+                color: colors[(rank1Paths.length + i) % colors.length]
+            }));
 
-        setRank1Paths(newPaths);
+        // Combine existing paths with new unique paths
+        const combinedPaths = [...rank1Paths, ...newPathsToAdd];
+        
+        // Limit to 10 paths total
+        if (combinedPaths.length > 10) {
+            alert("Maximum of 10 paths can be displayed. Some paths were not added.");
+            setRank1Paths(combinedPaths.slice(0, 10));
+        } else {
+            setRank1Paths(combinedPaths);
+        }
     };
 
     // Dummy functions for ButtonBar compatibility
@@ -272,7 +285,8 @@ const Rank1 = () => {
     };
 
     const clearBase = () => {
-        // Not used in Rank 1
+        // Clear all paths from the screen (but keep the list in ButtonBar)
+        setRank1Paths([]);
     };
 
     const setGen = () => {

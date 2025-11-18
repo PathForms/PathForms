@@ -187,9 +187,10 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
    await initializeAudio();
    if (soundEnabled) await playClearSound();
 
-   // Clear custom exponents if in rank 1 mode
-   if (generate_custom) {
-     setCustomExponents([]);
+   // In rank 1 mode, only clear the displayed paths, not the list
+   // For rank 2+, clear the custom generators
+   if (!generate_custom) {
+     // Rank 2+ behavior: clear the generators list
    }
 
    clearbase();
