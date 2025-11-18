@@ -17,11 +17,22 @@ import { formatExponent } from "../utils/formatExponent";
 
 
 type Direction = "up" | "down" | "left" | "right";
-const translation: Record<Direction, string> = {
+type Direction3 = "up" | "down" | "left-up" | "right-down" | "left-down" | "right-up";
+
+const translation2: Record<Direction, string> = {
  up: "a",
  down: "a\u207B\u00B9", // a^-1
  right: "b",
  left: "b\u207B\u00B9",
+};
+
+const translation3: Record<Direction3, string> = {
+ up: "a",
+ down: "a\u207B\u00B9", // a^-1
+ "right-up": "b",
+ "left-down": "b\u207B\u00B9",
+ "right-down": "c",
+ "left-up": "c\u207B\u00B9",
 };
 
 
@@ -29,10 +40,10 @@ const translation: Record<Direction, string> = {
 
 
 interface ButtonBarProps {
- bases: Direction[][];
+ bases: (Direction | Direction3)[][];
  generate: (size: number) => void;
  generate_rand: (size: number) => void;
- generate_base: (size: number, b: Direction[][]) => void;
+ generate_base: (size: number, b: (Direction | Direction3)[][]) => void;
  addbase: (input: string) => void;
  clearbase: () => void;
  removebase?: (index: number) => void;
@@ -44,6 +55,8 @@ interface ButtonBarProps {
  generate_custom?: (exponents: number[]) => void;
  // Default generators text (for rank 3)
  defaultGeneratorsText?: string;
+ // Rank 3 flag
+ isRank3?: boolean;
 }
 
 
@@ -63,7 +76,11 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
  generate_custom,
  // Default generators text
  defaultGeneratorsText = "No specified bases, default generators a,b.",
+ // Rank 3 flag
+ isRank3 = false,
 }) => {
+  // Use appropriate translation based on rank
+  const translation = isRank3 ? translation3 : translation2;
  //input config
  const [inputSize, setInputSize] = useState<string>("");
  const [currBase, setCurrBase] = useState<string>("");
@@ -157,7 +174,8 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
      return;
    }
 
-   let inputNumber = 2; // Make sure to convert the input to a number
+   // Default to 3 for rank 3, 2 for rank 2
+   let inputNumber = isRank3 ? 3 : 2;
    if (inputSize != "") {
      inputNumber = Number(inputSize);
    }
@@ -166,7 +184,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
      inputNumber = Math.min(Math.max(inputNumber, 0), 10);
      generate_base(inputNumber, bases); // Pass the number to the generate function
    } else {
-     generate_base(2, bases); // Handle invalid number input
+     generate_base(isRank3 ? 3 : 2, bases); // Handle invalid number input
    }
 
 
@@ -243,7 +261,8 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
 
 
    // Convert inputValue to a number and pass it to generate
-   let inputNumber = 5; // Make sure to convert the input to a number
+   // Default to 3 for rank 3, 5 for rank 2
+   let inputNumber = isRank3 ? 3 : 5;
    if (inputSize != "") {
      inputNumber = Number(inputSize);
    }
@@ -256,7 +275,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
        if (soundEnabled) playGenerateSound();
      }, 100);
    } else {
-     generate(5); // Handle invalid number input
+     generate(isRank3 ? 3 : 5); // Handle invalid number input
      // Play generate sound after paths are generated
      setTimeout(() => {
        if (soundEnabled) playGenerateSound();
@@ -274,7 +293,8 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
 
 
    // Convert inputValue to a number and pass it to generate
-   let inputNumber = 2; // Make sure to convert the input to a number
+   // Default to 3 for rank 3, 2 for rank 2
+   let inputNumber = isRank3 ? 3 : 2;
    if (inputSize != "") {
      inputNumber = Number(inputSize);
    }
@@ -283,7 +303,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
      inputNumber = Math.min(Math.max(inputNumber, 0), 10);
      generate_rand(inputNumber); // Pass the number to the generate function
    } else {
-     generate_rand(5); // Handle invalid number input
+     generate_rand(isRank3 ? 3 : 2); // Handle invalid number input
    }
  };
 
@@ -317,7 +337,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
            size={10}
            value={inputSize}
            onChange={handleSizeChange}
-           placeholder="2"
+           placeholder={isRank3 ? "3" : "2"}
          />
        </div>
 
@@ -529,7 +549,10 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
                    ? "1"
                    : path
                        .map(
-                         (node) => translation[node as keyof typeof translation]
+                         (node) => {
+                           const translated = translation[node as keyof typeof translation];
+                           return translated || node; // Fallback to node if translation not found
+                         }
                        )
                        .join(" ")}
                </div>
