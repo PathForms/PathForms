@@ -383,11 +383,10 @@ const Rank1 = () => {
             }
 
             // Remove paths with zero exponent completely
-            const filteredPaths = newPaths;
+            const filteredPaths = newPaths.filter(path => path.exponent !== 0);
 
             // Check if we've reached Nielsen reduced form (only 1 non-zero path)
-            const nonZeroPaths = filteredPaths.filter(path => path.exponent !== 0);
-            const success = nonZeroPaths.length === 1;
+            const success = filteredPaths.length === 1;
             if (success) {
                 setShowConfetti(true);
                 if (soundEnabled) playSuccessSound();
