@@ -821,7 +821,7 @@ const Rank1 = () => {
             addbase={Addbase}
             clearbase={clearBase}
             generate_custom={GenerateCustomPaths}
-            soundEnabled={true}
+            soundEnabled={soundEnabled}
             />
 
             <NumberLine
@@ -864,18 +864,6 @@ const Rank1 = () => {
             </button>
         
             {/* <Steps optimalSteps={targetSteps} usedSteps={usedConcatSteps} /> */}
-
-            <Tutorial
-                step={tutorialStep}
-                isActive={tutorialActive}
-                isCompleted={tutorialCompleted}
-                onNext={() => setTutorialStep(s => s + 1)} 
-                onSkip={() => {
-                    setTutorialActive(false);
-                    setTutorialStep(0);
-                }}
-                steps={rank1TutorialSteps} // <-- PASS THE NEW STEPS
-            />
         </div>
         </>
     );
