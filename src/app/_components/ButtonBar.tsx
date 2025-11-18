@@ -408,6 +408,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
          }}
        >
          <button
+           className={`${tutorialStep === 1 ? styles.highlight : ""}`}
            style={{
              width: 140,
              height: 28,
@@ -426,7 +427,6 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
          {/* Only show Generate Custom Paths button if NOT in rank 1 mode */}
          {!generate_custom && (
            <button
-             className={`${tutorialStep === 1 ? styles.highlight : ""}`}
              style={{
                width: 140,
                height: 28,

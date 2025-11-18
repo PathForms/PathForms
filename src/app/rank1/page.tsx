@@ -24,7 +24,7 @@ import buildNodesEdgesFromMoves from "../utils/buildNodesEdgesFromMoves";
 import next from "next";
 import Steps from "../_components/Steps";
 import { greedyNielsenSteps } from "../utils/greedyNielsen";
-import { playSuccessSound, playPoofSound, playReductionSound } from "../utils/soundManager";
+import { playSuccessSound, playPoofSound, playReductionSound, playButtonSound, playGenerateSound } from "../utils/soundManager";
 
 type Direction = "up" | "down" | "left" | "right";
 
@@ -152,10 +152,15 @@ const Rank1 = () => {
     
     // EDIT RANK1 TUTORIAL
     // Generate random paths for Rank 1
-    const GenerateRandomPath = (n: number) => {
+    const GenerateRandomPath = async (n: number) => {
         if (tutorialActive && tutorialStep !== 1) {
             alert("Please follow the current tutorial step!"); // More helpful message
             return;
+        }
+
+        // Play generate sound
+        if (soundEnabled) {
+            await playGenerateSound();
         }
 
         // Reset paths
@@ -206,6 +211,12 @@ const Rank1 = () => {
         }
 
         setRank1Paths(newPaths);
+
+        // If we're on step 1 of the tutorial, advance to step 2
+        if (tutorialActive && tutorialStep === 1) {
+            setTutorialStep(s => s + 1);
+            if (soundEnabled) await playSuccessSound(); // Play success sound when advancing
+        }
     };
 
     // Generate custom paths from array of exponents
@@ -256,11 +267,16 @@ const Rank1 = () => {
 
     // Dummy functions for ButtonBar compatibility
     //Rank1Tutorial
-    const GeneratePath = () => {
+    const GeneratePath = async () => {
         // Block if tutorial is active BUT NOT on step 1
         if (tutorialActive && tutorialStep !== 1) {
             alert("Please follow the current tutorial step!");
             return;
+        }
+
+        // Play generate sound
+        if (soundEnabled) {
+            await playGenerateSound();
         }
 
         // Generate two simple paths for the tutorial
@@ -273,6 +289,7 @@ const Rank1 = () => {
         // If we're on step 1, advance to step 2
         if (tutorialActive && tutorialStep === 1) {
             setTutorialStep(s => s + 1);
+            if (soundEnabled) await playSuccessSound(); // Play success sound when advancing
         }
     };
 
@@ -302,6 +319,11 @@ const Rank1 = () => {
             return;
         }
 
+        // Play sound for inversion
+        if (soundEnabled) {
+            playButtonSound();
+        }
+
         setRank1Paths(prevPaths => {
             const newPaths = [...prevPaths];
             if (newPaths[index]) {
@@ -316,6 +338,7 @@ const Rank1 = () => {
         // If we are on step 2, advance to step 3
         if (tutorialActive && tutorialStep === 2) {
             setTutorialStep(s => s + 1);
+            if (soundEnabled) playSuccessSound(); // Play success sound when advancing
         }
     };
 

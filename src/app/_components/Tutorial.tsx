@@ -22,7 +22,7 @@ interface TutorialProps {
 }
 
 const defaultTutorialSteps = [ //Rank1Tutorial
-  "Click the 'Generate Paths' button to generate paths.",
+  "Click the 'Generate Rand' button to generate paths.",
   "Long press a path in the word list to hide it.",
   "Long press again to show it back.",
   "Double-click the second path to invert it.",
