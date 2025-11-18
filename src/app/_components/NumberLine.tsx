@@ -294,7 +294,7 @@ const NumberLine: React.FC<NumberLineProps> = ({
       
       // Draw path label (a^n notation)
       ctx.fillStyle = path.color;
-      ctx.font = "bold 16px Arial";
+      ctx.font = "bold 22px Arial";
       ctx.textBaseline = "middle";
       const label = formatExponent(path.exponent);
       
@@ -302,11 +302,11 @@ const NumberLine: React.FC<NumberLineProps> = ({
       if (path.exponent < 0) {
         // Negative exponent: label on the left
         ctx.textAlign = "right";
-        ctx.fillText(label, Math.min(startX, endX) - 15, yOffset);
+        ctx.fillText(label, Math.min(startX, endX) - 18, yOffset);
       } else {
         // Positive exponent: label on the right
         ctx.textAlign = "left";
-        ctx.fillText(label, Math.max(startX, endX) + 15, yOffset);
+        ctx.fillText(label, Math.max(startX, endX) + 18, yOffset);
       }
     });
 
@@ -376,11 +376,11 @@ const NumberLine: React.FC<NumberLineProps> = ({
 
       // Draw path label
       ctx.fillStyle = draggedPath.color;
-      ctx.font = "bold 16px Arial";
+      ctx.font = "bold 22px Arial";
       ctx.textAlign = "center";
       ctx.textBaseline = "top";
       const dragLabel = formatExponent(draggedPath.exponent);
-      ctx.fillText(dragLabel, dragX, dragY + 15);
+      ctx.fillText(dragLabel, dragX, dragY + 18);
     }
 
     // Highlight current position if provided
