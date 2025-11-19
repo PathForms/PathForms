@@ -24,7 +24,7 @@ import buildNodesEdgesFromMoves from "../utils/buildNodesEdgesFromMoves";
 import next from "next";
 import Steps from "../_components/Steps";
 import { greedyNielsenSteps } from "../utils/greedyNielsen";
-import { playSuccessSound, playPoofSound, playReductionSound } from "../utils/soundManager";
+import { playSuccessSound, playPoofSound, playReductionSound, playButtonSound, playGenerateSound } from "../utils/soundManager";
 
 type Direction = "up" | "down" | "left" | "right";
 
@@ -94,10 +94,11 @@ const Rank1 = () => {
     const [tutorialCompleted, setTutorialCompleted] = useState(false);
 
     const rank1TutorialSteps = [
-        "Click the 'Generate Paths' button to create some random paths.",
+        "Click the 'Generate Rand' button to create some random paths.",
         "Each path is a power of 'a'. Now, double-click any path to invert its exponent (e.g., a³ becomes a⁻³).",
         "Great! Now, drag one path onto another to add their exponents (e.g., dragging a² onto a³ makes a⁵).",
-        "Try to make all paths a⁰ (the dot at the center)!"
+        "Try to reduce the paths as much as possible!",
+        "🎉 Congratulations! You've reduced the paths to Nielsen form! What you just did is analogous to the Euclidean algorithm for finding the GCD of two integers. The Nielsen reduction for rank 1 free groups (F₁ ≅ ℤ) is essentially the Euclidean algorithm in disguise!"
     ];
 
     // Steps state
@@ -114,23 +115,6 @@ const Rank1 = () => {
     const toggleSettings = () => {
         setShowSettings((prev) => !prev);
     };
-
-
-    //ADD RANK1 TUTORIAL
-    useEffect(() => {
-        // Only check if we are on the final tutorial step and paths exist
-        if (tutorialActive && tutorialStep === 4 && rank1Paths.length > 0) {
-            
-            // Check if ALL path exponents are 0
-            const allReduced = rank1Paths.some(path => path.exponent === 0);
-            
-            if (allReduced) {
-                // This will trigger the "Congratulations" message in Tutorial.tsx
-                setTutorialCompleted(true);
-            }
-        }
-        // Run this check every time the paths change
-    }, [rank1Paths, tutorialActive, tutorialStep]);
 
 
     // Handle theme change
@@ -152,10 +136,15 @@ const Rank1 = () => {
     
     // EDIT RANK1 TUTORIAL
     // Generate random paths for Rank 1
-    const GenerateRandomPath = (n: number) => {
+    const GenerateRandomPath = async (n: number) => {
         if (tutorialActive && tutorialStep !== 1) {
             alert("Please follow the current tutorial step!"); // More helpful message
             return;
+        }
+
+        // Play generate sound
+        if (soundEnabled) {
+            await playGenerateSound();
         }
 
         // Reset paths
@@ -206,6 +195,12 @@ const Rank1 = () => {
         }
 
         setRank1Paths(newPaths);
+
+        // If we're on step 1 of the tutorial, advance to step 2
+        if (tutorialActive && tutorialStep === 1) {
+            setTutorialStep(s => s + 1);
+            if (soundEnabled) await playSuccessSound(); // Play success sound when advancing
+        }
     };
 
     // Generate custom paths from array of exponents
@@ -215,8 +210,6 @@ const Rank1 = () => {
             return;
         }
 
-        // Reset paths
-        setRank1Paths([]);
         setOperationMode("normal");
 
         // Color palette
@@ -233,21 +226,41 @@ const Rank1 = () => {
             "#FF3333", // Red
         ];
 
-        const newPaths: Rank1Path[] = exponents.map((exponent, i) => ({
-            exponent,
-            color: colors[i % colors.length]
-        }));
+        // Get existing exponents to avoid duplicates
+        const existingExponents = new Set(rank1Paths.map(p => p.exponent));
+        
+        // Filter out exponents that already exist and create new paths
+        const newPathsToAdd: Rank1Path[] = exponents
+            .filter(exp => !existingExponents.has(exp))
+            .map((exponent, i) => ({
+                exponent,
+                color: colors[(rank1Paths.length + i) % colors.length]
+            }));
 
-        setRank1Paths(newPaths);
+        // Combine existing paths with new unique paths
+        const combinedPaths = [...rank1Paths, ...newPathsToAdd];
+        
+        // Limit to 10 paths total
+        if (combinedPaths.length > 10) {
+            alert("Maximum of 10 paths can be displayed. Some paths were not added.");
+            setRank1Paths(combinedPaths.slice(0, 10));
+        } else {
+            setRank1Paths(combinedPaths);
+        }
     };
 
     // Dummy functions for ButtonBar compatibility
     //Rank1Tutorial
-    const GeneratePath = () => {
+    const GeneratePath = async () => {
         // Block if tutorial is active BUT NOT on step 1
         if (tutorialActive && tutorialStep !== 1) {
             alert("Please follow the current tutorial step!");
             return;
+        }
+
+        // Play generate sound
+        if (soundEnabled) {
+            await playGenerateSound();
         }
 
         // Generate two simple paths for the tutorial
@@ -260,6 +273,7 @@ const Rank1 = () => {
         // If we're on step 1, advance to step 2
         if (tutorialActive && tutorialStep === 1) {
             setTutorialStep(s => s + 1);
+            if (soundEnabled) await playSuccessSound(); // Play success sound when advancing
         }
     };
 
@@ -272,7 +286,8 @@ const Rank1 = () => {
     };
 
     const clearBase = () => {
-        // Not used in Rank 1
+        // Clear all paths from the screen (but keep the list in ButtonBar)
+        setRank1Paths([]);
     };
 
     const setGen = () => {
@@ -286,6 +301,11 @@ const Rank1 = () => {
         if (tutorialActive && tutorialStep !== 2 && tutorialStep !== 4) {
             alert("Please follow the current tutorial step!");
             return;
+        }
+
+        // Play sound for inversion
+        if (soundEnabled) {
+            playButtonSound();
         }
 
         setRank1Paths(prevPaths => {
@@ -302,22 +322,11 @@ const Rank1 = () => {
         // If we are on step 2, advance to step 3
         if (tutorialActive && tutorialStep === 2) {
             setTutorialStep(s => s + 1);
+            if (soundEnabled) playSuccessSound(); // Play success sound when advancing
         }
     };
 
-    //Rank1Tutorial
-    useEffect(() => {
-        // Check for tutorial completion
-        if (tutorialActive && tutorialStep === 4 && rank1Paths.length > 0) {
-            // Check if AT LEAST ONE path exponent is 0
-            const oneReduced = rank1Paths.some(path => path.exponent === 0);
-            
-            if (oneReduced) {
-                setTutorialCompleted(true);
-                playSuccessSound(); // Play sound
-            }
-        }
-    }, [rank1Paths, tutorialActive, tutorialStep]);
+
 
     // Handle path concatenation (drag and drop)
     //EDIT RANK1 TUTORIAL
@@ -369,14 +378,21 @@ const Rank1 = () => {
             }
 
             // Remove paths with zero exponent completely
-            const filteredPaths = newPaths;
+            const filteredPaths = newPaths.filter(path => path.exponent !== 0);
 
             // Check if we've reached Nielsen reduced form (only 1 non-zero path)
-            const nonZeroPaths = filteredPaths.filter(path => path.exponent !== 0);
-            const success = nonZeroPaths.length === 1;
+            const success = filteredPaths.length === 1;
             if (success) {
                 setShowConfetti(true);
                 if (soundEnabled) playSuccessSound();
+                
+                // If in tutorial step 4, advance to step 5 (congratulations)
+                if (tutorialActive && tutorialStep === 4) {
+                    console.log("Nielsen reduction complete! Advancing to step 5");
+                    setTimeout(() => {
+                        setTutorialStep(5);
+                    }, 500); // Small delay to let confetti start before showing message
+                }
             }
             return filteredPaths;
         });
@@ -808,7 +824,7 @@ const Rank1 = () => {
             addbase={Addbase}
             clearbase={clearBase}
             generate_custom={GenerateCustomPaths}
-            soundEnabled={true}
+            soundEnabled={soundEnabled}
             />
 
             <NumberLine
@@ -828,42 +844,25 @@ const Rank1 = () => {
                     setTutorialActive(false);
                     setTutorialStep(0);
                 }}
+                onRedo={() => {
+                    // Reset tutorial to beginning
+                    setTutorialStep(1);
+                    setTutorialActive(true);
+                    setTutorialCompleted(false);
+                    setRank1Paths([]);
+                }}
                 steps={rank1TutorialSteps}
                 soundEnabled={soundEnabled}
             />
 
             <button
-            className={styles.button}
-            style={{
-                position: "fixed",
-                bottom: 24,
-                right: 24,
-                zIndex: 100,
-                padding: "12px 28px",
-                fontSize: "16px",
-                borderRadius: "8px",
-                cursor: "pointer",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.15)"
-            }}
+            className={styles.homeButton}
             onClick={() => router.push("/")}
             >
             Go back to Home
             </button>
         
             {/* <Steps optimalSteps={targetSteps} usedSteps={usedConcatSteps} /> */}
-
-            <Tutorial
-                step={tutorialStep}
-                isActive={tutorialActive}
-                isCompleted={tutorialCompleted}
-                onNext={() => setTutorialStep(s => s + 1)} 
-                onSkip={() => {
-                    setTutorialActive(false);
-                    setTutorialStep(0);
-                }}
-                steps={rank1TutorialSteps} // <-- PASS THE NEW STEPS
-                soundEnabled={soundEnabled}
-            />
         </div>
         </>
     );

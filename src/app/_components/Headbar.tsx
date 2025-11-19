@@ -56,7 +56,7 @@ const Headbar: React.FC<HeadbarProps> = ({
   useEffect(() => {
     const root = document.documentElement;
     if (theme === "light") {
-      root.style.setProperty("--background", "#ffffff");
+      root.style.setProperty("--background", "#e6e6e6"); // change background color
       root.style.setProperty("--foreground", "#171717");
     } else {
       root.style.setProperty("--background", "#0a0a0a");
@@ -86,9 +86,7 @@ const Headbar: React.FC<HeadbarProps> = ({
       {" "}
       {/* Use CSS module styling for dynamic class */}
       <div>{heading}</div>
-      <button className={styles["settings-button"]} onClick={toggleSettings}>
-        Settings
-      </button>
+      <button className={styles["settings-button"]} onClick={toggleSettings}></button>
       {showSettings && (
         <div className={`${styles["settings-modal"]} ${styles[theme]}`}>
           <div>
