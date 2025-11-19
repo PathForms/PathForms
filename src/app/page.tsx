@@ -29,22 +29,21 @@ const Home = () => {
         alignItems: "center",
         justifyContent: "center",
         minHeight: "100vh",
-        height: "100vh",
         width: "100vw",
         overflow: "auto",
         backgroundColor: "#0a0a0a", // Dark theme background from globals.css
-        padding: "20px",
+        padding: "clamp(16px, 3vh, 40px) 20px",
         boxSizing: "border-box",
       }}
     >
       <div
-        style={{ marginBottom: "clamp(20px, 5vh, 60px)", textAlign: "center" }}
+        style={{ marginBottom: "clamp(16px, 2.5vh, 40px)", textAlign: "center" }}
       >
         <h1
           style={{
-            fontSize: "clamp(32px, 6vw, 48px)",
+            fontSize: "clamp(28px, 5vw, 42px)",
             fontWeight: "bold",
-            marginBottom: "10px",
+            marginBottom: "8px",
           }}
         >
           {text.split("").map((char, index) => (
@@ -53,7 +52,7 @@ const Home = () => {
             </span>
           ))}
         </h1>
-        <p style={{ fontSize: "clamp(16px, 2.5vw, 20px)", color: "#ededed" }}>
+        <p style={{ fontSize: "clamp(14px, 2vw, 18px)", color: "#ededed" }}>
           Explore Free Group Visualizations
         </p>
       </div>
@@ -61,19 +60,19 @@ const Home = () => {
       <div
         style={{
           display: "flex",
-          gap: "40px",
+          gap: "clamp(20px, 3vw, 40px)",
           flexWrap: "wrap",
           justifyContent: "center",
           alignItems: "center",
+          maxWidth: "1400px",
+          width: "100%",
         }}
       >
         {/* Rank 1 Button */}
         <button
           style={{
-            width: "min(500px, 45vw, calc(100vw - 40px))",
-            height: "min(500px, 45vw, 60vh)",
-            maxWidth: "500px",
-            maxHeight: "500px",
+            width: "clamp(280px, 28vw, 380px)",
+            height: "clamp(280px, 28vw, 380px)",
             borderRadius: "16px",
             backgroundColor: "#1a1a1a",
             border:
@@ -116,15 +115,15 @@ const Home = () => {
               <Image
                 src="/rank1.gif"
                 alt="Rank 1 Preview"
-                width={480}
-                height={380}
+                width={380}
+                height={300}
                 style={{ objectFit: "contain", width: "100%", height: "100%" }}
                 unoptimized
               />
             </div>
             <div
               style={{
-                height: "clamp(60px, 15%, 80px)",
+                height: "clamp(50px, 18%, 70px)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -137,7 +136,7 @@ const Home = () => {
             >
               <span
                 style={{
-                  fontSize: "clamp(18px, 3vw, 24px)",
+                  fontSize: "clamp(16px, 2.5vw, 22px)",
                   fontWeight: "bold",
                   color: "white",
                 }}
@@ -151,10 +150,8 @@ const Home = () => {
         {/* Rank 2 Button */}
         <button
           style={{
-            width: "min(500px, 45vw, calc(100vw - 40px))",
-            height: "min(500px, 45vw, 60vh)",
-            maxWidth: "500px",
-            maxHeight: "500px",
+            width: "clamp(280px, 28vw, 380px)",
+            height: "clamp(280px, 28vw, 380px)",
             borderRadius: "16px",
             backgroundColor: "#1a1a1a",
             border:
@@ -197,15 +194,15 @@ const Home = () => {
               <Image
                 src="/rank2.gif"
                 alt="Rank 2 Preview"
-                width={480}
-                height={380}
+                width={380}
+                height={300}
                 style={{ objectFit: "contain", width: "100%", height: "100%" }}
                 unoptimized
               />
             </div>
             <div
               style={{
-                height: "clamp(60px, 15%, 80px)",
+                height: "clamp(50px, 18%, 70px)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -218,7 +215,7 @@ const Home = () => {
             >
               <span
                 style={{
-                  fontSize: "clamp(18px, 3vw, 24px)",
+                  fontSize: "clamp(16px, 2.5vw, 22px)",
                   fontWeight: "bold",
                   color: "white",
                 }}
@@ -232,10 +229,8 @@ const Home = () => {
         {/* Rank 3 Button */}
         <button
           style={{
-            width: "min(500px, 45vw, calc(100vw - 40px))",
-            height: "min(500px, 45vw, 60vh)",
-            maxWidth: "500px",
-            maxHeight: "500px",
+            width: "clamp(280px, 28vw, 380px)",
+            height: "clamp(280px, 28vw, 380px)",
             borderRadius: "16px",
             backgroundColor: "#1a1a1a",
             border:
@@ -278,15 +273,15 @@ const Home = () => {
               <Image
                 src="/rank3.gif"
                 alt="Rank 3 Preview"
-                width={480}
-                height={380}
+                width={380}
+                height={300}
                 style={{ objectFit: "contain", width: "100%", height: "100%" }}
                 unoptimized
               />
             </div>
             <div
               style={{
-                height: "clamp(60px, 15%, 80px)",
+                height: "clamp(50px, 18%, 70px)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -299,7 +294,7 @@ const Home = () => {
             >
               <span
                 style={{
-                  fontSize: "clamp(18px, 3vw, 24px)",
+                  fontSize: "clamp(16px, 2.5vw, 22px)",
                   fontWeight: "bold",
                   color: "white",
                 }}
@@ -311,8 +306,8 @@ const Home = () => {
         </button>
       </div>
 
-      <div style={{ marginTop: "clamp(20px, 4vh, 48px)", textAlign: "center" }}>
-        <p style={{ color: "#e0e0e0", fontSize: "clamp(14px, 1.8vw, 18px)" }}>
+      <div style={{ marginTop: "clamp(16px, 2.5vh, 32px)", textAlign: "center" }}>
+        <p style={{ color: "#e0e0e0", fontSize: "clamp(13px, 1.6vw, 16px)" }}>
           Click on a rank to start exploring!
         </p>
       </div>
