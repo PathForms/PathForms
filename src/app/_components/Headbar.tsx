@@ -86,9 +86,7 @@ const Headbar: React.FC<HeadbarProps> = ({
       {" "}
       {/* Use CSS module styling for dynamic class */}
       <div>{heading}</div>
-      <button className={styles["settings-button"]} onClick={toggleSettings}>
-        Settings
-      </button>
+      <button className={styles["settings-button"]} onClick={toggleSettings}></button>
       {showSettings && (
         <div className={`${styles["settings-modal"]} ${styles[theme]}`}>
           <div>
