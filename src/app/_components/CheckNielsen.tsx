@@ -28,6 +28,7 @@ interface CheckNielsenProps {
   onTutorialCheck?: (step: number) => void;
   soundEnabled?: boolean;
   isRank3?: boolean; // ========== RANK3 TUTORIAL: Add isRank3 prop ==========
+  theme?: "dark" | "light"; // Add theme prop
 }
 
 const CheckNielsen: React.FC<CheckNielsenProps> = ({
@@ -37,7 +38,10 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
   onTutorialCheck = () => {},
   soundEnabled = true,
   isRank3 = false, // ========== RANK3 TUTORIAL: Add isRank3 prop ==========
+  theme = "dark", // Default to dark theme
 }) => {
+  // Define success color based on theme
+  const successColor = theme === "light" ? "#0891b2" : "limegreen";
   const [nStatus, setNStatus] = useState<boolean[]>([false, false, false]);
   const [result, setResult] = useState<string>("");
   const [emptyCnt, setEmptyCnt] = useState<number>(0);
@@ -435,7 +439,7 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
           className="tip-row"
           title="Condition (N0) is : All paths must be non-empty."
           style={{
-            color: nStatus[0] ? "limegreen" : "red",
+            color: nStatus[0] ? successColor : "red",
           }}
         >
           Nelisen-reduced conditions
@@ -446,7 +450,7 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
         <div
           className="tip-row"
           title="Condition (N1) is : For any two distinct paths u and v, the concatenations uv, u v⁻¹, u⁻¹v must not be shorter than either u or v."
-          style={{ color: nStatus[1] ? "limegreen" : "red" }}
+          style={{ color: nStatus[1] ? successColor : "red" }}
         >
           (N1)&nbsp;{nStatus[1] ? "satisfied" : "not satisfied"}
           ;total&nbsp;path&nbsp;length:&nbsp;{totalLen}
@@ -456,7 +460,7 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
         <div
           className="tip-row"
           title="Condition (N2) is : For any three pairwise distinct paths u, v, w, every concatenation of the form u± v± w± must not be shorter than u."
-          style={{ color: nStatus[2] ? "limegreen" : "red" }}
+          style={{ color: nStatus[2] ? successColor : "red" }}
         >
           (N2)&nbsp;{nStatus[2] ? "satisfied" : "not satisfied"}
         </div>

@@ -1832,6 +1832,7 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
           isDragging={isDragging}
           dragFromIndex={dragFromIndex}
           dragHoverIndex={dragHoverIndex}
+          theme={theme}
         />
         {/* ========== RANK3 TUTORIAL: Pass isRank3 to CheckNielsen ========== */}
         <CheckNielsen
@@ -1839,6 +1840,7 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
           tutorialActive={tutorialActive}
           tutorialStep={tutorialStep}
           isRank3={isRank3}
+          theme={theme}
           onTutorialCheck={(nextStep) => {
             if (nextStep === 0) {
               setTutorialCompleted(true);
@@ -3715,6 +3717,7 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
          isDragging={isDragging}
          dragFromIndex={dragFromIndex}
          dragHoverIndex={dragHoverIndex}
+         theme={theme}
        />
        {/* ========== RANK3 TUTORIAL: Pass isRank3 to CheckNielsen (duplicate component) ========== */}
         <CheckNielsen
@@ -3722,6 +3725,7 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
           tutorialActive={tutorialActive}
           tutorialStep={tutorialStep}
           isRank3={isRank3}
+          theme={theme}
           onTutorialCheck={(nextStep) => {
             if (nextStep === 0) {
               setTutorialCompleted(true);
@@ -3761,9 +3765,9 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
           steps={isRank3 ? rank3TutorialSteps : undefined}
         />
         {/* ========== END RANK3 TUTORIAL: Tutorial component ========== */}
-        <Steps optimalSteps={targetSteps} usedSteps={usedConcatSteps} />
+        <Steps optimalSteps={targetSteps} usedSteps={usedConcatSteps} theme={theme} />
         <button
-          className={styles.homeButton}
+          className={`${styles.homeButton} ${theme === "light" ? styles.light : ""}`}
           onClick={() => router.push("/")}
         >
           Go back to Home
