@@ -94,10 +94,11 @@ const Rank1 = () => {
     const [tutorialCompleted, setTutorialCompleted] = useState(false);
 
     const rank1TutorialSteps = [
-        "Click the 'Generate Paths' button to create some random paths.",
+        "Click the 'Generate Rand' button to create some random paths.",
         "Each path is a power of 'a'. Now, double-click any path to invert its exponent (e.g., a³ becomes a⁻³).",
         "Great! Now, drag one path onto another to add their exponents (e.g., dragging a² onto a³ makes a⁵).",
-        "Try to reduce the path as much as possible!"
+        "Try to reduce the paths as much as possible!",
+        "🎉 Congratulations! You've reduced the paths to Nielsen form! What you just did is analogous to the Euclidean algorithm for finding the GCD of two integers. The Nielsen reduction for rank 1 free groups (F₁ ≅ ℤ) is essentially the Euclidean algorithm in disguise!"
     ];
 
     // Steps state
@@ -114,23 +115,6 @@ const Rank1 = () => {
     const toggleSettings = () => {
         setShowSettings((prev) => !prev);
     };
-
-
-    //ADD RANK1 TUTORIAL
-    useEffect(() => {
-        // Only check if we are on the final tutorial step and paths exist
-        if (tutorialActive && tutorialStep === 4 && rank1Paths.length > 0) {
-            
-            // Check if ALL path exponents are 0
-            const allReduced = rank1Paths.some(path => path.exponent === 0);
-            
-            if (allReduced) {
-                // This will trigger the "Congratulations" message in Tutorial.tsx
-                setTutorialCompleted(true);
-            }
-        }
-        // Run this check every time the paths change
-    }, [rank1Paths, tutorialActive, tutorialStep]);
 
 
     // Handle theme change
@@ -342,19 +326,7 @@ const Rank1 = () => {
         }
     };
 
-    //Rank1Tutorial
-    useEffect(() => {
-        // Check for tutorial completion
-        if (tutorialActive && tutorialStep === 4 && rank1Paths.length > 0) {
-            // Check if AT LEAST ONE path exponent is 0
-            const oneReduced = rank1Paths.some(path => path.exponent === 0);
-            
-            if (oneReduced) {
-                setTutorialCompleted(true);
-                playSuccessSound(); // Play sound
-            }
-        }
-    }, [rank1Paths, tutorialActive, tutorialStep]);
+
 
     // Handle path concatenation (drag and drop)
     //EDIT RANK1 TUTORIAL
@@ -413,6 +385,14 @@ const Rank1 = () => {
             if (success) {
                 setShowConfetti(true);
                 if (soundEnabled) playSuccessSound();
+                
+                // If in tutorial step 4, advance to step 5 (congratulations)
+                if (tutorialActive && tutorialStep === 4) {
+                    console.log("Nielsen reduction complete! Advancing to step 5");
+                    setTimeout(() => {
+                        setTutorialStep(5);
+                    }, 500); // Small delay to let confetti start before showing message
+                }
             }
             return filteredPaths;
         });
@@ -863,6 +843,13 @@ const Rank1 = () => {
                 onSkip={() => {
                     setTutorialActive(false);
                     setTutorialStep(0);
+                }}
+                onRedo={() => {
+                    // Reset tutorial to beginning
+                    setTutorialStep(1);
+                    setTutorialActive(true);
+                    setTutorialCompleted(false);
+                    setRank1Paths([]);
                 }}
                 steps={rank1TutorialSteps}
                 soundEnabled={soundEnabled}
