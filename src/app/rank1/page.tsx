@@ -97,7 +97,7 @@ const Rank1 = () => {
         "Click the 'Generate Paths' button to create some random paths.",
         "Each path is a power of 'a'. Now, double-click any path to invert its exponent (e.g., a³ becomes a⁻³).",
         "Great! Now, drag one path onto another to add their exponents (e.g., dragging a² onto a³ makes a⁵).",
-        "Try to make all paths a⁰ (the dot at the center)!"
+        "Try to reduce the path as much as possible!"
     ];
 
     // Steps state
