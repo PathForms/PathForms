@@ -114,7 +114,7 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
     "Long press Path 1 again to show it back.",
     "Double-click Path 3 to invert it.",
     "Drag Path 3 and put it on Path 2 to concatenate Path 3 after Path 2.",
-    "Now try to reduce all paths to their simplest form using invert and concatenate operations!"
+    "Now try to reduce all paths to their simplest form using invert and concatenate operations!",
   ];
   // ========== END RANK3 TUTORIAL STEPS ==========
 
@@ -1252,8 +1252,21 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
       }
     }
 
-    while (moveRecordsRef.current.some((path) => path.length < 2)) {
-      const operation = Math.random() < 0.5 ? 0 : 1;
+    // Add a maximum iteration limit to prevent infinite loops
+    let maxIterations = 1000;
+    let iterations = 0;
+    while (
+      moveRecordsRef.current.some((path) => path.length < 2) &&
+      iterations < maxIterations
+    ) {
+      iterations++;
+
+      // When paths are too short, we should only concatenate (not invert)
+      // because inversion doesn't change path length
+      const hasShortPaths = moveRecordsRef.current.some(
+        (path) => path.length < 2
+      );
+      const operation = hasShortPaths ? 1 : Math.random() < 0.5 ? 0 : 1;
 
       if (operation === 0) {
         // Inversion with weighted random choice
@@ -1261,9 +1274,17 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
       } else if (operation === 1) {
         // Concatenate as usual (could also be enhanced with weights if desired)
         let [index1, index2] = generateRandomPathPair(n);
-        while (moveRecordsRef.current[index1].length >= 4) {
+        let attempts = 0;
+        while (moveRecordsRef.current[index1].length >= 4 && attempts < 100) {
+          [index1, index2] = generateRandomPathPair(n);
+          attempts++;
+        }
+
+        // If we couldn't find a suitable path after 100 attempts, just use any pair
+        if (attempts >= 100) {
           [index1, index2] = generateRandomPathPair(n);
         }
+
         const path1Moves = [...moveRecordsRef.current[index1]];
         const path2Moves = [...moveRecordsRef.current[index2]];
         let newMoves: Direction[] = [];
@@ -1285,6 +1306,31 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
         newMoves.push(...path2Moves);
         moveRecordsRef.current[index1] = newMoves;
       }
+    }
+
+    // If we hit the max iterations, ensure all paths have at least one move
+    if (iterations >= maxIterations) {
+      moveRecordsRef.current.forEach((path, index) => {
+        if (path.length === 0) {
+          // Add a random move to empty paths
+          const numDirections = isRank3 ? 6 : 4;
+          const move = Math.floor(Math.random() * numDirections);
+          if (isRank3) {
+            const moves: Direction3[] = [
+              "up",
+              "down",
+              "right-up",
+              "left-down",
+              "right-down",
+              "left-up",
+            ];
+            moveRecordsRef.current[index] = [moves[move]];
+          } else {
+            const moves: Direction2[] = ["up", "down", "left", "right"];
+            moveRecordsRef.current[index] = [moves[move]];
+          }
+        }
+      });
     }
 
     // After paths are generated, set moveRecordsRef to the state
@@ -1738,6 +1784,7 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
               ? "No specified bases, default generators a,b,c."
               : "No specified bases, default generators a,b."
           }
+          isRank3={isRank3}
         />
         <Pathterminal
           pathIndex={pathIndex}
@@ -3010,8 +3057,16 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
    }
 
 
-   while (moveRecordsRef.current.some((path) => path.length < 2)) {
-     const operation = Math.random() < 0.5 ? 0 : 1;
+   // Add a maximum iteration limit to prevent infinite loops
+   let maxIterations = 1000;
+   let iterations = 0;
+   while (moveRecordsRef.current.some((path) => path.length < 2) && iterations < maxIterations) {
+     iterations++;
+     
+     // When paths are too short, we should only concatenate (not invert)
+     // because inversion doesn't change path length
+     const hasShortPaths = moveRecordsRef.current.some((path) => path.length < 2);
+     const operation = hasShortPaths ? 1 : (Math.random() < 0.5 ? 0 : 1);
 
 
      if (operation === 0) {
@@ -3020,9 +3075,17 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
      } else if (operation === 1) {
        // Concatenate as usual (could also be enhanced with weights if desired)
        let [index1, index2] = generateRandomPathPair(n);
-       while (moveRecordsRef.current[index1].length >= 4) {
+       let attempts = 0;
+       while (moveRecordsRef.current[index1].length >= 4 && attempts < 100) {
+         [index1, index2] = generateRandomPathPair(n);
+         attempts++;
+       }
+       
+       // If we couldn't find a suitable path after 100 attempts, just use any pair
+       if (attempts >= 100) {
          [index1, index2] = generateRandomPathPair(n);
        }
+       
        const path1Moves = [...moveRecordsRef.current[index1]];
        const path2Moves = [...moveRecordsRef.current[index2]];
        let newMoves: Direction[] = [];
@@ -3047,6 +3110,18 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
        newMoves.push(...path2Moves);
        moveRecordsRef.current[index1] = newMoves;
      }
+   }
+   
+   // If we hit the max iterations, ensure all paths have at least one move
+   if (iterations >= maxIterations) {
+     moveRecordsRef.current.forEach((path, index) => {
+       if (path.length === 0) {
+         // Add a random move to empty paths
+         const move = Math.floor(Math.random() * 4);
+         const moves: Direction2[] = ["up", "down", "left", "right"];
+         moveRecordsRef.current[index] = [moves[move]];
+       }
+     });
    }
 
 
@@ -3587,6 +3662,7 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
          clearbase={clearBase}
          removebase={removeBase}
          soundEnabled={soundEnabled}
+         isRank3={isRank3}
        />
        <Pathterminal
          pathIndex={pathIndex}
@@ -3641,23 +3717,23 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
          dragHoverIndex={dragHoverIndex}
        />
        {/* ========== RANK3 TUTORIAL: Pass isRank3 to CheckNielsen (duplicate component) ========== */}
-       <CheckNielsen
-         movePaths={moveRecords}
-         tutorialActive={tutorialActive}
-         tutorialStep={tutorialStep}
-         isRank3={isRank3}
-         onTutorialCheck={(nextStep) => {
-           if (nextStep === 0) {
-             setTutorialCompleted(true);
-             // Keep tutorial active to show completion message
-           } else {
-             setTutorialStep(nextStep);
-           }
-         }}
-        soundEnabled={soundEnabled}
-      />
-      {/* ========== END RANK3 TUTORIAL: CheckNielsen (duplicate) ========== */}
-      {/*        
+        <CheckNielsen
+          movePaths={moveRecords}
+          tutorialActive={tutorialActive}
+          tutorialStep={tutorialStep}
+          isRank3={isRank3}
+          onTutorialCheck={(nextStep) => {
+            if (nextStep === 0) {
+              setTutorialCompleted(true);
+              // Keep tutorial active to show completion message
+            } else {
+              setTutorialStep(nextStep);
+            }
+          }}
+          soundEnabled={soundEnabled}
+        />
+        {/* ========== END RANK3 TUTORIAL: CheckNielsen (duplicate) ========== */}
+        {/*        
        <Pathbar
          mode={operationMode}
          setInvert={setInvert}

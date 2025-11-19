@@ -1,7 +1,6 @@
 "use client";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 
 const Home = () => {
   const router = useRouter();
@@ -112,13 +111,12 @@ const Home = () => {
                 justifyContent: "center",
               }}
             >
-              <Image
+              <img
                 src="/rank1.gif"
                 alt="Rank 1 Preview"
                 width={380}
                 height={300}
                 style={{ objectFit: "contain", width: "100%", height: "100%" }}
-                unoptimized
               />
             </div>
             <div
@@ -191,13 +189,12 @@ const Home = () => {
                 justifyContent: "center",
               }}
             >
-              <Image
+              <img
                 src="/rank2.gif"
                 alt="Rank 2 Preview"
                 width={380}
                 height={300}
                 style={{ objectFit: "contain", width: "100%", height: "100%" }}
-                unoptimized
               />
             </div>
             <div
@@ -270,13 +267,12 @@ const Home = () => {
                 justifyContent: "center",
               }}
             >
-              <Image
+              <img
                 src="/rank3.gif"
                 alt="Rank 3 Preview"
                 width={380}
                 height={300}
                 style={{ objectFit: "contain", width: "100%", height: "100%" }}
-                unoptimized
               />
             </div>
             <div
