@@ -30,7 +30,7 @@ const translation3: Record<Direction3, string> = {
 };
 
 // Color mapping to match CayleyTree colors
-const getDirectionColor2 = (direction: Direction2): string => {
+const getDirectionColor2 = (direction: Direction2, theme: "dark" | "light" = "dark"): string => {
   switch (direction) {
     case "up":
     case "down":
@@ -43,14 +43,15 @@ const getDirectionColor2 = (direction: Direction2): string => {
   }
 };
 
-const getDirectionColor3 = (direction: Direction3): string => {
+const getDirectionColor3 = (direction: Direction3, theme: "dark" | "light" = "dark"): string => {
+  const greenColor = theme === "light" ? "#0891b2" : "#00ff00"; // Cyan for light mode, green for dark
   switch (direction) {
     case "up":
     case "down":
       return "#ff0000"; // Red for a/a^-1
     case "right-up":
     case "left-down":
-      return "#00ff00"; // Green for b/b^-1
+      return greenColor; // Theme-aware green for b/b^-1
     case "right-down":
     case "left-up":
       return "#800080"; // Purple for c/c^-1
@@ -77,6 +78,7 @@ interface PathlistProps {
   isDragging?: boolean;
   dragFromIndex?: number;
   dragHoverIndex?: number;
+  theme?: "dark" | "light"; // Add theme prop
 }
 
 const CLICK_INTERVAL = 250;
@@ -100,6 +102,7 @@ const Pathlist: React.FC<PathlistProps> = ({
   isDragging = false,
   dragFromIndex = -1,
   dragHoverIndex = -1,
+  theme = "dark",
 }) => {
   const singleClickTimer = useRef<NodeJS.Timeout | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -288,8 +291,8 @@ const Pathlist: React.FC<PathlistProps> = ({
                         ? translation3[direction as Direction3]
                         : translation2[direction as Direction2];
                       const color = isRank3
-                        ? getDirectionColor3(direction as Direction3)
-                        : getDirectionColor2(direction as Direction2);
+                        ? getDirectionColor3(direction as Direction3, theme)
+                        : getDirectionColor2(direction as Direction2, theme);
                       return (
                         <React.Fragment key={nodeIndex}>
                           {nodeIndex > 0 && <span style={{ color: "rgb(64, 73, 65)" }}> </span>}

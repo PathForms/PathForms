@@ -856,7 +856,7 @@ const Rank1 = () => {
             />
 
             <button
-            className={styles.homeButton}
+            className={`${styles.homeButton} ${theme === "light" ? styles.light : ""}`}
             onClick={() => router.push("/")}
             >
             Go back to Home
