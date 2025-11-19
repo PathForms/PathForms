@@ -38,6 +38,22 @@ const translation3: Record<Direction3, string> = {
 
 // Sound related constants are now imported from soundManager
 
+const buttonStyle = {
+  width: 70,
+  height: 28,
+  fontSize: 13,
+  backgroundColor: "transparent",
+  border: "2px solid rgb(13, 255, 0)",
+  color: "rgb(13, 255, 0)",
+  cursor: "pointer",
+  borderRadius: 4,
+  transition: "0.3s",
+};
+
+const generateButtonStyle = {
+  ...buttonStyle,
+  width: 140,
+};
 
 interface ButtonBarProps {
  bases: (Direction | Direction3)[][];
@@ -351,33 +367,13 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
            placeholder="Add Generator"
          />
          <button
-           style={{
-             width: 70,
-             height: 28,
-             fontSize: 13,
-             backgroundColor: "transparent",
-             border: "2px solid rgb(13, 255, 0)",
-             color: "rgb(13, 255, 0)",
-             cursor: "pointer",
-             borderRadius: 4,
-             transition: "0.3s",
-           }}
+           style={buttonStyle}
            onClick={handleAddBase}
          >
            Add
          </button>
          <button
-           style={{
-             width: 70,
-             height: 28,
-             fontSize: 13,
-             backgroundColor: "transparent",
-             border: "2px solid rgb(13, 255, 0)",
-             color: "rgb(13, 255, 0)",
-             cursor: "pointer",
-             borderRadius: 4,
-             transition: "0.3s",
-           }}
+           style={buttonStyle}
            onClick={handlebaseremove}
          >
            Clear
@@ -394,17 +390,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
              placeholder="Remove G#"
            />
            <button
-             style={{
-               width: 70,
-               height: 28,
-               fontSize: 13,
-               backgroundColor: "transparent",
-               border: "2px solid rgb(255, 100, 100)",
-               color: "rgb(255, 100, 100)",
-               cursor: "pointer",
-               borderRadius: 4,
-               transition: "0.3s",
-             }}
+             style={buttonStyle}
              onClick={() => handleRemoveBase()}
            >
              Remove
@@ -422,34 +408,14 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
          }}
        >
          <button
-           style={{
-             width: 140,
-             height: 28,
-             fontSize: 13,
-             backgroundColor: "transparent",
-             border: "2px solid rgb(13, 255, 0)",
-             color: "rgb(13, 255, 0)",
-             cursor: "pointer",
-             borderRadius: 4,
-             transition: "0.3s",
-           }}
+           style={generateButtonStyle}
            onClick={handleClickRand}
          >
            Generate Rand
          </button>
          <button
            className={`${tutorialStep === 1 ? styles.highlight : ""}`}
-           style={{
-             width: 140,
-             height: 28,
-             fontSize: 13,
-             backgroundColor: "transparent",
-             border: "2px solid rgb(13, 255, 0)",
-             color: "rgb(13, 255, 0)",
-             cursor: "pointer",
-             borderRadius: 4,
-             transition: "0.3s",
-           }}
+           style={generateButtonStyle}
            onClick={handlebaseClick}
          >
            Generate Paths
