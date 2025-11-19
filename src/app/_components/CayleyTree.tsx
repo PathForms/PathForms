@@ -87,6 +87,7 @@ interface CayleyTreeProps {
   isDragging?: boolean;
   dragFromIndex?: number;
   dragHoverIndex?: number;
+  theme: "dark" | "light";
 }
 
 const CayleyTree: React.FC<CayleyTreeProps> = ({
@@ -99,6 +100,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
   isDragging = false,
   dragFromIndex = -1,
   dragHoverIndex = -1,
+  theme
 }) => {
   const [nodes, setNodes] = useState<LayoutNode[]>([]);
   const [links, setLinks] = useState<LayoutLink[]>([]);
@@ -296,6 +298,14 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
         style={{ border: "none", display: "block" }}
       >
         <g ref={gRef}>
+          <rect 
+            x={-500} 
+            y={-500} 
+            width={1000} 
+            height={1000} 
+            fill={"transparent"}
+            rx={20}
+          />
           {/* Use a path element so that we can place a marker at the midpoint */}
           {links.map((lk) => {
             // Determine if this edge should be highlighted
