@@ -17,12 +17,13 @@ interface TutorialProps {
   isCompleted?: boolean;
   onNext: () => void;
   onSkip: () => void;
+  onRedo?: () => void;
   soundEnabled: boolean;
   steps?: string[]; //Rank1Tutorial
 }
 
 const defaultTutorialSteps = [ //Rank1Tutorial
-  "Click the 'Generate Paths' button to generate paths.",
+  "Click the 'Generate Rand' button to generate paths.",
   "Long press a path in the word list to hide it.",
   "Long press again to show it back.",
   "Double-click the second path to invert it.",
@@ -37,6 +38,7 @@ const Tutorial: React.FC<TutorialProps> = ({
   isCompleted = false,
   onNext,
   onSkip,
+  onRedo,
   soundEnabled,
   steps,//Rank1Tutorial 
 }) => {
@@ -77,36 +79,61 @@ const Tutorial: React.FC<TutorialProps> = ({
     onSkip();
   };
 
+  const handleRedo = async () => {
+    await playClickSound();
+    if (onRedo) onRedo();
+  };
+
   if (!isActive || step < 1 || step > tutorialSteps.length) return null;
+
+  // Check if we're on the final step (step 5 for rank1)
+  const isFinalStep = step === tutorialSteps.length;
 
   return (
     <div className={styles.tutorialOverlay}>
-      <div className={styles.tutorialBox}>
-        {isCompleted ? (
-          <div style={{ textAlign: "center" }}>
-            <h2 style={{ color: "#4CAF50", margin: "0 0 10px 0", fontSize: "24px" }}>
-              🎉 Congratulations! 🎉
-            </h2>
-            <p style={{ color: "black", margin: "0 0 10px 0", fontSize: "16px" }}>
-              You have successfully completed the tutorial and reduced the paths to satisfy Nielsen conditions!
-            </p>
-          </div>
-        ) : (
-          <p style={{ color: "black", margin: 0 }}>{tutorialSteps[step - 1]}</p>
-        )}
+      <div className={styles.tutorialBox} style={isFinalStep ? { maxWidth: "800px", maxHeight: "80vh", overflowY: "auto" } : {}}>
+        <p style={{ color: "black", margin: 0, lineHeight: "1.6" }}>{tutorialSteps[step - 1]}</p>
         <div
           style={{
             display: "flex",
-            justifyContent: "flex-end",
-            marginTop: "10px",
+            justifyContent: isFinalStep ? "space-between" : "flex-end",
+            marginTop: "15px",
+            gap: "10px",
           }}
         >
-          {/* Auto-controlled step progression: no Next button */}
+          {isFinalStep && onRedo && (
+            <button 
+              onClick={handleRedo}
+              onMouseEnter={playHoverSound}
+              style={{
+                backgroundColor: "#2196F3",
+                color: "white",
+                border: "none",
+                padding: "10px 20px",
+                borderRadius: "6px",
+                cursor: "pointer",
+                fontSize: "15px",
+                fontWeight: "500",
+              }}
+            >
+              Redo Tutorial
+            </button>
+          )}
           <button 
             onClick={handleSkip}
             onMouseEnter={playHoverSound}
+            style={isFinalStep ? {
+              backgroundColor: "#4CAF50",
+              color: "white",
+              border: "none",
+              padding: "10px 20px",
+              borderRadius: "6px",
+              cursor: "pointer",
+              fontSize: "15px",
+              fontWeight: "500",
+            } : {}}
           >
-            {isCompleted ? "Exit Tutorial" : "Skip Tutorial"}
+            {isFinalStep ? "Start Playing!" : "Skip Tutorial"}
           </button>
         </div>
       </div>
