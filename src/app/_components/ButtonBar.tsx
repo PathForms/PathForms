@@ -221,9 +221,10 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
    await initializeAudio();
    if (soundEnabled) await playClearSound();
 
-   // Clear custom exponents if in rank 1 mode
-   if (generate_custom) {
-     setCustomExponents([]);
+   // In rank 1 mode, only clear the displayed paths, not the list
+   // For rank 2+, clear the custom generators
+   if (!generate_custom) {
+     // Rank 2+ behavior: clear the generators list
    }
 
    clearbase();
@@ -252,8 +253,13 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
          alert("Maximum of 10 custom paths allowed");
          return;
        }
-       setCustomExponents([...customExponents, exponent]);
+       const newExponents = [...customExponents, exponent];
+       setCustomExponents(newExponents);
        setCurrBase("");
+       
+       // Automatically generate the custom paths immediately
+       if (soundEnabled) await playGenerateSound();
+       generate_custom(newExponents);
        return;
      }
    }
@@ -408,18 +414,21 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
          }}
        >
          <button
+           className={`${tutorialStep === 1 ? styles.highlight : ""}`}
            style={generateButtonStyle}
            onClick={handleClickRand}
          >
            Generate Rand
          </button>
-         <button
-           className={`${tutorialStep === 1 ? styles.highlight : ""}`}
-           style={generateButtonStyle}
-           onClick={handlebaseClick}
-         >
-           Generate Paths
-         </button>
+         {/* Only show Generate Custom Paths button if NOT in rank 1 mode */}
+         {!generate_custom && (
+           <button
+             style={generateButtonStyle}
+             onClick={handlebaseClick}
+           >
+             Generate Paths
+           </button>
+         )}
        </div>
      </div>
 
