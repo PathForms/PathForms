@@ -263,7 +263,7 @@ const Rank1 = () => {
         }
     };
 
-    const GenerateBasedPath = (size: number, b: Direction[][]) => {
+    const GenerateBasedPath = (size: number, b: any[][]) => {
         // Not used in Rank 1
     };
 
