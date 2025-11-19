@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 const Home = () => {
   const router = useRouter();
   const [hoveredButton, setHoveredButton] = useState<string | null>(null);
-  
+
   // Get basePath from next.config
   const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
