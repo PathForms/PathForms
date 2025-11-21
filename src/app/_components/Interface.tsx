@@ -141,6 +141,9 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
     };
   } | null>(null);
 
+  // Hover state for path highlighting
+  const [hoverPathIndex, setHoverPathIndex] = useState<number>(-1);
+
   //
   //
   //
@@ -1738,6 +1741,16 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
       setPreviewPath(null);
     }
   };
+
+  ///////////////// Hover functions ///////////////////
+  const handlePathHover = (pathIndex: number) => {
+    setHoverPathIndex(pathIndex);
+  };
+
+  const handlePathLeave = () => {
+    setHoverPathIndex(-1);
+  };
+
   return (
     <>
       {showWelcome && (
@@ -1814,6 +1827,7 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
           isDragging={isDragging}
           dragFromIndex={dragFromIndex}
           dragHoverIndex={dragHoverIndex}
+          hoverPathIndex={hoverPathIndex}
         />
 
         <Pathlist
@@ -1835,6 +1849,9 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
           dragFromIndex={dragFromIndex}
           dragHoverIndex={dragHoverIndex}
           theme={theme}
+          onPathHover={handlePathHover}
+          onPathLeave={handlePathLeave}
+          hoverPathIndex={hoverPathIndex}
         />
         {/* ========== RANK3 TUTORIAL: Pass isRank3 to CheckNielsen ========== */}
         <CheckNielsen

@@ -87,6 +87,7 @@ interface CayleyTreeProps {
   isDragging?: boolean;
   dragFromIndex?: number;
   dragHoverIndex?: number;
+  hoverPathIndex?: number;
 }
 
 const CayleyTree: React.FC<CayleyTreeProps> = ({
@@ -99,6 +100,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
   isDragging = false,
   dragFromIndex = -1,
   dragHoverIndex = -1,
+  hoverPathIndex = -1,
 }) => {
   const [nodes, setNodes] = useState<LayoutNode[]>([]);
   const [links, setLinks] = useState<LayoutLink[]>([]);
@@ -310,9 +312,21 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
               isHoveredTarget = isFromPath;
             } else {
               // Normal display: highlight all paths in pathIndex
-              isActive =
+              const isInPathIndex =
                 pathIndex.length > 0 &&
                 pathIndex.some((index) => edgePaths[index]?.includes(lk.id));
+
+              // When hovering (not dragging), also highlight the hovered path
+              const isInHoverPath =
+                hoverPathIndex >= 0 &&
+                edgePaths[hoverPathIndex]?.includes(lk.id);
+
+              isActive = isInPathIndex || isInHoverPath;
+
+              // Mark hover path with special highlighting (always, to make it stand out)
+              if (isInHoverPath) {
+                isHoveredTarget = true;
+              }
             }
 
             const isFinalResult = Boolean(
@@ -355,9 +369,21 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
               isHoveredTarget = isFromPath;
             } else {
               // Normal display: highlight all paths in pathIndex
-              isActive =
+              const isInPathIndex =
                 pathIndex.length > 0 &&
                 pathIndex.some((index) => nodePaths[index]?.includes(nd.id));
+
+              // When hovering (not dragging), also highlight the hovered path
+              const isInHoverPath =
+                hoverPathIndex >= 0 &&
+                nodePaths[hoverPathIndex]?.includes(nd.id);
+
+              isActive = isInPathIndex || isInHoverPath;
+
+              // Mark hover path with special highlighting (always, to make it stand out)
+              if (isInHoverPath) {
+                isHoveredTarget = true;
+              }
             }
 
             const isFinalResult = Boolean(

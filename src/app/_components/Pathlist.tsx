@@ -79,6 +79,9 @@ interface PathlistProps {
   dragFromIndex?: number;
   dragHoverIndex?: number;
   theme?: "dark" | "light"; // Add theme prop
+  onPathHover?: (pathIndex: number) => void;
+  onPathLeave?: () => void;
+  hoverPathIndex?: number;
 }
 
 const CLICK_INTERVAL = 250;
@@ -103,6 +106,9 @@ const Pathlist: React.FC<PathlistProps> = ({
   dragFromIndex = -1,
   dragHoverIndex = -1,
   theme = "dark",
+  onPathHover,
+  onPathLeave,
+  hoverPathIndex = -1,
 }) => {
   const singleClickTimer = useRef<NodeJS.Timeout | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -280,6 +286,8 @@ const Pathlist: React.FC<PathlistProps> = ({
                 onMouseUp={() => handleMouseUp(rowIndex)}
                 onClick={() => handleClick(rowIndex)}
                 onDoubleClick={() => invert(rowIndex)}
+                onMouseEnter={() => onPathHover?.(rowIndex)}
+                onMouseLeave={() => onPathLeave?.()}
               >
                 {`[P${rowIndex + 1}]: `}{" "}
                 {path.length === 0
