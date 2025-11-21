@@ -813,6 +813,24 @@ const Rank1 = () => {
             hideEdgeThickness={true}
             hideShape={true}
             />
+            
+            <div
+                style={{
+                    width: "100%",
+                    textAlign: "center",
+                    marginTop: "70px",
+                    marginBottom: "10px",
+                    color: theme === "dark" ? "#e0e0e0" : "#333",
+                    fontSize: "18px",
+                    fontStyle: "italic",
+                    opacity: 0.9,
+                    zIndex: 1,
+                    position: "relative"
+                }}
+            >
+                The Euclidean algorithm can be viewed as a special case of the Rank 1 Nielsen algorithm.
+            </div>
+
 
             <ButtonBar
             bases={bases}
