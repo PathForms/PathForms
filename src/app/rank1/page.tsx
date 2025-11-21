@@ -277,7 +277,7 @@ const Rank1 = () => {
         }
     };
 
-    const GenerateBasedPath = (size: number, b: Direction[][]) => {
+    const GenerateBasedPath = (size: number, b: any[][]) => {
         // Not used in Rank 1
     };
 
@@ -856,7 +856,7 @@ const Rank1 = () => {
             />
 
             <button
-            className={styles.homeButton}
+            className={`${styles.homeButton} ${theme === "light" ? styles.light : ""}`}
             onClick={() => router.push("/")}
             >
             Go back to Home

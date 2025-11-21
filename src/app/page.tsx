@@ -6,6 +6,9 @@ const Home = () => {
   const router = useRouter();
   const [hoveredButton, setHoveredButton] = useState<string | null>(null);
 
+  // Get basePath from next.config
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
   // Rainbow colors for PathForms title (from Headbar)
   const colors = [
     "rgb(255, 50, 91)",
@@ -112,7 +115,7 @@ const Home = () => {
               }}
             >
               <img
-                src="/rank1.gif"
+                src={`${basePath}/rank1.gif`}
                 alt="Rank 1 Preview"
                 width={380}
                 height={300}
@@ -190,7 +193,7 @@ const Home = () => {
               }}
             >
               <img
-                src="/rank2.gif"
+                src={`${basePath}/rank2.gif`}
                 alt="Rank 2 Preview"
                 width={380}
                 height={300}
@@ -268,7 +271,7 @@ const Home = () => {
               }}
             >
               <img
-                src="/rank3.gif"
+                src={`${basePath}/rank3.gif`}
                 alt="Rank 3 Preview"
                 width={380}
                 height={300}
