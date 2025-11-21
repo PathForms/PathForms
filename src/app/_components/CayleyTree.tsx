@@ -406,6 +406,55 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
               />
             );
           })}
+
+          {/* Show label at the end of hovered path */}
+          {hoverPathIndex >= 0 &&
+            nodePaths[hoverPathIndex] &&
+            (() => {
+              // Get the last node of the hovered path
+              const pathNodes = nodePaths[hoverPathIndex];
+              if (pathNodes && pathNodes.length > 0) {
+                // Try to find a node from the end of the path backwards
+                // (in case the path is longer than the tree depth)
+                let lastNode = null;
+                for (let i = pathNodes.length - 1; i >= 0 && !lastNode; i--) {
+                  const nodeId = pathNodes[i];
+                  const [targetX, targetY] = nodeId.split(",").map(Number);
+
+                  // Find the node by approximate coordinate matching (to handle floating point precision)
+                  lastNode = nodes.find((n) => {
+                    const [nodeX, nodeY] = n.id.split(",").map(Number);
+                    // Use a small epsilon for floating point comparison
+                    return (
+                      Math.abs(nodeX - targetX) < 0.001 &&
+                      Math.abs(nodeY - targetY) < 0.001
+                    );
+                  });
+                }
+
+                if (lastNode) {
+                  return (
+                    <text
+                      x={lastNode.x}
+                      y={lastNode.y - 15}
+                      textAnchor="middle"
+                      fill="#ffffff"
+                      fontSize="16"
+                      fontWeight="bold"
+                      stroke="#000000"
+                      strokeWidth="0.5"
+                      style={{
+                        pointerEvents: "none",
+                        textShadow: "0 0 4px rgba(0,0,0,0.8)",
+                      }}
+                    >
+                      P{hoverPathIndex + 1}
+                    </text>
+                  );
+                }
+              }
+              return null;
+            })()}
         </g>
       </svg>
     </div>

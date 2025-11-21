@@ -10,7 +10,12 @@ type Direction = Direction2 | Direction3;
 
 // Helper to detect rank from direction type
 const isRank3Direction = (dir: string): dir is Direction3 => {
-  return dir === "right-up" || dir === "left-down" || dir === "right-down" || dir === "left-up";
+  return (
+    dir === "right-up" ||
+    dir === "left-down" ||
+    dir === "right-down" ||
+    dir === "left-up"
+  );
 };
 
 const translation2: Record<Direction2, string> = {
@@ -30,7 +35,10 @@ const translation3: Record<Direction3, string> = {
 };
 
 // Color mapping to match CayleyTree colors
-const getDirectionColor2 = (direction: Direction2, theme: "dark" | "light" = "dark"): string => {
+const getDirectionColor2 = (
+  direction: Direction2,
+  theme: "dark" | "light" = "dark"
+): string => {
   switch (direction) {
     case "up":
     case "down":
@@ -43,7 +51,10 @@ const getDirectionColor2 = (direction: Direction2, theme: "dark" | "light" = "da
   }
 };
 
-const getDirectionColor3 = (direction: Direction3, theme: "dark" | "light" = "dark"): string => {
+const getDirectionColor3 = (
+  direction: Direction3,
+  theme: "dark" | "light" = "dark"
+): string => {
   const greenColor = theme === "light" ? "#0891b2" : "#00ff00"; // Cyan for light mode, green for dark
   switch (direction) {
     case "up":
@@ -137,7 +148,10 @@ const Pathlist: React.FC<PathlistProps> = ({
     onDragEnd?.();
   };
 
-  const handleDragOver = (e: React.DragEvent<HTMLParagraphElement>, toIndex: number) => {
+  const handleDragOver = (
+    e: React.DragEvent<HTMLParagraphElement>,
+    toIndex: number
+  ) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
     e.currentTarget.classList.add(styles.dragOver);
@@ -239,7 +253,7 @@ const Pathlist: React.FC<PathlistProps> = ({
             const isActive = pathIndex.includes(rowIndex);
             const isDraggingFrom = isDragging && dragFromIndex === rowIndex;
             const isHoveredForDrop = isDragging && dragHoverIndex === rowIndex;
-            
+
             let textColor = isActive ? "rgb(255, 255, 0)" : "rgb(64, 73, 65)";
             if (isDraggingFrom) {
               textColor = "rgba(255, 255, 0, 0.5)"; // Dimmed when dragging
@@ -254,14 +268,16 @@ const Pathlist: React.FC<PathlistProps> = ({
                   (tutorialStep === 2 || tutorialStep === 3) && rowIndex === 0
                     ? styles.highlight
                     : tutorialStep === 4 && rowIndex === 2
-                    ? styles.highlight
-                    : tutorialStep === 5 && (rowIndex === 1 || rowIndex === 2)
-                    ? styles.highlight
-                    : tutorialStep === 6 && (rowIndex === 0 || rowIndex === 1)
-                    ? styles.highlight
-                    : tutorialStep === 7 && (rowIndex === 0 || rowIndex === 1)
-                    ? styles.highlight
-                    : ""
+                      ? styles.highlight
+                      : tutorialStep === 5 && (rowIndex === 1 || rowIndex === 2)
+                        ? styles.highlight
+                        : tutorialStep === 6 &&
+                            (rowIndex === 0 || rowIndex === 1)
+                          ? styles.highlight
+                          : tutorialStep === 7 &&
+                              (rowIndex === 0 || rowIndex === 1)
+                            ? styles.highlight
+                            : ""
                 }`}
                 draggable
                 onDragStart={(e) => handleDragStart(e, rowIndex)}
@@ -279,7 +295,9 @@ const Pathlist: React.FC<PathlistProps> = ({
                   padding: "2px",
                   margin: "0",
                   opacity: isDraggingFrom ? 0.5 : 1,
-                  backgroundColor: isHoveredForDrop ? "rgba(255, 255, 0, 0.2)" : "transparent",
+                  backgroundColor: isHoveredForDrop
+                    ? "rgba(255, 255, 0, 0.2)"
+                    : "transparent",
                   transition: "all 0.2s ease",
                 }}
                 onMouseDown={() => handleMouseDown(rowIndex)}
@@ -295,7 +313,7 @@ const Pathlist: React.FC<PathlistProps> = ({
                   : path.map((node, nodeIndex) => {
                       const direction = node as Direction;
                       const isRank3 = isRank3Direction(direction);
-                      const letter = isRank3 
+                      const letter = isRank3
                         ? translation3[direction as Direction3]
                         : translation2[direction as Direction2];
                       const color = isRank3
@@ -303,10 +321,10 @@ const Pathlist: React.FC<PathlistProps> = ({
                         : getDirectionColor2(direction as Direction2, theme);
                       return (
                         <React.Fragment key={nodeIndex}>
-                          {nodeIndex > 0 && <span style={{ color: "rgb(64, 73, 65)" }}> </span>}
-                          <span style={{ color: color }}>
-                            {letter}
-                          </span>
+                          {nodeIndex > 0 && (
+                            <span style={{ color: "rgb(64, 73, 65)" }}> </span>
+                          )}
+                          <span style={{ color: color }}>{letter}</span>
                         </React.Fragment>
                       );
                     })}
