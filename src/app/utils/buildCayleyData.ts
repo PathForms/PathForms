@@ -1,3 +1,5 @@
+import { getRank2Color, getRank3Color } from "./colorConfig";
+
 export interface TreeNode {
   name: string;
   edgeColor?: string;
@@ -16,32 +18,29 @@ interface DirSpec {
 
 /**
  * Returns the dimension=2 direction array in order: [a, b, a^-, b^-].
- * (a, a^-) => color #1f77b4
- * (b, b^-) => color #ff7f0e
+ * Colors are imported from centralized colorConfig.ts
  */
 function getDirList(): DirSpec[] {
   return [
-    { label: "a", opposite: "a^-", color: "#1f77b4" },
-    { label: "b", opposite: "b^-", color: "#ff7f0e" },
-    { label: "a^-", opposite: "a", color: "#1f77b4" },
-    { label: "b^-", opposite: "b", color: "#ff7f0e" },
+    { label: "a", opposite: "a^-", color: getRank2Color("a") },
+    { label: "b", opposite: "b^-", color: getRank2Color("b") },
+    { label: "a^-", opposite: "a", color: getRank2Color("a^-") },
+    { label: "b^-", opposite: "b", color: getRank2Color("b^-") },
   ];
 }
 
 /**
  * Returns the dimension=3 direction array for hexagon layout: [a, b, c, a^-, b^-, c^-].
- * (a, a^-) => color red #ff0000
- * (b, b^-) => color green #00ff00
- * (c, c^-) => color purple #800080
+ * Colors are imported from centralized colorConfig.ts
  */
 function getDirList3(): DirSpec[] {
   return [
-    { label: "a", opposite: "a^-", color: "#ff0000" }, // red
-    { label: "b", opposite: "b^-", color: "#00ff00" }, // green
-    { label: "c", opposite: "c^-", color: "#800080" }, // purple
-    { label: "a^-", opposite: "a", color: "#ff0000" }, // red
-    { label: "b^-", opposite: "b", color: "#00ff00" }, // green
-    { label: "c^-", opposite: "c", color: "#800080" }, // purple
+    { label: "a", opposite: "a^-", color: getRank3Color("a") },
+    { label: "b", opposite: "b^-", color: getRank3Color("b") },
+    { label: "c", opposite: "c^-", color: getRank3Color("c") },
+    { label: "a^-", opposite: "a", color: getRank3Color("a^-") },
+    { label: "b^-", opposite: "b", color: getRank3Color("b^-") },
+    { label: "c^-", opposite: "c", color: getRank3Color("c^-") },
   ];
 }
 
@@ -164,7 +163,7 @@ export function buildCayleyTreeData3(
     let dx = 0,
       dy = 0;
     const sqrt3over2 = 0.86602540378; // √3/2
-    
+
     if (dir.label === "a") {
       dx = 0;
       dy = -1;

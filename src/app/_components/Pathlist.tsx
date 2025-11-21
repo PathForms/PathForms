@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import styles from "./components.module.css";
 import { Direction3 } from "../utils/buildNodesEdgesFromMoves3";
+import { getRank2Color, getRank3Color } from "../utils/colorConfig";
 
 // Support both rank 2 and rank 3
 type Direction2 = "up" | "down" | "left" | "right";
@@ -10,7 +11,12 @@ type Direction = Direction2 | Direction3;
 
 // Helper to detect rank from direction type
 const isRank3Direction = (dir: string): dir is Direction3 => {
-  return dir === "right-up" || dir === "left-down" || dir === "right-down" || dir === "left-up";
+  return (
+    dir === "right-up" ||
+    dir === "left-down" ||
+    dir === "right-down" ||
+    dir === "left-up"
+  );
 };
 
 const translation2: Record<Direction2, string> = {
@@ -29,32 +35,37 @@ const translation3: Record<Direction3, string> = {
   "left-up": "c\u207B\u00B9",
 };
 
-// Color mapping to match CayleyTree colors
-const getDirectionColor2 = (direction: Direction2, theme: "dark" | "light" = "dark"): string => {
+// Color mapping using centralized config
+const getDirectionColor2 = (
+  direction: Direction2,
+  theme: "dark" | "light" = "dark"
+): string => {
   switch (direction) {
     case "up":
     case "down":
-      return "rgb(0, 140, 255)"; // Blue for a/a^-1
+      return getRank2Color("a");
     case "left":
     case "right":
-      return "rgb(251, 0, 71)"; // Red for b/b^-1
+      return getRank2Color("b");
     default:
       return "rgb(64, 73, 65)"; // Default color
   }
 };
 
-const getDirectionColor3 = (direction: Direction3, theme: "dark" | "light" = "dark"): string => {
-  const greenColor = theme === "light" ? "#0891b2" : "#00ff00"; // Cyan for light mode, green for dark
+const getDirectionColor3 = (
+  direction: Direction3,
+  theme: "dark" | "light" = "dark"
+): string => {
   switch (direction) {
     case "up":
     case "down":
-      return "#ff0000"; // Red for a/a^-1
+      return getRank3Color("a", theme);
     case "right-up":
     case "left-down":
-      return greenColor; // Theme-aware green for b/b^-1
+      return getRank3Color("b", theme);
     case "right-down":
     case "left-up":
-      return "#800080"; // Purple for c/c^-1
+      return getRank3Color("c", theme);
     default:
       return "rgb(64, 73, 65)"; // Default color
   }
@@ -79,6 +90,9 @@ interface PathlistProps {
   dragFromIndex?: number;
   dragHoverIndex?: number;
   theme?: "dark" | "light"; // Add theme prop
+  onPathHover?: (pathIndex: number) => void;
+  onPathLeave?: () => void;
+  hoverPathIndex?: number;
 }
 
 const CLICK_INTERVAL = 250;
@@ -103,6 +117,9 @@ const Pathlist: React.FC<PathlistProps> = ({
   dragFromIndex = -1,
   dragHoverIndex = -1,
   theme = "dark",
+  onPathHover,
+  onPathLeave,
+  hoverPathIndex = -1,
 }) => {
   const singleClickTimer = useRef<NodeJS.Timeout | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -131,7 +148,10 @@ const Pathlist: React.FC<PathlistProps> = ({
     onDragEnd?.();
   };
 
-  const handleDragOver = (e: React.DragEvent<HTMLParagraphElement>, toIndex: number) => {
+  const handleDragOver = (
+    e: React.DragEvent<HTMLParagraphElement>,
+    toIndex: number
+  ) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
     e.currentTarget.classList.add(styles.dragOver);
@@ -233,7 +253,7 @@ const Pathlist: React.FC<PathlistProps> = ({
             const isActive = pathIndex.includes(rowIndex);
             const isDraggingFrom = isDragging && dragFromIndex === rowIndex;
             const isHoveredForDrop = isDragging && dragHoverIndex === rowIndex;
-            
+
             let textColor = isActive ? "rgb(255, 255, 0)" : "rgb(64, 73, 65)";
             if (isDraggingFrom) {
               textColor = "rgba(255, 255, 0, 0.5)"; // Dimmed when dragging
@@ -248,14 +268,16 @@ const Pathlist: React.FC<PathlistProps> = ({
                   (tutorialStep === 2 || tutorialStep === 3) && rowIndex === 0
                     ? styles.highlight
                     : tutorialStep === 4 && rowIndex === 2
-                    ? styles.highlight
-                    : tutorialStep === 5 && (rowIndex === 1 || rowIndex === 2)
-                    ? styles.highlight
-                    : tutorialStep === 6 && (rowIndex === 0 || rowIndex === 1)
-                    ? styles.highlight
-                    : tutorialStep === 7 && (rowIndex === 0 || rowIndex === 1)
-                    ? styles.highlight
-                    : ""
+                      ? styles.highlight
+                      : tutorialStep === 5 && (rowIndex === 1 || rowIndex === 2)
+                        ? styles.highlight
+                        : tutorialStep === 6 &&
+                            (rowIndex === 0 || rowIndex === 1)
+                          ? styles.highlight
+                          : tutorialStep === 7 &&
+                              (rowIndex === 0 || rowIndex === 1)
+                            ? styles.highlight
+                            : ""
                 }`}
                 draggable
                 onDragStart={(e) => handleDragStart(e, rowIndex)}
@@ -273,13 +295,17 @@ const Pathlist: React.FC<PathlistProps> = ({
                   padding: "2px",
                   margin: "0",
                   opacity: isDraggingFrom ? 0.5 : 1,
-                  backgroundColor: isHoveredForDrop ? "rgba(255, 255, 0, 0.2)" : "transparent",
+                  backgroundColor: isHoveredForDrop
+                    ? "rgba(255, 255, 0, 0.2)"
+                    : "transparent",
                   transition: "all 0.2s ease",
                 }}
                 onMouseDown={() => handleMouseDown(rowIndex)}
                 onMouseUp={() => handleMouseUp(rowIndex)}
                 onClick={() => handleClick(rowIndex)}
                 onDoubleClick={() => invert(rowIndex)}
+                onMouseEnter={() => onPathHover?.(rowIndex)}
+                onMouseLeave={() => onPathLeave?.()}
               >
                 {`[P${rowIndex + 1}]: `}{" "}
                 {path.length === 0
@@ -287,7 +313,7 @@ const Pathlist: React.FC<PathlistProps> = ({
                   : path.map((node, nodeIndex) => {
                       const direction = node as Direction;
                       const isRank3 = isRank3Direction(direction);
-                      const letter = isRank3 
+                      const letter = isRank3
                         ? translation3[direction as Direction3]
                         : translation2[direction as Direction2];
                       const color = isRank3
@@ -295,10 +321,10 @@ const Pathlist: React.FC<PathlistProps> = ({
                         : getDirectionColor2(direction as Direction2, theme);
                       return (
                         <React.Fragment key={nodeIndex}>
-                          {nodeIndex > 0 && <span style={{ color: "rgb(64, 73, 65)" }}> </span>}
-                          <span style={{ color: color }}>
-                            {letter}
-                          </span>
+                          {nodeIndex > 0 && (
+                            <span style={{ color: "rgb(64, 73, 65)" }}> </span>
+                          )}
+                          <span style={{ color: color }}>{letter}</span>
                         </React.Fragment>
                       );
                     })}

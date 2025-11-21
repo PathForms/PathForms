@@ -93,7 +93,8 @@ const Edge: React.FC<EdgeProps> = ({
 
   // For hexagon layout (rank 3), use the edgeColor from the tree
   // For other layouts, use direction-based colors
-  let strokeColor = "rgba(255, 34, 5, 0.2)";
+  // b (horizontal/left-right) => rgb(251, 0, 71) red
+  let strokeColor = "rgba(251, 0, 71, 0.2)";
   if (shape === "hexagon" && edgeColor) {
     // Use the edge color from the tree, with reduced opacity for inactive edges
     // Convert hex to rgba format
@@ -106,7 +107,8 @@ const Edge: React.FC<EdgeProps> = ({
         : `rgba(${r}, ${g}, ${b}, 0.3)`;
     }
   } else if ((x === x2 && y <= y2) || (x === x2 && y >= y2)) {
-    strokeColor = "rgba(0, 94, 255, 0.23)";
+    // a (vertical/up-down) => rgb(0, 140, 255) blue
+    strokeColor = "rgba(0, 140, 255, 0.23)";
   }
 
   let thickness = edgeThickness ?? 1;
@@ -127,9 +129,11 @@ const Edge: React.FC<EdgeProps> = ({
         strokeColor = `rgba(${r}, ${g}, ${b}, 0.9)`;
       }
     } else if ((x === x2 && y <= y2) || (x === x2 && y >= y2)) {
-      strokeColor = "rgba(0, 94, 255, 0.8)"; // Bright blue for final result
+      // a (vertical) => blue
+      strokeColor = "rgba(0, 140, 255, 0.8)"; // Bright blue for final result
     } else {
-      strokeColor = "rgba(255, 34, 5, 0.8)"; // Bright red for final result
+      // b (horizontal) => red
+      strokeColor = "rgba(251, 0, 71, 0.8)"; // Bright red for final result
     }
   } else if (isCancelledPart) {
     // Cancelled parts - dimmed and dashed
@@ -145,9 +149,11 @@ const Edge: React.FC<EdgeProps> = ({
         strokeColor = `rgba(${r}, ${g}, ${b}, 0.2)`;
       }
     } else if ((x === x2 && y <= y2) || (x === x2 && y >= y2)) {
-      strokeColor = "rgba(0, 94, 255, 0.3)"; // Dimmed blue for cancelled
+      // a (vertical) => blue
+      strokeColor = "rgba(0, 140, 255, 0.3)"; // Dimmed blue for cancelled
     } else {
-      strokeColor = "rgba(255, 34, 5, 0.3)"; // Dimmed red for cancelled
+      // b (horizontal) => red
+      strokeColor = "rgba(251, 0, 71, 0.3)"; // Dimmed red for cancelled
     }
   } else if (isHoveredTarget) {
     // Highlight the hovered target path with a brighter, thicker line
@@ -167,9 +173,11 @@ const Edge: React.FC<EdgeProps> = ({
         strokeColor = `rgb(${lightR}, ${lightG}, ${lightB})`;
       }
     } else if ((x == x2 && y <= y2) || (x == x2 && y >= y2)) {
-      strokeColor = "rgb(135, 206, 250)"; // Light blue for hovered target
+      // a (vertical) => lighter blue
+      strokeColor = "rgb(100, 180, 255)"; // Light blue for hovered target
     } else {
-      strokeColor = "rgb(255, 99, 132)"; // Light red/pink for hovered target
+      // b (horizontal) => lighter red
+      strokeColor = "rgb(255, 100, 140)"; // Light red/pink for hovered target
     }
   } else if (isActive) {
     thickness += 2;

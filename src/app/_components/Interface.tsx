@@ -17,8 +17,10 @@ import buildNodesEdgesFromMoves3, {
 } from "../utils/buildNodesEdgesFromMoves3";
 import next from "next";
 import Steps from "./Steps";
-import { greedyNielsenSteps } from "../utils/greedyNielsen";
-import { greedyNielsenSteps3 } from "../utils/greedyNielsen3";
+import {
+  greedyNielsenSteps,
+  greedyNielsenSteps3,
+} from "../utils/greedyNielsen";
 import { useRouter } from "next/navigation";
 import { setSoundEnabled as setSoundEnabledGlobal } from "../utils/soundManager";
 
@@ -138,6 +140,9 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
       moves: Direction[];
     };
   } | null>(null);
+
+  // Hover state for path highlighting
+  const [hoverPathIndex, setHoverPathIndex] = useState<number>(-1);
 
   //
   //
@@ -1736,6 +1741,16 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
       setPreviewPath(null);
     }
   };
+
+  ///////////////// Hover functions ///////////////////
+  const handlePathHover = (pathIndex: number) => {
+    setHoverPathIndex(pathIndex);
+  };
+
+  const handlePathLeave = () => {
+    setHoverPathIndex(-1);
+  };
+
   return (
     <>
       {showWelcome && (
@@ -1812,6 +1827,7 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
           isDragging={isDragging}
           dragFromIndex={dragFromIndex}
           dragHoverIndex={dragHoverIndex}
+          hoverPathIndex={hoverPathIndex}
         />
 
         <Pathlist
@@ -1833,6 +1849,9 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
           dragFromIndex={dragFromIndex}
           dragHoverIndex={dragHoverIndex}
           theme={theme}
+          onPathHover={handlePathHover}
+          onPathLeave={handlePathLeave}
+          hoverPathIndex={hoverPathIndex}
         />
         {/* ========== RANK3 TUTORIAL: Pass isRank3 to CheckNielsen ========== */}
         <CheckNielsen
@@ -3765,7 +3784,11 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
           steps={isRank3 ? rank3TutorialSteps : undefined}
         />
         {/* ========== END RANK3 TUTORIAL: Tutorial component ========== */}
-        <Steps optimalSteps={targetSteps} usedSteps={usedConcatSteps} theme={theme} />
+        <Steps
+          optimalSteps={targetSteps}
+          usedSteps={usedConcatSteps}
+          theme={theme}
+        />
         <button
           className={`${styles.homeButton} ${theme === "light" ? styles.light : ""}`}
           onClick={() => router.push("/")}
