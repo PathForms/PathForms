@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import styles from "./components.module.css";
 import { Direction3 } from "../utils/buildNodesEdgesFromMoves3";
+import { getRank2Color, getRank3Color } from "../utils/colorConfig";
 
 // Support both rank 2 and rank 3
 type Direction2 = "up" | "down" | "left" | "right";
@@ -34,7 +35,7 @@ const translation3: Record<Direction3, string> = {
   "left-up": "c\u207B\u00B9",
 };
 
-// Color mapping to match CayleyTree colors
+// Color mapping using centralized config
 const getDirectionColor2 = (
   direction: Direction2,
   theme: "dark" | "light" = "dark"
@@ -42,10 +43,10 @@ const getDirectionColor2 = (
   switch (direction) {
     case "up":
     case "down":
-      return "rgb(0, 140, 255)"; // Blue for a/a^-1
+      return getRank2Color("a");
     case "left":
     case "right":
-      return "rgb(251, 0, 71)"; // Red for b/b^-1
+      return getRank2Color("b");
     default:
       return "rgb(64, 73, 65)"; // Default color
   }
@@ -55,17 +56,16 @@ const getDirectionColor3 = (
   direction: Direction3,
   theme: "dark" | "light" = "dark"
 ): string => {
-  const greenColor = theme === "light" ? "#0891b2" : "#00ff00"; // Cyan for light mode, green for dark
   switch (direction) {
     case "up":
     case "down":
-      return "#ff0000"; // Red for a/a^-1
+      return getRank3Color("a", theme);
     case "right-up":
     case "left-down":
-      return greenColor; // Theme-aware green for b/b^-1
+      return getRank3Color("b", theme);
     case "right-down":
     case "left-up":
-      return "#800080"; // Purple for c/c^-1
+      return getRank3Color("c", theme);
     default:
       return "rgb(64, 73, 65)"; // Default color
   }
