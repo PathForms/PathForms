@@ -17,8 +17,10 @@ import buildNodesEdgesFromMoves3, {
 } from "../utils/buildNodesEdgesFromMoves3";
 import next from "next";
 import Steps from "./Steps";
-import { greedyNielsenSteps } from "../utils/greedyNielsen";
-import { greedyNielsenSteps3 } from "../utils/greedyNielsen3";
+import {
+  greedyNielsenSteps,
+  greedyNielsenSteps3,
+} from "../utils/greedyNielsen";
 import { useRouter } from "next/navigation";
 import { setSoundEnabled as setSoundEnabledGlobal } from "../utils/soundManager";
 
@@ -3765,7 +3767,11 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
           steps={isRank3 ? rank3TutorialSteps : undefined}
         />
         {/* ========== END RANK3 TUTORIAL: Tutorial component ========== */}
-        <Steps optimalSteps={targetSteps} usedSteps={usedConcatSteps} theme={theme} />
+        <Steps
+          optimalSteps={targetSteps}
+          usedSteps={usedConcatSteps}
+          theme={theme}
+        />
         <button
           className={`${styles.homeButton} ${theme === "light" ? styles.light : ""}`}
           onClick={() => router.push("/")}
