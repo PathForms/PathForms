@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 
 interface VertexProps {
   id: string;
@@ -11,20 +11,32 @@ interface VertexProps {
   isFinalResult?: boolean;
   isCancelledPart?: boolean;
   isHoveredTarget?: boolean;
+  depth?: number;
 }
 
-const Vertex: React.FC<VertexProps> = ({ id, x, y, isActive, isFinalResult = false, isCancelledPart = false, isHoveredTarget = false }) => {
+const Vertex: React.FC<VertexProps> = ({
+  id,
+  x,
+  y,
+  isActive,
+  isFinalResult = false,
+  isCancelledPart = false,
+  isHoveredTarget = false,
+  depth = 0,
+}) => {
   //color logic
   const isRoot = id === "0,0";
 
   let fillColor = "rgba(244, 252, 0, 0.14)";
-  let radius = 2;
+  // Scale radius based on depth: larger at root, smaller at deeper levels
+  // Base radius shrinks from 2.5 to 0.1 as depth increases
+  let radius = Math.max(0.1, 2.5 - 0.4 * depth);
   let stroke = "transparent";
   let strokeW = 0;
 
   if (isRoot) {
     fillColor = "#ffd700";
-    radius = 4;
+    radius = 5;
     stroke = "#ffffff";
     strokeW = 0.8;
   }
@@ -55,7 +67,7 @@ const Vertex: React.FC<VertexProps> = ({ id, x, y, isActive, isFinalResult = fal
   const className = isRoot ? "root-vertex" : "";
   return (
     <circle
-      className = {className}
+      className={className}
       cx={x}
       cy={y}
       r={radius}
