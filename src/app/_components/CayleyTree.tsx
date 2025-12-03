@@ -53,6 +53,7 @@ interface LayoutNode {
   id: string;
   x: number;
   y: number;
+  depth?: number;
 }
 
 interface LayoutLink {
@@ -134,6 +135,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
           id: d.data.name,
           x: rX * Math.cos(angle),
           y: rY * Math.sin(angle),
+          depth: d.depth,
         };
       });
 
@@ -179,6 +181,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
             id: d.data.name,
             x: 2.5 * x_,
             y: 2.5 * y_,
+            depth: d.depth,
           });
         }
       });
@@ -228,6 +231,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
             id: d.data.name,
             x: 2.5 * x_,
             y: 2.5 * y_,
+            depth: d.depth,
           });
         }
       });
@@ -403,6 +407,8 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
                 isFinalResult={isFinalResult}
                 isCancelledPart={isCancelledPart}
                 isHoveredTarget={isHoveredTarget}
+                depth={nd.depth}
+                isHexagon={shape === "hexagon"}
               />
             );
           })}

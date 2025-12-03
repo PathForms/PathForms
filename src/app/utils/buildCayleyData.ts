@@ -194,7 +194,7 @@ export function buildCayleyTreeData3(
       depth + 1,
       maxDepth,
       dir.label,
-      step * 0.5
+      step * 1/3
     );
     // store color => child's edge color
     child.edgeColor = dir.color;
