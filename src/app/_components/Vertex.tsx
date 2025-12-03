@@ -12,6 +12,7 @@ interface VertexProps {
   isCancelledPart?: boolean;
   isHoveredTarget?: boolean;
   depth?: number;
+  isHexagon?: boolean;
 }
 
 const Vertex: React.FC<VertexProps> = ({
@@ -23,14 +24,18 @@ const Vertex: React.FC<VertexProps> = ({
   isCancelledPart = false,
   isHoveredTarget = false,
   depth = 0,
+  isHexagon = false,
 }) => {
   //color logic
   const isRoot = id === "0,0";
 
   let fillColor = "rgba(244, 252, 0, 0.14)";
-  // Scale radius based on depth: larger at root, smaller at deeper levels
-  // Base radius shrinks from 2.5 to 0.1 as depth increases
-  let radius = Math.max(0.1, 2.5 - 0.4 * depth);
+  // Scale radius based on depth using exponential decay to match edge length decay
+  // Rank2 (rect): edges decay by 1/2, so use decay rate ~0.7
+  // Rank3 (hexagon): edges decay by 1/3, so use decay rate ~0.55
+  const baseRadius = 2.5;
+  const decayRate = isHexagon ? 0.55 : 0.7;
+  let radius = Math.max(0.3, baseRadius * Math.pow(decayRate, depth));
   let stroke = "transparent";
   let strokeW = 0;
 

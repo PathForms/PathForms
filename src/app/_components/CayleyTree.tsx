@@ -408,6 +408,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
                 isCancelledPart={isCancelledPart}
                 isHoveredTarget={isHoveredTarget}
                 depth={nd.depth}
+                isHexagon={shape === "hexagon"}
               />
             );
           })}
