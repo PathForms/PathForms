@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   output: "export",
-  // basePath: basePathValue,
+  basePath: basePathValue,
   trailingSlash: true, // recommended for static hosting
   env: {
     NEXT_PUBLIC_BASE_PATH: basePathValue,
