@@ -12,8 +12,8 @@ export const RANK2_COLORS = {
 // ============= RANK 3 COLORS =============
 export const RANK3_COLORS = {
   a: "#008cff", // Blue - same as rank2 for consistency
-  b: "#00ff00", // Green
-  c: "#800080", // Purple
+  b: "#fb0047", // Red - same as rank2 for consistency
+  c: "#00ff00", // Green
 } as const;
 
 // ============= HELPER FUNCTIONS =============
@@ -35,10 +35,7 @@ export function getRank3Color(
   theme: "dark" | "light" = "dark"
 ): string {
   if (label === "a" || label === "a^-") return RANK3_COLORS.a;
-  if (label === "b" || label === "b^-") {
-    // Allow theme-specific override for b in rank 3
-    return theme === "light" ? "#0891b2" : RANK3_COLORS.b;
-  }
+  if (label === "b" || label === "b^-") return RANK3_COLORS.b;
   if (label === "c" || label === "c^-") return RANK3_COLORS.c;
   return "#666666"; // fallback
 }
