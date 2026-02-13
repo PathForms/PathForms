@@ -89,6 +89,11 @@ interface CayleyTreeProps {
   dragFromIndex?: number;
   dragHoverIndex?: number;
   hoverPathIndex?: number;
+  onPathDragStart?: (fromIndex: number) => void;
+  onPathDragHover?: (toIndex: number) => void;
+  onPathDragLeave?: () => void;
+  onPathDragEnd?: () => void;
+  onPathDropConcatenate?: (targetIndex: number, draggedIndex: number) => void;
 }
 
 const CayleyTree: React.FC<CayleyTreeProps> = ({
@@ -102,12 +107,22 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
   dragFromIndex = -1,
   dragHoverIndex = -1,
   hoverPathIndex = -1,
+  onPathDragStart,
+  onPathDragHover,
+  onPathDragLeave,
+  onPathDragEnd,
+  onPathDropConcatenate,
 }) => {
   const [nodes, setNodes] = useState<LayoutNode[]>([]);
   const [links, setLinks] = useState<LayoutLink[]>([]);
+  const [dragGhostPos, setDragGhostPos] = useState<{ x: number; y: number } | null>(
+    null
+  );
 
   const svgRef = useRef<SVGSVGElement | null>(null);
   const gRef = useRef<SVGGElement | null>(null);
+  const graphDragFromRef = useRef<number | null>(null);
+  const graphDragPointerIdRef = useRef<number | null>(null);
 
   useEffect(() => {
     // Use smaller depth for hexagon (rank 3) to avoid performance issues
@@ -273,6 +288,14 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
     const zoomBehavior = d3
       .zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.1, 10])
+      .filter((event) => {
+        // Disable pan/zoom while dragging paths so the graph does not move.
+        if (isDragging || graphDragFromRef.current !== null) return false;
+        const e = event as PointerEvent | WheelEvent | MouseEvent;
+        if ("ctrlKey" in e && e.ctrlKey && e.type !== "wheel") return false;
+        if ("button" in e && e.button) return false;
+        return true;
+      })
       .on("zoom", (event) => {
         d3.select(gRef.current).attr("transform", event.transform.toString());
       });
@@ -283,7 +306,115 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
       "transform",
       `translate(${screenW / 2}, ${screenH / 2})`
     );
-  }, [shape]);
+  }, [shape, isDragging]);
+
+  const toGraphCoords = (
+    clientX: number,
+    clientY: number
+  ): { x: number; y: number } | null => {
+    const g = gRef.current;
+    const svg = svgRef.current;
+    if (!g || !svg) return null;
+    const ctm = g.getScreenCTM();
+    if (!ctm) return null;
+    const point = svg.createSVGPoint();
+    point.x = clientX;
+    point.y = clientY;
+    const transformed = point.matrixTransform(ctm.inverse());
+    return { x: transformed.x, y: transformed.y };
+  };
+
+  const getPathIndexAtPoint = (clientX: number, clientY: number): number => {
+    const el = document.elementFromPoint(clientX, clientY) as HTMLElement | null;
+    const hit = el?.closest("[data-path-index]") as HTMLElement | null;
+    if (!hit) return -1;
+    const index = Number(hit.dataset.pathIndex);
+    return Number.isFinite(index) ? index : -1;
+  };
+
+  const findNodeById = (nodeId: string): LayoutNode | undefined => {
+    const exact = nodes.find((n) => n.id === nodeId);
+    if (exact) return exact;
+    const [targetX, targetY] = nodeId.split(",").map(Number);
+    if (!Number.isFinite(targetX) || !Number.isFinite(targetY)) return undefined;
+    return nodes.find((n) => {
+      const [x, y] = n.id.split(",").map(Number);
+      return Math.abs(x - targetX) < 0.001 && Math.abs(y - targetY) < 0.001;
+    });
+  };
+
+  useEffect(() => {
+    const handleWindowPointerMove = (e: PointerEvent) => {
+      if (!isDragging || dragFromIndex < 0) return;
+      const graphPoint = toGraphCoords(e.clientX, e.clientY);
+      if (graphPoint) {
+        setDragGhostPos(graphPoint);
+      }
+      const hoverIndex = getPathIndexAtPoint(e.clientX, e.clientY);
+      if (hoverIndex >= 0) {
+        onPathDragHover?.(hoverIndex);
+      } else {
+        onPathDragLeave?.();
+      }
+    };
+
+    const handleWindowPointerUp = (e: PointerEvent) => {
+      if (
+        graphDragFromRef.current === null ||
+        graphDragPointerIdRef.current !== e.pointerId
+      ) {
+        return;
+      }
+      const from = graphDragFromRef.current;
+      const target = getPathIndexAtPoint(e.clientX, e.clientY);
+      if (target >= 0 && from !== target) {
+        onPathDropConcatenate?.(target, from);
+      }
+      graphDragFromRef.current = null;
+      graphDragPointerIdRef.current = null;
+      onPathDragLeave?.();
+      onPathDragEnd?.();
+      setDragGhostPos(null);
+    };
+    window.addEventListener("pointermove", handleWindowPointerMove, {
+      passive: false,
+    });
+    window.addEventListener("pointerup", handleWindowPointerUp);
+    window.addEventListener("pointercancel", handleWindowPointerUp);
+    return () => {
+      window.removeEventListener("pointermove", handleWindowPointerMove);
+      window.removeEventListener("pointerup", handleWindowPointerUp);
+      window.removeEventListener("pointercancel", handleWindowPointerUp);
+    };
+  }, [
+    dragFromIndex,
+    isDragging,
+    onPathDragEnd,
+    onPathDragHover,
+    onPathDragLeave,
+    onPathDropConcatenate,
+  ]);
+
+  const draggedPathPoints = (() => {
+    if (!isDragging || dragFromIndex < 0) return [];
+    return (nodePaths[dragFromIndex] || [])
+      .map((nodeId) => findNodeById(nodeId))
+      .filter((n): n is LayoutNode => Boolean(n))
+      .map((n) => ({ x: n.x, y: n.y }));
+  })();
+
+  const draggedPathGhostPoints = (() => {
+    if (!dragGhostPos || draggedPathPoints.length < 2) return [];
+    const center = draggedPathPoints.reduce(
+      (acc, p) => ({ x: acc.x + p.x, y: acc.y + p.y }),
+      { x: 0, y: 0 }
+    );
+    center.x /= draggedPathPoints.length;
+    center.y /= draggedPathPoints.length;
+    const dx = dragGhostPos.x - center.x;
+    const dy = dragGhostPos.y - center.y;
+    return draggedPathPoints.map((p) => ({ x: p.x + dx, y: p.y + dy }));
+  })();
 
   return (
     <div
@@ -299,9 +430,45 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
         ref={svgRef}
         width="100%"
         height="100%"
-        style={{ border: "none", display: "block" }}
+        style={{
+          border: "none",
+          display: "block",
+          touchAction: isDragging ? "none" : "auto",
+          userSelect: "none",
+        }}
       >
         <g ref={gRef}>
+          {pathIndex
+            .map((idx) => {
+              const pts = (nodePaths[idx] || [])
+                .map((nodeId) => findNodeById(nodeId))
+                .filter((n): n is LayoutNode => Boolean(n))
+                .map((n) => `${n.x},${n.y}`);
+              return { idx, pts };
+            })
+            .filter((entry) => entry.pts.length >= 2)
+            .map(({ idx, pts }) => (
+              <polyline
+                key={`drag-hit-${idx}`}
+                data-path-index={idx}
+                points={pts.join(" ")}
+                fill="none"
+                stroke="transparent"
+                strokeWidth={26}
+                style={{ pointerEvents: "stroke", cursor: "grab" }}
+                onPointerDown={(e) => {
+                  if (e.button !== 0) return;
+                  e.preventDefault();
+                  e.stopPropagation();
+                  graphDragFromRef.current = idx;
+                  graphDragPointerIdRef.current = e.pointerId;
+                  const graphPoint = toGraphCoords(e.clientX, e.clientY);
+                  setDragGhostPos(graphPoint);
+                  onPathDragStart?.(idx);
+                }}
+              />
+            ))}
+
           {/* Use a path element so that we can place a marker at the midpoint */}
           {links.map((lk) => {
             // Determine if this edge should be highlighted
@@ -412,6 +579,31 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
               />
             );
           })}
+
+          {draggedPathGhostPoints.length >= 2 && (
+            <>
+              <polyline
+                points={draggedPathGhostPoints
+                  .map((p) => `${p.x},${p.y}`)
+                  .join(" ")}
+                fill="none"
+                stroke="rgba(255, 255, 0, 0.95)"
+                strokeWidth={4}
+                strokeDasharray="8,4"
+                style={{ pointerEvents: "none" }}
+              />
+              {draggedPathGhostPoints.map((p, i) => (
+                <circle
+                  key={`drag-ghost-node-${i}`}
+                  cx={p.x}
+                  cy={p.y}
+                  r={3}
+                  fill="rgba(255, 255, 0, 0.95)"
+                  style={{ pointerEvents: "none" }}
+                />
+              ))}
+            </>
+          )}
 
           {/* Show label at the end of hovered path */}
           {hoverPathIndex >= 0 &&

@@ -1828,6 +1828,11 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
           dragFromIndex={dragFromIndex}
           dragHoverIndex={dragHoverIndex}
           hoverPathIndex={hoverPathIndex}
+          onPathDragStart={handleDragStart}
+          onPathDragHover={handleDragHover}
+          onPathDragLeave={handleDragLeave}
+          onPathDragEnd={handleDragEnd}
+          onPathDropConcatenate={concatenate}
         />
 
         <Pathlist
