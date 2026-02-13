@@ -24,7 +24,7 @@ import buildNodesEdgesFromMoves from "../utils/buildNodesEdgesFromMoves";
 import next from "next";
 import Steps from "../_components/Steps";
 import { greedyNielsenSteps } from "../utils/greedyNielsen";
-import { playSuccessSound, playPoofSound, playReductionSound, playButtonSound, playGenerateSound } from "../utils/soundManager";
+import { playSuccessSound, playPoofSound, playReductionSound, playButtonSound, playGenerateSound, playBackgroundAudioLoop, stopBackgroundAudioLoop } from "../utils/soundManager";
 
 type Direction = "up" | "down" | "left" | "right";
 
@@ -133,6 +133,16 @@ const Rank1 = () => {
         // This function signature matches Headbar's expectation
         // Shape changes are handled via the select element directly
     };
+
+    useEffect(() => {
+        if (soundEnabled) {
+            playBackgroundAudioLoop();
+        }
+
+        return () => {
+            stopBackgroundAudioLoop();
+        };
+    }, [soundEnabled]);
     
     // EDIT RANK1 TUTORIAL
     // Generate random paths for Rank 1
