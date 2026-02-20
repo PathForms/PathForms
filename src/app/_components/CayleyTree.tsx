@@ -73,6 +73,7 @@ interface CayleyTreeProps {
   edgePaths: string[][];
   edgeThickness: number;
   shape: string;
+  edgeColorOverrides?: Record<string, string>;
   previewPath?: {
     finalResult: {
       nodes: string[];
@@ -97,6 +98,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
   edgePaths,
   edgeThickness,
   shape,
+  edgeColorOverrides,
   previewPath,
   isDragging = false,
   dragFromIndex = -1,
@@ -354,7 +356,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
                 isCancelledPart={isCancelledPart}
                 isHoveredTarget={isHoveredTarget}
                 edgeThickness={edgeThickness}
-                edgeColor={lk.edgeColor}
+                edgeColor={edgeColorOverrides?.[lk.id] ?? lk.edgeColor}
                 shape={shape}
               />
             );

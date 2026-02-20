@@ -35,6 +35,25 @@ const Edge: React.FC<EdgeProps> = ({
   const [x, y] = source.split(",").map(Number);
   const [x2, y2] = target.split(",").map(Number);
   const [dashOffset, setDashOffset] = useState(0);
+  const hasOverrideColor = Boolean(edgeColor) && shape !== "hexagon";
+
+  const resolveOverrideColor = (alpha: number) => {
+    if (!edgeColor) return null;
+    if (edgeColor.startsWith("#")) {
+      const r = parseInt(edgeColor.slice(1, 3), 16);
+      const g = parseInt(edgeColor.slice(3, 5), 16);
+      const b = parseInt(edgeColor.slice(5, 7), 16);
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+    if (edgeColor.startsWith("rgb(")) {
+      const body = edgeColor.slice(4, -1);
+      return `rgba(${body}, ${alpha})`;
+    }
+    if (edgeColor.startsWith("rgba(")) {
+      return edgeColor;
+    }
+    return edgeColor;
+  };
 
   // Determine arrow marker for midpoint based on shape and direction
   const getMidpointArrowMarker = () => {
@@ -110,6 +129,9 @@ const Edge: React.FC<EdgeProps> = ({
     // a (vertical/up-down) => rgb(0, 140, 255) blue
     strokeColor = "rgba(0, 140, 255, 0.23)";
   }
+  if (hasOverrideColor) {
+    strokeColor = resolveOverrideColor(0.25) ?? strokeColor;
+  }
 
   let thickness = edgeThickness ?? 1;
   let strokeDasharray = "none";
@@ -135,6 +157,9 @@ const Edge: React.FC<EdgeProps> = ({
       // b (horizontal) => red
       strokeColor = "rgba(251, 0, 71, 0.8)"; // Bright red for final result
     }
+    if (hasOverrideColor) {
+      strokeColor = resolveOverrideColor(0.9) ?? strokeColor;
+    }
   } else if (isCancelledPart) {
     // Cancelled parts - dimmed and dashed
     thickness += 2;
@@ -154,6 +179,9 @@ const Edge: React.FC<EdgeProps> = ({
     } else {
       // b (horizontal) => red
       strokeColor = "rgba(251, 0, 71, 0.3)"; // Dimmed red for cancelled
+    }
+    if (hasOverrideColor) {
+      strokeColor = resolveOverrideColor(0.25) ?? strokeColor;
     }
   } else if (isHoveredTarget) {
     // Highlight the hovered target path with a brighter, thicker line
@@ -179,6 +207,9 @@ const Edge: React.FC<EdgeProps> = ({
       // b (horizontal) => lighter red
       strokeColor = "rgb(255, 100, 140)"; // Light red/pink for hovered target
     }
+    if (hasOverrideColor) {
+      strokeColor = resolveOverrideColor(1) ?? strokeColor;
+    }
   } else if (isActive) {
     thickness += 2;
     strokeDasharray = "5,3"; // Add dotted line effect when active
@@ -197,6 +228,9 @@ const Edge: React.FC<EdgeProps> = ({
       if ((x == x2 && y <= y2) || (x == x2 && y >= y2)) {
         strokeColor = "rgb(0, 140, 255)";
       }
+    }
+    if (hasOverrideColor) {
+      strokeColor = resolveOverrideColor(0.9) ?? strokeColor;
     }
   }
 

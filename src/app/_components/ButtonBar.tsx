@@ -73,7 +73,6 @@ interface ButtonBarProps {
  defaultGeneratorsText?: string;
  // Rank 3 flag
  isRank3?: boolean;
- // hide generate rand button for rank 2
 }
 
 
@@ -414,13 +413,13 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
            justifyContent: "left",
          }}
        >
-        {/* <button
-          className={`${tutorialStep === 1 ? styles.highlight : ""}`}
+        <button
+          // className={`${tutorialStep === 1 ? styles.highlight : ""}`}
           style={generateButtonStyle}
           onClick={handleClickRand}
         >
           Generate Rand
-        </button> */}
+        </button> 
          {/* Only show Generate Custom Paths button if NOT in rank 1 mode */}
          {!generate_custom && (
            <button
