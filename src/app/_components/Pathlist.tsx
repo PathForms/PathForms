@@ -307,8 +307,7 @@ const Pathlist: React.FC<PathlistProps> = ({
                 onMouseEnter={() => onPathHover?.(rowIndex)}
                 onMouseLeave={() => onPathLeave?.()}
               >
-                {`[p${rowIndex + 1}]: `}{" "} 
-                {/* changed to lower case */}
+                {`[P${rowIndex + 1}]: `}{" "}
                 {path.length === 0
                   ? "1"
                   : path.map((node, nodeIndex) => {
