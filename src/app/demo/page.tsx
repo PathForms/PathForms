@@ -47,8 +47,12 @@ const randomTokens = () => {
 const Demo = () => {
   const [tokens, setTokens] = useState<Token[]>([]);
 
-  useEffect(() => {
+  const generatePaths = () => {
     setTokens(randomTokens());
+  };
+
+  useEffect(() => {
+    generatePaths();
   }, []);
 
   const { nodePaths, edgePaths, edgeColorOverrides } = useMemo(() => {
@@ -142,6 +146,22 @@ const Demo = () => {
             flexWrap: "wrap",
           }}
         >
+          <button
+            type="button"
+            onClick={generatePaths}
+            style={{
+              padding: "8px 20px",
+              minWidth: "120px",
+              borderRadius: "8px",
+              border: "1px solid rgba(15, 23, 42, 0.2)",
+              backgroundColor: "rgba(15, 23, 42, 0.1)",
+              color: "#0f172a",
+              cursor: "pointer",
+              fontWeight: 600,
+            }}
+          >
+            Generate Paths
+          </button>
           <button
             type="button"
             onClick={applyATransform}
