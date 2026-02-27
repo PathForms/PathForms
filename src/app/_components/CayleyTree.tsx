@@ -12,6 +12,7 @@ const directions = {
   left: { dx: -1, dy: 0, opposite: "right" },
 };
 type DirKey = keyof typeof directions;
+const PATH_LABEL_SELECTOR = "[data-path-label-index]";
 
 interface TreeNode {
   name: string;
@@ -123,6 +124,11 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
   const gRef = useRef<SVGGElement | null>(null);
   const graphDragFromRef = useRef<number | null>(null);
   const graphDragPointerIdRef = useRef<number | null>(null);
+  const isDraggingRef = useRef(false);
+
+  useEffect(() => {
+    isDraggingRef.current = isDragging;
+  }, [isDragging]);
 
   useEffect(() => {
     // Use smaller depth for hexagon (rank 3) to avoid performance issues
@@ -290,7 +296,9 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
       .scaleExtent([0.1, 10])
       .filter((event) => {
         // Disable pan/zoom while dragging paths so the graph does not move.
-        if (isDragging || graphDragFromRef.current !== null) return false;
+        if (isDraggingRef.current || graphDragFromRef.current !== null) {
+          return false;
+        }
         const e = event as PointerEvent | WheelEvent | MouseEvent;
         if ("ctrlKey" in e && e.ctrlKey && e.type !== "wheel") return false;
         if ("button" in e && e.button) return false;
@@ -306,7 +314,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
       "transform",
       `translate(${screenW / 2}, ${screenH / 2})`
     );
-  }, [shape, isDragging]);
+  }, [shape]);
 
   const toGraphCoords = (
     clientX: number,
@@ -324,12 +332,23 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
     return { x: transformed.x, y: transformed.y };
   };
 
-  const getPathIndexAtPoint = (clientX: number, clientY: number): number => {
+  const getPathLabelIndexAtPoint = (clientX: number, clientY: number): number => {
     const el = document.elementFromPoint(clientX, clientY) as HTMLElement | null;
-    const hit = el?.closest("[data-path-index]") as HTMLElement | null;
+    const hit = el?.closest(PATH_LABEL_SELECTOR) as HTMLElement | null;
     if (!hit) return -1;
-    const index = Number(hit.dataset.pathIndex);
+    const index = Number(hit.dataset.pathLabelIndex);
     return Number.isFinite(index) ? index : -1;
+  };
+
+  const startGraphDrag = (idx: number, e: React.PointerEvent<SVGElement>) => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    e.stopPropagation();
+    graphDragFromRef.current = idx;
+    graphDragPointerIdRef.current = e.pointerId;
+    const graphPoint = toGraphCoords(e.clientX, e.clientY);
+    setDragGhostPos(graphPoint);
+    onPathDragStart?.(idx);
   };
 
   const findNodeById = (nodeId: string): LayoutNode | undefined => {
@@ -343,6 +362,16 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
     });
   };
 
+  const getPathLastVisibleNode = (pathIdx: number): LayoutNode | null => {
+    const pathNodes = nodePaths[pathIdx];
+    if (!pathNodes || pathNodes.length === 0) return null;
+    for (let i = pathNodes.length - 1; i >= 0; i--) {
+      const nd = findNodeById(pathNodes[i]);
+      if (nd) return nd;
+    }
+    return null;
+  };
+
   useEffect(() => {
     const handleWindowPointerMove = (e: PointerEvent) => {
       if (!isDragging || dragFromIndex < 0) return;
@@ -350,7 +379,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
       if (graphPoint) {
         setDragGhostPos(graphPoint);
       }
-      const hoverIndex = getPathIndexAtPoint(e.clientX, e.clientY);
+      const hoverIndex = getPathLabelIndexAtPoint(e.clientX, e.clientY);
       if (hoverIndex >= 0) {
         onPathDragHover?.(hoverIndex);
       } else {
@@ -366,7 +395,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
         return;
       }
       const from = graphDragFromRef.current;
-      const target = getPathIndexAtPoint(e.clientX, e.clientY);
+      const target = getPathLabelIndexAtPoint(e.clientX, e.clientY);
       if (target >= 0 && from !== target) {
         onPathDropConcatenate?.(target, from);
       }
@@ -456,16 +485,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
                 stroke="transparent"
                 strokeWidth={26}
                 style={{ pointerEvents: "stroke", cursor: "grab" }}
-                onPointerDown={(e) => {
-                  if (e.button !== 0) return;
-                  e.preventDefault();
-                  e.stopPropagation();
-                  graphDragFromRef.current = idx;
-                  graphDragPointerIdRef.current = e.pointerId;
-                  const graphPoint = toGraphCoords(e.clientX, e.clientY);
-                  setDragGhostPos(graphPoint);
-                  onPathDragStart?.(idx);
-                }}
+                onPointerDown={(e) => startGraphDrag(idx, e)}
               />
             ))}
 
@@ -605,54 +625,56 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
             </>
           )}
 
-          {/* Show label at the end of hovered path */}
-          {hoverPathIndex >= 0 &&
-            nodePaths[hoverPathIndex] &&
-            (() => {
-              // Get the last node of the hovered path
-              const pathNodes = nodePaths[hoverPathIndex];
-              if (pathNodes && pathNodes.length > 0) {
-                // Try to find a node from the end of the path backwards
-                // (in case the path is longer than the tree depth)
-                let lastNode = null;
-                for (let i = pathNodes.length - 1; i >= 0 && !lastNode; i--) {
-                  const nodeId = pathNodes[i];
-                  const [targetX, targetY] = nodeId.split(",").map(Number);
-
-                  // Find the node by approximate coordinate matching (to handle floating point precision)
-                  lastNode = nodes.find((n) => {
-                    const [nodeX, nodeY] = n.id.split(",").map(Number);
-                    // Use a small epsilon for floating point comparison
-                    return (
-                      Math.abs(nodeX - targetX) < 0.001 &&
-                      Math.abs(nodeY - targetY) < 0.001
-                    );
-                  });
-                }
-
-                if (lastNode) {
-                  return (
-                    <text
-                      x={lastNode.x}
-                      y={lastNode.y - 15}
-                      textAnchor="middle"
-                      fill="#ffffff"
-                      fontSize="16"
-                      fontWeight="bold"
-                      stroke="#000000"
-                      strokeWidth="0.5"
-                      style={{
-                        pointerEvents: "none",
-                        textShadow: "0 0 4px rgba(0,0,0,0.8)",
-                      }}
-                    >
-                      P{hoverPathIndex + 1}
-                    </text>
-                  );
-                }
-              }
-              return null;
-            })()}
+          {Array.from(new Set(pathIndex))
+            .filter((idx) => idx >= 0 && idx < nodePaths.length)
+            .map((idx) => {
+              const lastNode = getPathLastVisibleNode(idx);
+              if (!lastNode) return null;
+              const isDragFrom = isDragging && dragFromIndex === idx;
+              const isDropHover = isDragging && dragHoverIndex === idx;
+              const label = `P${idx + 1}`;
+              return (
+                <g key={`path-label-${idx}`}>
+                  <rect
+                    data-path-label-index={idx}
+                    x={lastNode.x - 22}
+                    y={lastNode.y - 30}
+                    width={44}
+                    height={22}
+                    rx={8}
+                    ry={8}
+                    fill="transparent"
+                    style={{
+                      pointerEvents: "all",
+                      cursor: isDragging ? "grabbing" : "grab",
+                    }}
+                    onPointerDown={(e) => startGraphDrag(idx, e)}
+                  />
+                  <text
+                    data-path-label-index={idx}
+                    x={lastNode.x}
+                    y={lastNode.y - 15}
+                    textAnchor="middle"
+                    fill={
+                      isDragFrom ? "#ffe066" : isDropHover ? "#ffffff" : "#d9f99d"
+                    }
+                    fontSize="16"
+                    fontWeight="bold"
+                    stroke="#000000"
+                    strokeWidth="0.6"
+                    style={{
+                      pointerEvents: "auto",
+                      cursor: isDragging ? "grabbing" : "grab",
+                      textShadow: "0 0 4px rgba(0,0,0,0.85)",
+                      userSelect: "none",
+                    }}
+                    onPointerDown={(e) => startGraphDrag(idx, e)}
+                  >
+                    {label}
+                  </text>
+                </g>
+              );
+            })}
         </g>
       </svg>
     </div>
