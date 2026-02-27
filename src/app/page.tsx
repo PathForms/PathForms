@@ -316,6 +316,35 @@ const Home = () => {
         </div>
       </div>
 
+      {/* Sandbox Demo Button */}
+      <div style={{ marginTop: "clamp(24px, 3vh, 40px)", textAlign: "center" }}>
+        <button
+          style={{
+            padding: "16px 32px",
+            fontSize: "clamp(16px, 2vw, 20px)",
+            fontWeight: "bold",
+            borderRadius: "12px",
+            backgroundColor: hoveredButton === "sandbox" ? "#059669" : "#10b981",
+            border: "none",
+            color: "white",
+            cursor: "pointer",
+            transition: "all 0.3s ease",
+            transform: hoveredButton === "sandbox" ? "scale(1.05)" : "scale(1)",
+            boxShadow: hoveredButton === "sandbox"
+              ? "0 10px 20px -5px rgba(16, 185, 129, 0.4)"
+              : "0 4px 12px rgba(0, 0, 0, 0.3)",
+          }}
+          onClick={() => router.push("/sandbox")}
+          onMouseEnter={() => setHoveredButton("sandbox")}
+          onMouseLeave={() => setHoveredButton(null)}
+        >
+          🎮 Try the Sandbox Demo
+        </button>
+        <p style={{ color: "#a0a0a0", fontSize: "clamp(12px, 1.4vw, 14px)", marginTop: "12px" }}>
+          Experiment with Nielsen transformations interactively
+        </p>
+      </div>
+
       <div style={{ marginTop: "clamp(16px, 2.5vh, 32px)", textAlign: "center" }}>
         <p style={{ color: "#e0e0e0", fontSize: "clamp(13px, 1.6vw, 16px)" }}>
           Click on a rank to start exploring!
