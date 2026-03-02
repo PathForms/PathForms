@@ -51,6 +51,8 @@ const Demo = () => {
     setTokens(randomTokens());
   };
 
+
+ // added random generation to demo
   useEffect(() => {
     generatePaths();
   }, []);
