@@ -53,12 +53,12 @@ const oppositeMoves3: Record<Direction3, Direction3> = {
 
 interface InterfaceProps {
   defaultShape?: string;
-  showDemoTransforms?: boolean;
+  showDualTransforms?: boolean;
 }
 
 const Interface = ({
   defaultShape = "circle",
-  showDemoTransforms = false,
+  showDualTransforms = false,
 }: InterfaceProps = {}) => {
   const rank = getRank(defaultShape);
   const isRank3 = rank === 3;
@@ -1868,28 +1868,28 @@ const Interface = ({
     setHoverPathIndex(-1);
   };
 
-  const demoTransforms =
-    showDemoTransforms && !isRank3
+  const dualTransforms =
+    showDualTransforms && !isRank3
       ? [
           {
             id: "a-to-ab",
             label: "a to ab",
-            onClick: () => applyDemoATransform(["a", "b"]),
+            onClick: () => applyDualATransform(["a", "b"]),
           },
           {
             id: "a-to-ab-inv",
             label: "a to ab^-1",
-            onClick: () => applyDemoATransform(["a", "b^-"]),
+            onClick: () => applyDualATransform(["a", "b^-"]),
           },
           {
             id: "a-to-ba",
             label: "a to ba",
-            onClick: () => applyDemoATransform(["b", "a"]),
+            onClick: () => applyDualATransform(["b", "a"]),
           },
           {
             id: "a-to-b-inv-a",
             label: "a to b^-1a",
-            onClick: () => applyDemoATransform(["b^-", "a"]),
+            onClick: () => applyDualATransform(["b^-", "a"]),
           },
         ]
       : undefined;
@@ -1943,7 +1943,7 @@ const Interface = ({
               : "No specified bases, default generators a,b."
           }
           isRank3={isRank3}
-          demoTransforms={demoTransforms}
+          dualTransforms={dualTransforms}
         />
         <Pathterminal
           pathIndex={pathIndex}

@@ -73,7 +73,7 @@ interface ButtonBarProps {
  defaultGeneratorsText?: string;
  // Rank 3 flag
  isRank3?: boolean;
- demoTransforms?: { id: string; label: string; onClick: () => void }[];
+ dualTransforms?: { id: string; label: string; onClick: () => void }[];
 }
 
 
@@ -95,7 +95,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
  defaultGeneratorsText = "No specified bases, default generators a,b.",
   // Rank 3 flag
   isRank3 = false,
-  demoTransforms,
+  dualTransforms,
 }) => {
   // Use appropriate translation based on rank
   const translation = isRank3 ? translation3 : translation2;
@@ -282,7 +282,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
    addbase(currBase);
  };
 
- const handleDemoTransformClick = async (handler: () => void) => {
+ const handleDualTransformClick = async (handler: () => void) => {
    if (soundEnabled) await playButtonSound();
    await initializeAudio();
    handler();
@@ -457,7 +457,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
          )}
        </div>
 
-       {demoTransforms && demoTransforms.length > 0 && (
+       {dualTransforms && dualTransforms.length > 0 && (
          <div
            style={{
              display: "flex",
@@ -466,11 +466,11 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
              justifyContent: "left",
            }}
          >
-           {demoTransforms.map((action) => (
+           {dualTransforms.map((action) => (
              <button
                key={action.id}
                style={generateButtonStyle}
-               onClick={() => handleDemoTransformClick(action.onClick)}
+               onClick={() => handleDualTransformClick(action.onClick)}
              >
                {action.label}
              </button>
