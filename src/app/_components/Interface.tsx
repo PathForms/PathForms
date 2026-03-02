@@ -1654,7 +1654,7 @@ const Interface = ({
     setBases([]);
   };
 
-  const applyDemoATransform = (replacement: Token2[]) => {
+  const applyDualATransform = (replacement: Token2[]) => {
     if (isRank3) return;
 
     setMoveRecords((prev) => {
