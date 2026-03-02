@@ -22,6 +22,7 @@ let pathSynth: Tone.Synth | null = null;
 let clickSynth: Tone.Synth | null = null;
 let hoverSynth: Tone.Synth | null = null;
 let stepTransitionSynth: Tone.Synth | null = null;
+let backgroundPlayer: Tone.Player | null = null;
 
 // Initialize all synths
 export const initializeSynths = async () => {
@@ -240,7 +241,7 @@ export const playSuccessSound = async () => {
   await initializeAudio();
   
   // Create a polyphonic synth for success sound
-  const synth = new Tone.PolySynth(Tone.Synth).toDestination();
+  const synth = new Tone.PolySynth(Tone.Synth, {volume: -12}).toDestination();
   
   // Play a major chord sequence
   synth.triggerAttackRelease(["C4", "E4", "G4"], "8n", Tone.now());
@@ -383,4 +384,25 @@ export const cleanupSynths = () => {
   stepTransitionSynth = null;
   
   isSoundInitialized = false;
+};
+
+export const playBackgroundAudioLoop = async () => {
+  await initializeAudio();
+
+  if (backgroundPlayer) return; // already playing
+
+  backgroundPlayer = new Tone.Player({
+    url: "/audio/gameplay-loop.mp3",
+    loop: true,
+    autostart: true,
+    volume: -12, // adjust as needed
+  }).toDestination();
+};
+
+export const stopBackgroundAudioLoop = () => {
+  if (backgroundPlayer) {
+    backgroundPlayer.stop();
+    backgroundPlayer.dispose();
+    backgroundPlayer = null;
+  }
 };
