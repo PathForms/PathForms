@@ -97,6 +97,7 @@ interface PathlistProps {
 
 const CLICK_INTERVAL = 250;
 const LONG_PRESS_DURATION = 500;
+const DRAG_THRESHOLD_PX = 6;
 
 const Pathlist: React.FC<PathlistProps> = ({
   mode,
@@ -123,78 +124,128 @@ const Pathlist: React.FC<PathlistProps> = ({
 }) => {
   const singleClickTimer = useRef<NodeJS.Timeout | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const suppressClickRef = useRef(false);
+  const dragStateRef = useRef<{
+    fromIndex: number;
+    pointerId: number;
+    startX: number;
+    startY: number;
+    started: boolean;
+  } | null>(null);
 
-  ///////////// dragging handler //////////////
-  const handleDragStart = (
-    e: React.DragEvent<HTMLParagraphElement>,
+  ///////////// pointer drag handler //////////////
+  const getPathIndexAtPoint = (clientX: number, clientY: number): number => {
+    const el = document.elementFromPoint(clientX, clientY) as HTMLElement | null;
+    const row = el?.closest("[data-path-index]") as HTMLElement | null;
+    if (!row) return -1;
+    const value = Number(row.dataset.pathIndex);
+    return Number.isFinite(value) ? value : -1;
+  };
+
+  const handlePointerDown = (
+    e: React.PointerEvent<HTMLParagraphElement>,
     fromIndex: number
   ) => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-    e.dataTransfer.effectAllowed = "move";
-    e.dataTransfer.setData("text/plain", String(fromIndex));
-    e.currentTarget.classList.add(styles.dragging);
-    onDragStart?.(fromIndex);
-  };
-
-  const handleDragEnd = (e: React.DragEvent<HTMLParagraphElement>) => {
-    e.currentTarget.classList.remove(styles.dragging);
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-    onDragEnd?.();
-  };
-
-  const handleDragOver = (
-    e: React.DragEvent<HTMLParagraphElement>,
-    toIndex: number
-  ) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-    e.currentTarget.classList.add(styles.dragOver);
-    onDragHover?.(toIndex);
-  };
-
-  const handleDragLeave = (e: React.DragEvent<HTMLParagraphElement>) => {
-    e.currentTarget.classList.remove(styles.dragOver);
-    onDragLeave?.();
-  };
-
-  const handleDrop = (
-    e: React.DragEvent<HTMLParagraphElement>,
-    toIndex: number
-  ) => {
-    e.preventDefault();
-    const fromIndex = Number(e.dataTransfer.getData("text/plain"));
-    e.currentTarget.classList.remove(styles.dragOver);
-    if (fromIndex !== toIndex) {
-      concatenate(toIndex, fromIndex);
-    }
-  };
-
-  const handleClick = (index: number) => {
-    if (movePaths[index].length === 0) {
-      removePath(index);
-      return;
-    }
-  };
-
-  const handleMouseDown = (index: number) => {
+    if (e.button !== 0) return;
+    dragStateRef.current = {
+      fromIndex,
+      pointerId: e.pointerId,
+      startX: e.clientX,
+      startY: e.clientY,
+      started: false,
+    };
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    suppressClickRef.current = false;
+    // Keep existing long-press behavior for show/hide.
     timerRef.current = setTimeout(() => {
-      demonstratePath(index);
+      demonstratePath(fromIndex);
       if (singleClickTimer.current) {
         clearTimeout(singleClickTimer.current);
         singleClickTimer.current = null;
       }
     }, LONG_PRESS_DURATION);
   };
-  const handleMouseUp = (index: number) => {
+
+  useEffect(() => {
+    const handlePointerMove = (e: PointerEvent) => {
+      const drag = dragStateRef.current;
+      if (!drag || e.pointerId !== drag.pointerId) return;
+      const dx = e.clientX - drag.startX;
+      const dy = e.clientY - drag.startY;
+      if (!drag.started && Math.hypot(dx, dy) >= DRAG_THRESHOLD_PX) {
+        drag.started = true;
+        if (timerRef.current) {
+          clearTimeout(timerRef.current);
+          timerRef.current = null;
+        }
+        onDragStart?.(drag.fromIndex);
+      }
+      if (drag.started) {
+        const toIndex = getPathIndexAtPoint(e.clientX, e.clientY);
+        if (toIndex >= 0) {
+          onDragHover?.(toIndex);
+        }
+      }
+    };
+
+    const handlePointerUpOrCancel = (e: PointerEvent) => {
+      const drag = dragStateRef.current;
+      if (!drag || e.pointerId !== drag.pointerId) return;
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+      if (drag.started) {
+        const toIndex = getPathIndexAtPoint(e.clientX, e.clientY);
+        if (toIndex >= 0 && toIndex !== drag.fromIndex) {
+          concatenate(toIndex, drag.fromIndex);
+        }
+        onDragEnd?.();
+        suppressClickRef.current = true;
+        setTimeout(() => {
+          suppressClickRef.current = false;
+        }, 0);
+      }
+      dragStateRef.current = null;
+      onDragLeave?.();
+    };
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUpOrCancel);
+    window.addEventListener("pointercancel", handlePointerUpOrCancel);
+    return () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUpOrCancel);
+      window.removeEventListener("pointercancel", handlePointerUpOrCancel);
+    };
+  }, [concatenate, demonstratePath, onDragEnd, onDragHover, onDragLeave, onDragStart]);
+
+  const handlePointerEnter = (toIndex: number) => {
+    const drag = dragStateRef.current;
+    if (drag?.started) {
+      onDragHover?.(toIndex);
+    }
+  };
+
+  const handlePointerLeave = () => {
+    const drag = dragStateRef.current;
+    if (drag?.started) {
+      onDragLeave?.();
+    }
+  };
+
+  const handlePointerUp = () => {
     if (timerRef.current) {
       clearTimeout(timerRef.current);
       timerRef.current = null;
+    }
+  };
+
+  const handleClick = (index: number) => {
+    if (suppressClickRef.current) return;
+    if (movePaths[index].length === 0) {
+      removePath(index);
+      return;
     }
   };
 
@@ -279,12 +330,8 @@ const Pathlist: React.FC<PathlistProps> = ({
                             ? styles.highlight
                             : ""
                 }`}
-                draggable
-                onDragStart={(e) => handleDragStart(e, rowIndex)}
-                onDragEnd={handleDragEnd}
-                onDragOver={(e) => handleDragOver(e, rowIndex)}
-                onDragLeave={handleDragLeave}
-                onDrop={(e) => handleDrop(e, rowIndex)}
+                data-path-index={rowIndex}
+                draggable={false}
                 style={{
                   color: textColor,
                   textAlign: "left",
@@ -300,10 +347,16 @@ const Pathlist: React.FC<PathlistProps> = ({
                     : "transparent",
                   transition: "all 0.2s ease",
                 }}
-                onMouseDown={() => handleMouseDown(rowIndex)}
-                onMouseUp={() => handleMouseUp(rowIndex)}
+                onPointerDown={(e) => handlePointerDown(e, rowIndex)}
+                onPointerUp={handlePointerUp}
+                onPointerEnter={() => handlePointerEnter(rowIndex)}
+                onPointerLeave={handlePointerLeave}
                 onClick={() => handleClick(rowIndex)}
-                onDoubleClick={() => invert(rowIndex)}
+                onDoubleClick={() => {
+                  if (!suppressClickRef.current) {
+                    invert(rowIndex);
+                  }
+                }}
                 onMouseEnter={() => onPathHover?.(rowIndex)}
                 onMouseLeave={() => onPathLeave?.()}
               >

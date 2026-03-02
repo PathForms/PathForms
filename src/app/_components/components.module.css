@@ -320,3 +320,44 @@
   border: 2px solid #0891b2;
   color: #0891b2;
 }
+
+.helpWrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.helpBubble {
+  position: absolute;
+  bottom: 125%;
+  left: 0;
+  min-width: 180px;
+  max-width: 260px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(13, 255, 0, 0.5);
+  background: rgba(20, 20, 20, 0.95);
+  color: #e6ffe6;
+  font-size: 12px;
+  line-height: 1.25;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+  z-index: 20;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+.helpBubble::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 12px;
+  border-width: 6px;
+  border-style: solid;
+  border-color: rgba(20, 20, 20, 0.95) transparent transparent transparent;
+}
+
+.helpWrapper:hover .helpBubble {
+  opacity: 1;
+  transform: translateY(0);
+}

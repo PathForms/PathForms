@@ -149,6 +149,7 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
     "Drag Path 3 and put it on Path 2 to concatenate Path 3 after Path 2.",
     "Now try to reduce all paths to their simplest form using invert and concatenate operations!",
   ];
+
   // ========== END RANK3 TUTORIAL STEPS ==========
 
   // Steps state
@@ -1859,6 +1860,11 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
           dragFromIndex={dragFromIndex}
           dragHoverIndex={dragHoverIndex}
           hoverPathIndex={hoverPathIndex}
+          onPathDragStart={handleDragStart}
+          onPathDragHover={handleDragHover}
+          onPathDragLeave={handleDragLeave}
+          onPathDragEnd={handleDragEnd}
+          onPathDropConcatenate={concatenate}
         />
 
         <Pathlist
