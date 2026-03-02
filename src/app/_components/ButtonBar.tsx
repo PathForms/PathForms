@@ -92,11 +92,17 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
  generate_custom,
  // Default generators text
  defaultGeneratorsText = "No specified bases, default generators a,b.",
- // Rank 3 flag
- isRank3 = false,
+  // Rank 3 flag
+  isRank3 = false,
 }) => {
   // Use appropriate translation based on rank
   const translation = isRank3 ? translation3 : translation2;
+  const helpTextRand = isRank3
+    ? "Starts from default generators (a,b,c) and appends random moves across all six directions. Ignores any custom generators provided."
+    : "Starts from default generators (a,b) and appends random moves across all four directions. Ignores any custom generators provided.";
+  const helpTextPaths = isRank3
+    ? "Uses custom generator list if provided. If empty, uses default generators (a,b,c) then expands via inversion/concatenation."
+    : "Uses custom generator list if provided. If empty, uses default generators (a,b) then expands via inversion/concatenation.";
  //input config
  const [inputSize, setInputSize] = useState<string>("");
  const [currBase, setCurrBase] = useState<string>("");
@@ -413,21 +419,33 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
            justifyContent: "left",
          }}
        >
-         <button
-           className={`${tutorialStep === 1 ? styles.highlight : ""}`}
-           style={generateButtonStyle}
-           onClick={handleClickRand}
-         >
-           Generate Rand
-         </button>
-         {/* Only show Generate Custom Paths button if NOT in rank 1 mode */}
-         {!generate_custom && (
+         <div className={styles.helpWrapper}>
+           <span className={styles.helpBubble} role="tooltip">
+             {helpTextRand}
+           </span>
            <button
+            //  className={`${tutorialStep === 1 ? styles.highlight : ""}`}
              style={generateButtonStyle}
-             onClick={handlebaseClick}
+             onClick={handleClickRand}
+             aria-label="Generate Rand"
            >
-             Generate Paths
+             Generate Rand
            </button>
+         </div>
+         {!generate_custom && (
+           <div className={styles.helpWrapper}>
+             <span className={styles.helpBubble} role="tooltip">
+               {helpTextPaths}
+             </span>
+             <button
+              className={`${tutorialStep === 1 ? styles.highlight : ""}`}
+              style={generateButtonStyle}
+              onClick={handlebaseClick}
+              aria-label="Generate Paths"
+             >
+               Generate Paths
+             </button>
+           </div>
          )}
        </div>
      </div>
@@ -542,5 +560,4 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
 
 
 export default ButtonBar;
-
 

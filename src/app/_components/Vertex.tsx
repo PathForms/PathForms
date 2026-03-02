@@ -79,7 +79,11 @@ const Vertex: React.FC<VertexProps> = ({
       fill={fillColor}
       stroke={stroke}
       strokeWidth={strokeW}
-      style={{ cursor: "pointer", transition: "fill 0.3s" }}
+      style={{
+        cursor: "default",
+        transition: "fill 0.3s",
+        pointerEvents: "none",
+      }}
     />
   );
 };

@@ -216,7 +216,10 @@ const Edge: React.FC<EdgeProps> = ({
         strokeDasharray={strokeDasharray}
         strokeDashoffset={strokeDashoffset}
         markerEnd={undefined}
-        style={{ transition: isActive ? "none" : "all 0.3s ease" }}
+        style={{
+          transition: isActive ? "none" : "all 0.3s ease",
+          pointerEvents: "none",
+        }}
       />
       {/* Add arrow at midpoint */}
       {isActive && (
@@ -229,12 +232,14 @@ const Edge: React.FC<EdgeProps> = ({
                 <polygon
                   points={`${midX - 9} ${midY - 6}, ${midX + 9} ${midY}, ${midX - 9} ${midY + 6}`}
                   fill="rgb(0, 255, 0)"
+                  style={{ pointerEvents: "none" }}
                 />
               ) : (
                 // Vertical movement - up arrow (triangle) - pointing towards source
                 <polygon
                   points={`${midX - 6} ${midY + 9}, ${midX + 6} ${midY + 9}, ${midX} ${midY - 9}`}
                   fill="rgb(0, 255, 0)"
+                  style={{ pointerEvents: "none" }}
                 />
               )}
             </>
