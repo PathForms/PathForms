@@ -53,9 +53,13 @@ const oppositeMoves3: Record<Direction3, Direction3> = {
 
 interface InterfaceProps {
   defaultShape?: string;
+  showDemoTransforms?: boolean;
 }
 
-const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
+const Interface = ({
+  defaultShape = "circle",
+  showDemoTransforms = false,
+}: InterfaceProps = {}) => {
   const rank = getRank(defaultShape);
   const isRank3 = rank === 3;
 
@@ -71,6 +75,60 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
   const greedyNielsenStepsFunc = isRank3
     ? greedyNielsenSteps3
     : greedyNielsenSteps;
+
+  type Token2 = "a" | "a^-" | "b" | "b^-";
+
+  const moveToToken2 = (move: Direction2): Token2 => {
+    switch (move) {
+      case "up":
+        return "a";
+      case "down":
+        return "a^-";
+      case "right":
+        return "b";
+      case "left":
+        return "b^-";
+    }
+  };
+
+  const tokenToMove2 = (token: Token2): Direction2 => {
+    switch (token) {
+      case "a":
+        return "up";
+      case "a^-":
+        return "down";
+      case "b":
+        return "right";
+      case "b^-":
+        return "left";
+    }
+  };
+
+  const invertToken2 = (token: Token2): Token2 => {
+    switch (token) {
+      case "a":
+        return "a^-";
+      case "a^-":
+        return "a";
+      case "b":
+        return "b^-";
+      case "b^-":
+        return "b";
+    }
+  };
+
+  const reduceTokens2 = (tokens: Token2[]): Token2[] => {
+    const stack: Token2[] = [];
+    tokens.forEach((token) => {
+      const last = stack[stack.length - 1];
+      if (last && invertToken2(last) === token) {
+        stack.pop();
+      } else {
+        stack.push(token);
+      }
+    });
+    return stack;
+  };
 
   // State for storing historical paths & cayley graph rendering
   const [pathIndex, setPathIndex] = useState<number[]>([]); // index of paths to show on the Cayley graph;
@@ -1564,6 +1622,33 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
   const clearBase = () => {
     setBases([]);
   };
+
+  const applyDemoATransform = (replacement: Token2[]) => {
+    if (isRank3) return;
+
+    setMoveRecords((prev) => {
+      const next = prev.map((path) => {
+        const tokens = (path as Direction2[]).map(moveToToken2);
+        const transformed = reduceTokens2(
+          tokens.flatMap((token) => (token === "a" ? replacement : [token]))
+        );
+        return transformed.map(tokenToMove2);
+      });
+
+      const newNodePaths: string[][] = [];
+      const newEdgePaths: string[][] = [];
+      next.forEach((moves) => {
+        const { newNodes, newEdges } = buildNodesEdges(moves as any);
+        newNodePaths.push(newNodes);
+        newEdgePaths.push(newEdges);
+      });
+
+      setNodePaths(newNodePaths);
+      setEdgePaths(newEdgePaths);
+      setTargetSteps(greedyNielsenStepsFunc(next as any));
+      return next as any;
+    });
+  };
   //
   //
   //
@@ -1752,6 +1837,32 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
     setHoverPathIndex(-1);
   };
 
+  const demoTransforms =
+    showDemoTransforms && !isRank3
+      ? [
+          {
+            id: "a-to-ab",
+            label: "a to ab",
+            onClick: () => applyDemoATransform(["a", "b"]),
+          },
+          {
+            id: "a-to-ab-inv",
+            label: "a to ab^-1",
+            onClick: () => applyDemoATransform(["a", "b^-"]),
+          },
+          {
+            id: "a-to-ba",
+            label: "a to ba",
+            onClick: () => applyDemoATransform(["b", "a"]),
+          },
+          {
+            id: "a-to-b-inv-a",
+            label: "a to b^-1a",
+            onClick: () => applyDemoATransform(["b^-", "a"]),
+          },
+        ]
+      : undefined;
+
   return (
     <>
       {showWelcome && (
@@ -1801,6 +1912,7 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
               : "No specified bases, default generators a,b."
           }
           isRank3={isRank3}
+          demoTransforms={demoTransforms}
         />
         <Pathterminal
           pathIndex={pathIndex}

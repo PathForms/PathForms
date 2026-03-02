@@ -73,6 +73,7 @@ interface ButtonBarProps {
  defaultGeneratorsText?: string;
  // Rank 3 flag
  isRank3?: boolean;
+ demoTransforms?: { id: string; label: string; onClick: () => void }[];
 }
 
 
@@ -94,15 +95,16 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
  defaultGeneratorsText = "No specified bases, default generators a,b.",
   // Rank 3 flag
   isRank3 = false,
+  demoTransforms,
 }) => {
   // Use appropriate translation based on rank
   const translation = isRank3 ? translation3 : translation2;
   const helpTextRand = isRank3
-    ? "Starts from default generators (a,b,c) and appends random moves across all six directions. Ignores any custom generators provided."
-    : "Starts from default generators (a,b) and appends random moves across all four directions. Ignores any custom generators provided.";
+    ? "Generates words in the full free group using the default basis (a,b,c) and random moves in all directions. Always reducible to the standard basis."
+    : "Generates words in the full free group using the default basis (a,b) and random moves in all directions. Always reducible to the standard basis.";
   const helpTextPaths = isRank3
-    ? "Uses custom generator list if provided. If empty, uses default generators (a,b,c) then expands via inversion/concatenation."
-    : "Uses custom generator list if provided. If empty, uses default generators (a,b) then expands via inversion/concatenation.";
+    ? "Generates words from the subgroup spanned by the provided generators. If none are provided, uses the default basis (a,b,c) and expands via inversion/concatenation. May not reduce tot he standard basis."
+    : "Generates words from the subgroup spanned by the provided generators. If none are provided, uses the default basis (a,b) and expands via inversion/concatenation. May not reduce tot he standard basis.";
  //input config
  const [inputSize, setInputSize] = useState<string>("");
  const [currBase, setCurrBase] = useState<string>("");
@@ -280,6 +282,12 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
    addbase(currBase);
  };
 
+ const handleDemoTransformClick = async (handler: () => void) => {
+   if (soundEnabled) await playButtonSound();
+   await initializeAudio();
+   handler();
+ };
+
 
  // Function to be called when the button is clicked
  const handleClick = async () => {
@@ -448,6 +456,27 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
            </div>
          )}
        </div>
+
+       {demoTransforms && demoTransforms.length > 0 && (
+         <div
+           style={{
+             display: "flex",
+             gap: 8,
+             flexWrap: "wrap",
+             justifyContent: "left",
+           }}
+         >
+           {demoTransforms.map((action) => (
+             <button
+               key={action.id}
+               style={generateButtonStyle}
+               onClick={() => handleDemoTransformClick(action.onClick)}
+             >
+               {action.label}
+             </button>
+           ))}
+         </div>
+       )}
      </div>
 
 
@@ -560,4 +589,3 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
 
 
 export default ButtonBar;
-
