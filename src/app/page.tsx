@@ -2,6 +2,20 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 
+type LandingCard = {
+  id: string;
+  label: string;
+  route: string;
+  image: string;
+  alt: string;
+  borderColor: string;
+  shadowColor: string;
+  gradient: {
+    idle: string;
+    hover: string;
+  };
+};
+
 const Home = () => {
   const router = useRouter();
   const [hoveredButton, setHoveredButton] = useState<string | null>(null);
@@ -23,16 +37,74 @@ const Home = () => {
   ];
   const text = "PathForms";
 
+  const cardSize = "clamp(280px, 28vw, 380px)";
+  const cards: LandingCard[] = [
+    {
+      id: "rank1",
+      label: "Rank 1",
+      route: "/rank1",
+      image: `${basePath}/rank1.gif`,
+      alt: "Rank 1 Preview",
+      borderColor: "#3b82f6",
+      shadowColor: "59, 130, 246",
+      gradient: {
+        idle: "linear-gradient(to right, #3b82f6, #2563eb)",
+        hover: "linear-gradient(to right, #2563eb, #1d4ed8)",
+      },
+    },
+    {
+      id: "rank2",
+      label: "Rank 2",
+      route: "/rank2",
+      image: `${basePath}/rank2.gif`,
+      alt: "Rank 2 Preview",
+      borderColor: "#8b5cf6",
+      shadowColor: "139, 92, 246",
+      gradient: {
+        idle: "linear-gradient(to right, #8b5cf6, #7c3aed)",
+        hover: "linear-gradient(to right, #7c3aed, #6d28d9)",
+      },
+    },
+    {
+      id: "rank3",
+      label: "Rank 3",
+      route: "/rank3",
+      image: `${basePath}/rank3.gif`,
+      alt: "Rank 3 Preview",
+      borderColor: "#800080",
+      shadowColor: "128, 0, 128",
+      gradient: {
+        idle: "linear-gradient(to right, #800080, #6a0080)",
+        hover: "linear-gradient(to right, #6a0080, #5a0070)",
+      },
+    },
+    {
+      id: "dual",
+      label: "Dual",
+      route: "/dual",
+      image: `${basePath}/rank3.gif`,
+      alt: "Dual Preview",
+      borderColor: "#14b8a6",
+      shadowColor: "20, 184, 166",
+      gradient: {
+        idle: "linear-gradient(to right, #14b8a6, #0f766e)",
+        hover: "linear-gradient(to right, #0f766e, #115e59)",
+      },
+    },
+  ];
+
   return (
     <div
       style={{
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        justifyContent: "center",
-        minHeight: "100vh",
-        width: "100vw",
-        overflow: "auto",
+        justifyContent: "flex-start",
+        position: "fixed",
+        inset: 0,
+        width: "100%",
+        overflowY: "auto",
+        overflowX: "hidden",
         backgroundColor: "#0a0a0a", // Dark theme background from globals.css
         padding: "clamp(16px, 3vh, 40px) 20px",
         boxSizing: "border-box",
@@ -70,241 +142,87 @@ const Home = () => {
           width: "100%",
         }}
       >
-        {/* Rank 1 Button */}
-        <button
-          style={{
-            width: "clamp(280px, 28vw, 380px)",
-            height: "clamp(280px, 28vw, 380px)",
-            borderRadius: "16px",
-            backgroundColor: "#1a1a1a",
-            border:
-              hoveredButton === "rank1"
-                ? "4px solid #3b82f6"
-                : "4px solid #2a2a2a",
-            boxShadow:
-              hoveredButton === "rank1"
-                ? "0 20px 25px -5px rgba(59, 130, 246, 0.3), 0 10px 10px -5px rgba(59, 130, 246, 0.2)"
-                : "0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2)",
-            cursor: "pointer",
-            transition: "all 0.3s ease",
-            transform: hoveredButton === "rank1" ? "scale(1.05)" : "scale(1)",
-            overflow: "hidden",
-            padding: 0,
-          }}
-          onClick={() => router.push("/rank1")}
-          onMouseEnter={() => setHoveredButton("rank1")}
-          onMouseLeave={() => setHoveredButton(null)}
-        >
-          <div
-            style={{
-              width: "100%",
-              height: "100%",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            <div
+        {cards.map((card) => {
+          const isHovered = hoveredButton === card.id;
+          return (
+            <button
+              key={card.id}
               style={{
-                flex: 1,
-                position: "relative",
-                backgroundColor: "#0a0a0a",
+                width: cardSize,
+                height: cardSize,
+                borderRadius: "16px",
+                backgroundColor: "#1a1a1a",
+                border: isHovered
+                  ? `4px solid ${card.borderColor}`
+                  : "4px solid #2a2a2a",
+                boxShadow: isHovered
+                  ? `0 20px 25px -5px rgba(${card.shadowColor}, 0.3), 0 10px 10px -5px rgba(${card.shadowColor}, 0.2)`
+                  : "0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2)",
+                cursor: "pointer",
+                transition: "all 0.3s ease",
+                transform: isHovered ? "scale(1.05)" : "scale(1)",
                 overflow: "hidden",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
+                padding: 0,
               }}
+              onClick={() => router.push(card.route)}
+              onMouseEnter={() => setHoveredButton(card.id)}
+              onMouseLeave={() => setHoveredButton(null)}
             >
-              <img
-                src={`${basePath}/rank1.gif`}
-                alt="Rank 1 Preview"
-                width={380}
-                height={300}
-                style={{ objectFit: "contain", width: "100%", height: "100%" }}
-              />
-            </div>
-            <div
-              style={{
-                height: "clamp(50px, 18%, 70px)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                background:
-                  hoveredButton === "rank1"
-                    ? "linear-gradient(to right, #2563eb, #1d4ed8)"
-                    : "linear-gradient(to right, #3b82f6, #2563eb)",
-                transition: "background 0.3s ease",
-              }}
-            >
-              <span
+              <div
                 style={{
-                  fontSize: "clamp(16px, 2.5vw, 22px)",
-                  fontWeight: "bold",
-                  color: "white",
+                  width: "100%",
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
                 }}
               >
-                Rank 1
-              </span>
-            </div>
-          </div>
-        </button>
-
-        {/* Rank 2 Button */}
-        <button
-          style={{
-            width: "clamp(280px, 28vw, 380px)",
-            height: "clamp(280px, 28vw, 380px)",
-            borderRadius: "16px",
-            backgroundColor: "#1a1a1a",
-            border:
-              hoveredButton === "rank2"
-                ? "4px solid #8b5cf6"
-                : "4px solid #2a2a2a",
-            boxShadow:
-              hoveredButton === "rank2"
-                ? "0 20px 25px -5px rgba(139, 92, 246, 0.3), 0 10px 10px -5px rgba(139, 92, 246, 0.2)"
-                : "0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2)",
-            cursor: "pointer",
-            transition: "all 0.3s ease",
-            transform: hoveredButton === "rank2" ? "scale(1.05)" : "scale(1)",
-            overflow: "hidden",
-            padding: 0,
-          }}
-          onClick={() => router.push("/rank2")}
-          onMouseEnter={() => setHoveredButton("rank2")}
-          onMouseLeave={() => setHoveredButton(null)}
-        >
-          <div
-            style={{
-              width: "100%",
-              height: "100%",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            <div
-              style={{
-                flex: 1,
-                position: "relative",
-                backgroundColor: "#0a0a0a",
-                overflow: "hidden",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <img
-                src={`${basePath}/rank2.gif`}
-                alt="Rank 2 Preview"
-                width={380}
-                height={300}
-                style={{ objectFit: "contain", width: "100%", height: "100%" }}
-              />
-            </div>
-            <div
-              style={{
-                height: "clamp(50px, 18%, 70px)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                background:
-                  hoveredButton === "rank2"
-                    ? "linear-gradient(to right, #7c3aed, #6d28d9)"
-                    : "linear-gradient(to right, #8b5cf6, #7c3aed)",
-                transition: "background 0.3s ease",
-              }}
-            >
-              <span
-                style={{
-                  fontSize: "clamp(16px, 2.5vw, 22px)",
-                  fontWeight: "bold",
-                  color: "white",
-                }}
-              >
-                Rank 2
-              </span>
-            </div>
-          </div>
-        </button>
-
-        {/* Rank 3 Button */}
-        <button
-          style={{
-            width: "clamp(280px, 28vw, 380px)",
-            height: "clamp(280px, 28vw, 380px)",
-            borderRadius: "16px",
-            backgroundColor: "#1a1a1a",
-            border:
-              hoveredButton === "rank3"
-                ? "4px solid #800080"
-                : "4px solid #2a2a2a",
-            boxShadow:
-              hoveredButton === "rank3"
-                ? "0 20px 25px -5px rgba(128, 0, 128, 0.3), 0 10px 10px -5px rgba(128, 0, 128, 0.2)"
-                : "0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2)",
-            cursor: "pointer",
-            transition: "all 0.3s ease",
-            transform: hoveredButton === "rank3" ? "scale(1.05)" : "scale(1)",
-            overflow: "hidden",
-            padding: 0,
-          }}
-          onClick={() => router.push("/rank3")}
-          onMouseEnter={() => setHoveredButton("rank3")}
-          onMouseLeave={() => setHoveredButton(null)}
-        >
-          <div
-            style={{
-              width: "100%",
-              height: "100%",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            <div
-              style={{
-                flex: 1,
-                position: "relative",
-                backgroundColor: "#0a0a0a",
-                overflow: "hidden",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <img
-                src={`${basePath}/rank3.gif`}
-                alt="Rank 3 Preview"
-                width={380}
-                height={300}
-                style={{ objectFit: "contain", width: "100%", height: "100%" }}
-              />
-            </div>
-            <div
-              style={{
-                height: "clamp(50px, 18%, 70px)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                background:
-                  hoveredButton === "rank3"
-                    ? "linear-gradient(to right, #6a0080, #5a0070)"
-                    : "linear-gradient(to right, #800080, #6a0080)",
-                transition: "background 0.3s ease",
-              }}
-            >
-              <span
-                style={{
-                  fontSize: "clamp(16px, 2.5vw, 22px)",
-                  fontWeight: "bold",
-                  color: "white",
-                }}
-              >
-                Rank 3
-              </span>
-            </div>
-          </div>
-        </button>
+                <div
+                  style={{
+                    flex: 1,
+                    position: "relative",
+                    backgroundColor: "#0a0a0a",
+                    overflow: "hidden",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <img
+                    src={card.image}
+                    alt={card.alt}
+                    width={380}
+                    height={300}
+                    style={{ objectFit: "contain", width: "100%", height: "100%" }}
+                  />
+                </div>
+                <div
+                  style={{
+                    height: "clamp(50px, 18%, 70px)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    background: isHovered
+                      ? card.gradient.hover
+                      : card.gradient.idle,
+                    transition: "background 0.3s ease",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: "clamp(16px, 2.5vw, 22px)",
+                      fontWeight: "bold",
+                      color: "white",
+                    }}
+                  >
+                    {card.label}
+                  </span>
+                </div>
+              </div>
+            </button>
+          );
+        })}
+        
       </div>
-
       <div style={{ marginTop: "clamp(16px, 2.5vh, 32px)", textAlign: "center" }}>
         <p style={{ color: "#e0e0e0", fontSize: "clamp(13px, 1.6vw, 16px)" }}>
           Click on a rank to start exploring!

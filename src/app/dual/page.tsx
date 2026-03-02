@@ -3,12 +3,12 @@ import React from "react";
 
 import Interface from "../_components/Interface";
 
-const Demo = () => {
+const Dual = () => {
   return (
     <div className="cayley">
-      <Interface defaultShape="rect" showDemoTransforms />
+      <Interface defaultShape="rect" showDualTransforms />
     </div>
   );
 };
 
-export default Demo;
+export default Dual;
