@@ -22,7 +22,7 @@ import {
   greedyNielsenSteps3,
 } from "../utils/greedyNielsen";
 import { useRouter } from "next/navigation";
-import { setSoundEnabled as setSoundEnabledGlobal } from "../utils/soundManager";
+import { setSoundEnabled as setSoundEnabledGlobal, playBackgroundAudioLoop, stopBackgroundAudioLoop } from "../utils/soundManager";
 
 // Support both rank 2 and rank 3
 type Direction2 = "up" | "down" | "left" | "right";
@@ -154,9 +154,21 @@ const Interface = ({
 
   // Settings state: edge thickness, vertex size, theme and settings panel visibility
   const [edgeThickness, setEdgeThickness] = useState<number>(0.7);
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [theme, setTheme] = useState<"dark" | "light">(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("theme");
+      return (saved === "light" || saved === "dark") ? saved : "dark";
+    }
+    return "dark";
+  });
   const [showSettings, setShowSettings] = useState<boolean>(false);
-  const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(() => {
+      if (typeof window !== "undefined") {
+          const saved = localStorage.getItem("soundEnabled");
+          return saved !== null ? saved === "true" : true;
+      }
+      return true;
+  });
 
   //Welcome screen state
   const [showWelcome, setShowWelcome] = useState(true);
@@ -165,6 +177,25 @@ const Interface = ({
   const [tutorialStep, setTutorialStep] = useState<number>(1);
   const [tutorialActive, setTutorialActive] = useState<boolean>(false);
   const [tutorialCompleted, setTutorialCompleted] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("soundEnabled", String(soundEnabled));
+      // Add this line to save the theme:
+      localStorage.setItem("theme", theme);
+    }
+
+    if (soundEnabled) {
+      playBackgroundAudioLoop();
+    } else {
+      stopBackgroundAudioLoop();
+    }
+
+    return () => {
+      stopBackgroundAudioLoop();
+    };
+  }, [soundEnabled, theme]); 
+
 
   // ========== RANK3 TUTORIAL: Define tutorial steps for Rank 3 ==========
   // Rank 3 Tutorial Steps (6 steps total)
@@ -1941,6 +1972,11 @@ const Interface = ({
           dragFromIndex={dragFromIndex}
           dragHoverIndex={dragHoverIndex}
           hoverPathIndex={hoverPathIndex}
+          onPathDragStart={handleDragStart}
+          onPathDragHover={handleDragHover}
+          onPathDragLeave={handleDragLeave}
+          onPathDragEnd={handleDragEnd}
+          onPathDropConcatenate={concatenate}
         />
 
         <Pathlist
