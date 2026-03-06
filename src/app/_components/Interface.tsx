@@ -80,13 +80,13 @@ const Interface = ({
 
   const moveToToken2 = (move: Direction2): Token2 => {
     switch (move) {
-      case "up":
-        return "a";
-      case "down":
-        return "a^-";
       case "right":
-        return "b";
+        return "a";
       case "left":
+        return "a^-";
+      case "up":
+        return "b";
+      case "down":
         return "b^-";
     }
   };
@@ -94,13 +94,13 @@ const Interface = ({
   const tokenToMove2 = (token: Token2): Direction2 => {
     switch (token) {
       case "a":
-        return "up";
-      case "a^-":
-        return "down";
-      case "b":
         return "right";
-      case "b^-":
+      case "a^-":
         return "left";
+      case "b":
+        return "up";
+      case "b^-":
+        return "down";
     }
   };
 
@@ -233,6 +233,17 @@ const Interface = ({
 
   // Hover state for path highlighting
   const [hoverPathIndex, setHoverPathIndex] = useState<number>(-1);
+
+  // Stepped dual transform state
+  type TransformSnapshot = {
+    moves: Direction2[][];
+    nodes: string[][];
+    edges: string[][];
+  };
+  const [steppedMode, setSteppedMode] = useState<boolean>(false);
+  const [steppedTransformActive, setSteppedTransformActive] = useState<boolean>(false);
+  const [transformSteps, setTransformSteps] = useState<TransformSnapshot[]>([]);
+  const [transformStepIndex, setTransformStepIndex] = useState<number>(0);
 
   //
   //
@@ -929,8 +940,12 @@ const Interface = ({
   };
 
   ////////////// GeneratePath for Game //////////////////////
+  const defaultRank2Generators: Direction2[][] = [["right"], ["up"]];
+
   const moveRecordsRef = useRef<Direction[][]>(
-    isRank3 ? [["up"], ["right-up"], ["right-down"]] : [["up"], ["right"]]
+    isRank3
+      ? [["up"], ["right-up"], ["right-down"]]
+      : defaultRank2Generators
   );
   const nodePathsRef = useRef<string[][]>([]);
   const edgePathsRef = useRef<string[][]>([]);
@@ -1181,7 +1196,7 @@ const Interface = ({
     // Reset refs - start with default generators based on rank
     moveRecordsRef.current = isRank3
       ? [["up"], ["right-up"], ["right-down"]]
-      : [["up"], ["right"]];
+      : defaultRank2Generators;
     nodePathsRef.current = [];
     edgePathsRef.current = [];
     //generate additional
@@ -1273,7 +1288,7 @@ const Interface = ({
     // Reset refs - start with default generators based on rank
     moveRecordsRef.current = isRank3
       ? [["up"], ["right-up"], ["right-down"]]
-      : [["up"], ["right"]];
+      : defaultRank2Generators;
     nodePathsRef.current = [];
     edgePathsRef.current = [];
     //generate additional
@@ -1529,7 +1544,7 @@ const Interface = ({
       //if empty, generate default words based on rank
       bases = isRank3
         ? [["up"], ["right-up"], ["right-down"]]
-        : [["up"], ["right"]];
+        : defaultRank2Generators;
     }
 
     if (n < bases.length) {
@@ -1626,13 +1641,13 @@ const Interface = ({
     while (i < b.length) {
       const c = b[i];
       if (i + 1 < b.length && b[i + 1] === "-") {
-        if (c === "a") newbase.push(isRank3 ? "down" : "down");
-        else if (c === "b") newbase.push(isRank3 ? "left-down" : "left");
+        if (c === "a") newbase.push(isRank3 ? "down" : "left");
+        else if (c === "b") newbase.push(isRank3 ? "left-down" : "down");
         else if (c === "c" && isRank3) newbase.push("left-up");
         i += 2;
       } else {
-        if (c === "a") newbase.push("up");
-        else if (c === "b") newbase.push(isRank3 ? "right-up" : "right");
+        if (c === "a") newbase.push(isRank3 ? "up" : "right");
+        else if (c === "b") newbase.push(isRank3 ? "right-up" : "up");
         else if (c === "c" && isRank3) newbase.push("right-down");
         i += 1;
       }
@@ -1657,6 +1672,12 @@ const Interface = ({
   const applyDualATransform = (replacement: Token2[]) => {
     if (isRank3) return;
 
+    // If stepped mode is on, precompute all intermediate states
+    if (steppedMode) {
+      startSteppedTransform(replacement);
+      return;
+    }
+
     setMoveRecords((prev) => {
       const next = prev.map((path) => {
         const tokens = (path as Direction2[]).map(moveToToken2);
@@ -1680,6 +1701,96 @@ const Interface = ({
       return next as any;
     });
   };
+
+  // --- Stepped dual transform helpers ---
+  const startSteppedTransform = (replacement: Token2[]) => {
+    const currentPaths = moveRecords as Direction2[][];
+    const allPathTokens = currentPaths.map((path) =>
+      path.map(moveToToken2)
+    );
+
+    // Count total "a" tokens across all paths
+    let totalAs = 0;
+    allPathTokens.forEach((tokens) => {
+      tokens.forEach((t) => { if (t === "a") totalAs++; });
+    });
+
+    if (totalAs === 0) return;
+
+    // Build intermediate snapshots: step 0 = original, step i = first i "a"s replaced
+    const steps: TransformSnapshot[] = [];
+
+    // Step 0: current state
+    steps.push({
+      moves: currentPaths.map((p) => [...p]),
+      nodes: nodePaths.map((n) => [...n]),
+      edges: edgePaths.map((e) => [...e]),
+    });
+
+    for (let step = 1; step <= totalAs; step++) {
+      let aCount = 0;
+      const newPathTokens = allPathTokens.map((tokens) =>
+        tokens.flatMap((token) => {
+          if (token === "a") {
+            aCount++;
+            if (aCount <= step) return replacement;
+          }
+          return [token];
+        })
+      );
+
+      const reducedMoves = newPathTokens.map((tokens) =>
+        reduceTokens2(tokens).map(tokenToMove2)
+      );
+
+      const newNodePaths: string[][] = [];
+      const newEdgePaths: string[][] = [];
+      reducedMoves.forEach((moves) => {
+        const { newNodes, newEdges } = buildNodesEdges(moves as any);
+        newNodePaths.push(newNodes);
+        newEdgePaths.push(newEdges);
+      });
+
+      steps.push({ moves: reducedMoves, nodes: newNodePaths, edges: newEdgePaths });
+    }
+
+    setTransformSteps(steps);
+    setTransformStepIndex(0);
+    setSteppedTransformActive(true);
+  };
+
+  const steppedTransformNext = () => {
+    if (!steppedTransformActive || transformSteps.length === 0) return;
+    const nextIdx = Math.min(transformStepIndex + 1, transformSteps.length - 1);
+    applySteppedState(nextIdx);
+    if (nextIdx === transformSteps.length - 1) {
+      finishSteppedTransform(nextIdx);
+    }
+  };
+
+  const steppedTransformSkip = () => {
+    if (!steppedTransformActive || transformSteps.length === 0) return;
+    const lastIdx = transformSteps.length - 1;
+    applySteppedState(lastIdx);
+    finishSteppedTransform(lastIdx);
+  };
+
+  const applySteppedState = (idx: number) => {
+    const snapshot = transformSteps[idx];
+    setMoveRecords(snapshot.moves as any);
+    setNodePaths(snapshot.nodes);
+    setEdgePaths(snapshot.edges);
+    setTransformStepIndex(idx);
+  };
+
+  const finishSteppedTransform = (idx: number) => {
+    const snapshot = transformSteps[idx];
+    setTargetSteps(greedyNielsenStepsFunc(snapshot.moves as any));
+    setSteppedTransformActive(false);
+    setTransformSteps([]);
+    setTransformStepIndex(0);
+  };
+  // --- End stepped dual transform helpers ---
   //
   //
   //
@@ -1944,6 +2055,13 @@ const Interface = ({
           }
           isRank3={isRank3}
           dualTransforms={dualTransforms}
+          steppedMode={steppedMode}
+          onSteppedModeChange={setSteppedMode}
+          steppedTransformActive={steppedTransformActive}
+          steppedTransformStepIndex={transformStepIndex}
+          steppedTransformTotalSteps={transformSteps.length}
+          onSteppedNext={steppedTransformNext}
+          onSteppedSkip={steppedTransformSkip}
         />
         <Pathterminal
           pathIndex={pathIndex}
@@ -3605,12 +3723,12 @@ const Interface = ({
    while (i < b.length) {
      const c = b[i];
      if (i + 1 < b.length && b[i + 1] === "-") {
-       if (c === "a") newbase.push("down");
-       else if (c === "b") newbase.push("left");
+       if (c === "a") newbase.push("left");
+       else if (c === "b") newbase.push("down");
        i += 2;
      } else {
-       if (c === "a") newbase.push("up");
-       else if (c === "b") newbase.push("right");
+       if (c === "a") newbase.push("right");
+       else if (c === "b") newbase.push("up");
        i += 1;
      }
      //automatically cancel;
