@@ -9,10 +9,10 @@ function buildNodesEdgesFromMoves(moves: Direction[], startNode: string = "0,0")
     let next: [number, number] = [x, y];
     switch (dir) {
       case "up":
-        next = [x, y + 100.0 / 2 ** (newNodes.length - 1)];
+        next = [x, y - 100.0 / 2 ** (newNodes.length - 1)];
         break;
       case "down":
-        next = [x, y - 100.0 / 2 ** (newNodes.length - 1)];
+        next = [x, y + 100.0 / 2 ** (newNodes.length - 1)];
         break;
       case "left":
         next = [x - 100.0 / 2 ** (newNodes.length - 1), y];

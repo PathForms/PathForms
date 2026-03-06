@@ -20,10 +20,10 @@ type Direction = "up" | "down" | "left" | "right";
 type Direction3 = "up" | "down" | "left-up" | "right-down" | "left-down" | "right-up";
 
 const translation2: Record<Direction, string> = {
- up: "a",
- down: "a\u207B\u00B9", // a^-1
- right: "b",
- left: "b\u207B\u00B9",
+ up: "b",
+ down: "b\u207B\u00B9", // b^-1
+ right: "a",
+ left: "a\u207B\u00B9",
 };
 
 const translation3: Record<Direction3, string> = {
@@ -98,7 +98,9 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
   dualTransforms,
 }) => {
   // Use appropriate translation based on rank
-  const translation = isRank3 ? translation3 : translation2;
+  const translation = isRank3
+    ? translation3
+    : translation2;
   const helpTextRand = isRank3
     ? "Generates words in the full free group using the default basis (a,b,c) and random moves in all directions. Always reducible to the standard basis."
     : "Generates words in the full free group using the default basis (a,b) and random moves in all directions. Always reducible to the standard basis.";
