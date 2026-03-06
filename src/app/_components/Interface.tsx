@@ -234,6 +234,17 @@ const Interface = ({
   // Hover state for path highlighting
   const [hoverPathIndex, setHoverPathIndex] = useState<number>(-1);
 
+  // Stepped dual transform state
+  type TransformSnapshot = {
+    moves: Direction2[][];
+    nodes: string[][];
+    edges: string[][];
+  };
+  const [steppedMode, setSteppedMode] = useState<boolean>(false);
+  const [steppedTransformActive, setSteppedTransformActive] = useState<boolean>(false);
+  const [transformSteps, setTransformSteps] = useState<TransformSnapshot[]>([]);
+  const [transformStepIndex, setTransformStepIndex] = useState<number>(0);
+
   //
   //
   //
@@ -1661,6 +1672,12 @@ const Interface = ({
   const applyDualATransform = (replacement: Token2[]) => {
     if (isRank3) return;
 
+    // If stepped mode is on, precompute all intermediate states
+    if (steppedMode) {
+      startSteppedTransform(replacement);
+      return;
+    }
+
     setMoveRecords((prev) => {
       const next = prev.map((path) => {
         const tokens = (path as Direction2[]).map(moveToToken2);
@@ -1684,6 +1701,96 @@ const Interface = ({
       return next as any;
     });
   };
+
+  // --- Stepped dual transform helpers ---
+  const startSteppedTransform = (replacement: Token2[]) => {
+    const currentPaths = moveRecords as Direction2[][];
+    const allPathTokens = currentPaths.map((path) =>
+      path.map(moveToToken2)
+    );
+
+    // Count total "a" tokens across all paths
+    let totalAs = 0;
+    allPathTokens.forEach((tokens) => {
+      tokens.forEach((t) => { if (t === "a") totalAs++; });
+    });
+
+    if (totalAs === 0) return;
+
+    // Build intermediate snapshots: step 0 = original, step i = first i "a"s replaced
+    const steps: TransformSnapshot[] = [];
+
+    // Step 0: current state
+    steps.push({
+      moves: currentPaths.map((p) => [...p]),
+      nodes: nodePaths.map((n) => [...n]),
+      edges: edgePaths.map((e) => [...e]),
+    });
+
+    for (let step = 1; step <= totalAs; step++) {
+      let aCount = 0;
+      const newPathTokens = allPathTokens.map((tokens) =>
+        tokens.flatMap((token) => {
+          if (token === "a") {
+            aCount++;
+            if (aCount <= step) return replacement;
+          }
+          return [token];
+        })
+      );
+
+      const reducedMoves = newPathTokens.map((tokens) =>
+        reduceTokens2(tokens).map(tokenToMove2)
+      );
+
+      const newNodePaths: string[][] = [];
+      const newEdgePaths: string[][] = [];
+      reducedMoves.forEach((moves) => {
+        const { newNodes, newEdges } = buildNodesEdges(moves as any);
+        newNodePaths.push(newNodes);
+        newEdgePaths.push(newEdges);
+      });
+
+      steps.push({ moves: reducedMoves, nodes: newNodePaths, edges: newEdgePaths });
+    }
+
+    setTransformSteps(steps);
+    setTransformStepIndex(0);
+    setSteppedTransformActive(true);
+  };
+
+  const steppedTransformNext = () => {
+    if (!steppedTransformActive || transformSteps.length === 0) return;
+    const nextIdx = Math.min(transformStepIndex + 1, transformSteps.length - 1);
+    applySteppedState(nextIdx);
+    if (nextIdx === transformSteps.length - 1) {
+      finishSteppedTransform(nextIdx);
+    }
+  };
+
+  const steppedTransformSkip = () => {
+    if (!steppedTransformActive || transformSteps.length === 0) return;
+    const lastIdx = transformSteps.length - 1;
+    applySteppedState(lastIdx);
+    finishSteppedTransform(lastIdx);
+  };
+
+  const applySteppedState = (idx: number) => {
+    const snapshot = transformSteps[idx];
+    setMoveRecords(snapshot.moves as any);
+    setNodePaths(snapshot.nodes);
+    setEdgePaths(snapshot.edges);
+    setTransformStepIndex(idx);
+  };
+
+  const finishSteppedTransform = (idx: number) => {
+    const snapshot = transformSteps[idx];
+    setTargetSteps(greedyNielsenStepsFunc(snapshot.moves as any));
+    setSteppedTransformActive(false);
+    setTransformSteps([]);
+    setTransformStepIndex(0);
+  };
+  // --- End stepped dual transform helpers ---
   //
   //
   //
@@ -1948,6 +2055,13 @@ const Interface = ({
           }
           isRank3={isRank3}
           dualTransforms={dualTransforms}
+          steppedMode={steppedMode}
+          onSteppedModeChange={setSteppedMode}
+          steppedTransformActive={steppedTransformActive}
+          steppedTransformStepIndex={transformStepIndex}
+          steppedTransformTotalSteps={transformSteps.length}
+          onSteppedNext={steppedTransformNext}
+          onSteppedSkip={steppedTransformSkip}
         />
         <Pathterminal
           pathIndex={pathIndex}
