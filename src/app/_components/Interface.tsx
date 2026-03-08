@@ -17,10 +17,12 @@ import buildNodesEdgesFromMoves3, {
 } from "../utils/buildNodesEdgesFromMoves3";
 import next from "next";
 import Steps from "./Steps";
-import { greedyNielsenSteps } from "../utils/greedyNielsen";
-import { greedyNielsenSteps3 } from "../utils/greedyNielsen3";
+import {
+  greedyNielsenSteps,
+  greedyNielsenSteps3,
+} from "../utils/greedyNielsen";
 import { useRouter } from "next/navigation";
-import { setSoundEnabled as setSoundEnabledGlobal } from "../utils/soundManager";
+import { setSoundEnabled as setSoundEnabledGlobal, playBackgroundAudioLoop, stopBackgroundAudioLoop } from "../utils/soundManager";
 
 // Support both rank 2 and rank 3
 type Direction2 = "up" | "down" | "left" | "right";
@@ -51,9 +53,13 @@ const oppositeMoves3: Record<Direction3, Direction3> = {
 
 interface InterfaceProps {
   defaultShape?: string;
+  showDualTransforms?: boolean;
 }
 
-const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
+const Interface = ({
+  defaultShape = "circle",
+  showDualTransforms = false,
+}: InterfaceProps = {}) => {
   const rank = getRank(defaultShape);
   const isRank3 = rank === 3;
 
@@ -69,6 +75,60 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
   const greedyNielsenStepsFunc = isRank3
     ? greedyNielsenSteps3
     : greedyNielsenSteps;
+
+  type Token2 = "a" | "a^-" | "b" | "b^-";
+
+  const moveToToken2 = (move: Direction2): Token2 => {
+    switch (move) {
+      case "right":
+        return "a";
+      case "left":
+        return "a^-";
+      case "up":
+        return "b";
+      case "down":
+        return "b^-";
+    }
+  };
+
+  const tokenToMove2 = (token: Token2): Direction2 => {
+    switch (token) {
+      case "a":
+        return "right";
+      case "a^-":
+        return "left";
+      case "b":
+        return "up";
+      case "b^-":
+        return "down";
+    }
+  };
+
+  const invertToken2 = (token: Token2): Token2 => {
+    switch (token) {
+      case "a":
+        return "a^-";
+      case "a^-":
+        return "a";
+      case "b":
+        return "b^-";
+      case "b^-":
+        return "b";
+    }
+  };
+
+  const reduceTokens2 = (tokens: Token2[]): Token2[] => {
+    const stack: Token2[] = [];
+    tokens.forEach((token) => {
+      const last = stack[stack.length - 1];
+      if (last && invertToken2(last) === token) {
+        stack.pop();
+      } else {
+        stack.push(token);
+      }
+    });
+    return stack;
+  };
 
   // State for storing historical paths & cayley graph rendering
   const [pathIndex, setPathIndex] = useState<number[]>([]); // index of paths to show on the Cayley graph;
@@ -94,9 +154,21 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
 
   // Settings state: edge thickness, vertex size, theme and settings panel visibility
   const [edgeThickness, setEdgeThickness] = useState<number>(0.7);
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [theme, setTheme] = useState<"dark" | "light">(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("theme");
+      return (saved === "light" || saved === "dark") ? saved : "dark";
+    }
+    return "dark";
+  });
   const [showSettings, setShowSettings] = useState<boolean>(false);
-  const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(() => {
+      if (typeof window !== "undefined") {
+          const saved = localStorage.getItem("soundEnabled");
+          return saved !== null ? saved === "true" : true;
+      }
+      return true;
+  });
 
   //Welcome screen state
   const [showWelcome, setShowWelcome] = useState(true);
@@ -105,6 +177,25 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
   const [tutorialStep, setTutorialStep] = useState<number>(1);
   const [tutorialActive, setTutorialActive] = useState<boolean>(false);
   const [tutorialCompleted, setTutorialCompleted] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("soundEnabled", String(soundEnabled));
+      // Add this line to save the theme:
+      localStorage.setItem("theme", theme);
+    }
+
+    if (soundEnabled) {
+      playBackgroundAudioLoop();
+    } else {
+      stopBackgroundAudioLoop();
+    }
+
+    return () => {
+      stopBackgroundAudioLoop();
+    };
+  }, [soundEnabled, theme]); 
+
 
   // ========== RANK3 TUTORIAL: Define tutorial steps for Rank 3 ==========
   // Rank 3 Tutorial Steps (6 steps total)
@@ -116,6 +207,7 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
     "Drag Path 3 and put it on Path 2 to concatenate Path 3 after Path 2.",
     "Now try to reduce all paths to their simplest form using invert and concatenate operations!",
   ];
+
   // ========== END RANK3 TUTORIAL STEPS ==========
 
   // Steps state
@@ -138,6 +230,20 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
       moves: Direction[];
     };
   } | null>(null);
+
+  // Hover state for path highlighting
+  const [hoverPathIndex, setHoverPathIndex] = useState<number>(-1);
+
+  // Stepped dual transform state
+  type TransformSnapshot = {
+    moves: Direction2[][];
+    nodes: string[][];
+    edges: string[][];
+  };
+  const [steppedMode, setSteppedMode] = useState<boolean>(false);
+  const [steppedTransformActive, setSteppedTransformActive] = useState<boolean>(false);
+  const [transformSteps, setTransformSteps] = useState<TransformSnapshot[]>([]);
+  const [transformStepIndex, setTransformStepIndex] = useState<number>(0);
 
   //
   //
@@ -834,8 +940,12 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
   };
 
   ////////////// GeneratePath for Game //////////////////////
+  const defaultRank2Generators: Direction2[][] = [["right"], ["up"]];
+
   const moveRecordsRef = useRef<Direction[][]>(
-    isRank3 ? [["up"], ["right-up"], ["right-down"]] : [["up"], ["right"]]
+    isRank3
+      ? [["up"], ["right-up"], ["right-down"]]
+      : defaultRank2Generators
   );
   const nodePathsRef = useRef<string[][]>([]);
   const edgePathsRef = useRef<string[][]>([]);
@@ -1086,7 +1196,7 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
     // Reset refs - start with default generators based on rank
     moveRecordsRef.current = isRank3
       ? [["up"], ["right-up"], ["right-down"]]
-      : [["up"], ["right"]];
+      : defaultRank2Generators;
     nodePathsRef.current = [];
     edgePathsRef.current = [];
     //generate additional
@@ -1178,7 +1288,7 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
     // Reset refs - start with default generators based on rank
     moveRecordsRef.current = isRank3
       ? [["up"], ["right-up"], ["right-down"]]
-      : [["up"], ["right"]];
+      : defaultRank2Generators;
     nodePathsRef.current = [];
     edgePathsRef.current = [];
     //generate additional
@@ -1434,7 +1544,7 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
       //if empty, generate default words based on rank
       bases = isRank3
         ? [["up"], ["right-up"], ["right-down"]]
-        : [["up"], ["right"]];
+        : defaultRank2Generators;
     }
 
     if (n < bases.length) {
@@ -1531,13 +1641,13 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
     while (i < b.length) {
       const c = b[i];
       if (i + 1 < b.length && b[i + 1] === "-") {
-        if (c === "a") newbase.push(isRank3 ? "down" : "down");
-        else if (c === "b") newbase.push(isRank3 ? "left-down" : "left");
+        if (c === "a") newbase.push(isRank3 ? "down" : "left");
+        else if (c === "b") newbase.push(isRank3 ? "left-down" : "down");
         else if (c === "c" && isRank3) newbase.push("left-up");
         i += 2;
       } else {
-        if (c === "a") newbase.push("up");
-        else if (c === "b") newbase.push(isRank3 ? "right-up" : "right");
+        if (c === "a") newbase.push(isRank3 ? "up" : "right");
+        else if (c === "b") newbase.push(isRank3 ? "right-up" : "up");
         else if (c === "c" && isRank3) newbase.push("right-down");
         i += 1;
       }
@@ -1558,6 +1668,129 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
   const clearBase = () => {
     setBases([]);
   };
+
+  const applyDualATransform = (replacement: Token2[]) => {
+    if (isRank3) return;
+
+    // If stepped mode is on, precompute all intermediate states
+    if (steppedMode) {
+      startSteppedTransform(replacement);
+      return;
+    }
+
+    setMoveRecords((prev) => {
+      const next = prev.map((path) => {
+        const tokens = (path as Direction2[]).map(moveToToken2);
+        const transformed = reduceTokens2(
+          tokens.flatMap((token) => (token === "a" ? replacement : [token]))
+        );
+        return transformed.map(tokenToMove2);
+      });
+
+      const newNodePaths: string[][] = [];
+      const newEdgePaths: string[][] = [];
+      next.forEach((moves) => {
+        const { newNodes, newEdges } = buildNodesEdges(moves as any);
+        newNodePaths.push(newNodes);
+        newEdgePaths.push(newEdges);
+      });
+
+      setNodePaths(newNodePaths);
+      setEdgePaths(newEdgePaths);
+      setTargetSteps(greedyNielsenStepsFunc(next as any));
+      return next as any;
+    });
+  };
+
+  // --- Stepped dual transform helpers ---
+  const startSteppedTransform = (replacement: Token2[]) => {
+    const currentPaths = moveRecords as Direction2[][];
+    const allPathTokens = currentPaths.map((path) =>
+      path.map(moveToToken2)
+    );
+
+    // Count total "a" tokens across all paths
+    let totalAs = 0;
+    allPathTokens.forEach((tokens) => {
+      tokens.forEach((t) => { if (t === "a") totalAs++; });
+    });
+
+    if (totalAs === 0) return;
+
+    // Build intermediate snapshots: step 0 = original, step i = first i "a"s replaced
+    const steps: TransformSnapshot[] = [];
+
+    // Step 0: current state
+    steps.push({
+      moves: currentPaths.map((p) => [...p]),
+      nodes: nodePaths.map((n) => [...n]),
+      edges: edgePaths.map((e) => [...e]),
+    });
+
+    for (let step = 1; step <= totalAs; step++) {
+      let aCount = 0;
+      const newPathTokens = allPathTokens.map((tokens) =>
+        tokens.flatMap((token) => {
+          if (token === "a") {
+            aCount++;
+            if (aCount <= step) return replacement;
+          }
+          return [token];
+        })
+      );
+
+      const reducedMoves = newPathTokens.map((tokens) =>
+        reduceTokens2(tokens).map(tokenToMove2)
+      );
+
+      const newNodePaths: string[][] = [];
+      const newEdgePaths: string[][] = [];
+      reducedMoves.forEach((moves) => {
+        const { newNodes, newEdges } = buildNodesEdges(moves as any);
+        newNodePaths.push(newNodes);
+        newEdgePaths.push(newEdges);
+      });
+
+      steps.push({ moves: reducedMoves, nodes: newNodePaths, edges: newEdgePaths });
+    }
+
+    setTransformSteps(steps);
+    setTransformStepIndex(0);
+    setSteppedTransformActive(true);
+  };
+
+  const steppedTransformNext = () => {
+    if (!steppedTransformActive || transformSteps.length === 0) return;
+    const nextIdx = Math.min(transformStepIndex + 1, transformSteps.length - 1);
+    applySteppedState(nextIdx);
+    if (nextIdx === transformSteps.length - 1) {
+      finishSteppedTransform(nextIdx);
+    }
+  };
+
+  const steppedTransformSkip = () => {
+    if (!steppedTransformActive || transformSteps.length === 0) return;
+    const lastIdx = transformSteps.length - 1;
+    applySteppedState(lastIdx);
+    finishSteppedTransform(lastIdx);
+  };
+
+  const applySteppedState = (idx: number) => {
+    const snapshot = transformSteps[idx];
+    setMoveRecords(snapshot.moves as any);
+    setNodePaths(snapshot.nodes);
+    setEdgePaths(snapshot.edges);
+    setTransformStepIndex(idx);
+  };
+
+  const finishSteppedTransform = (idx: number) => {
+    const snapshot = transformSteps[idx];
+    setTargetSteps(greedyNielsenStepsFunc(snapshot.moves as any));
+    setSteppedTransformActive(false);
+    setTransformSteps([]);
+    setTransformStepIndex(0);
+  };
+  // --- End stepped dual transform helpers ---
   //
   //
   //
@@ -1736,6 +1969,42 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
       setPreviewPath(null);
     }
   };
+
+  ///////////////// Hover functions ///////////////////
+  const handlePathHover = (pathIndex: number) => {
+    setHoverPathIndex(pathIndex);
+  };
+
+  const handlePathLeave = () => {
+    setHoverPathIndex(-1);
+  };
+
+  const dualTransforms =
+    showDualTransforms && !isRank3
+      ? [
+          {
+            id: "a-to-ab",
+            label: "a to ab",
+            onClick: () => applyDualATransform(["a", "b"]),
+          },
+          {
+            id: "a-to-ab-inv",
+            label: "a to ab^-1",
+            onClick: () => applyDualATransform(["a", "b^-"]),
+          },
+          {
+            id: "a-to-ba",
+            label: "a to ba",
+            onClick: () => applyDualATransform(["b", "a"]),
+          },
+          {
+            id: "a-to-b-inv-a",
+            label: "a to b^-1a",
+            onClick: () => applyDualATransform(["b^-", "a"]),
+          },
+        ]
+      : undefined;
+
   return (
     <>
       {showWelcome && (
@@ -1785,6 +2054,14 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
               : "No specified bases, default generators a,b."
           }
           isRank3={isRank3}
+          dualTransforms={dualTransforms}
+          steppedMode={steppedMode}
+          onSteppedModeChange={setSteppedMode}
+          steppedTransformActive={steppedTransformActive}
+          steppedTransformStepIndex={transformStepIndex}
+          steppedTransformTotalSteps={transformSteps.length}
+          onSteppedNext={steppedTransformNext}
+          onSteppedSkip={steppedTransformSkip}
         />
         <Pathterminal
           pathIndex={pathIndex}
@@ -1812,6 +2089,12 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
           isDragging={isDragging}
           dragFromIndex={dragFromIndex}
           dragHoverIndex={dragHoverIndex}
+          hoverPathIndex={hoverPathIndex}
+          onPathDragStart={handleDragStart}
+          onPathDragHover={handleDragHover}
+          onPathDragLeave={handleDragLeave}
+          onPathDragEnd={handleDragEnd}
+          onPathDropConcatenate={concatenate}
         />
 
         <Pathlist
@@ -1833,6 +2116,9 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
           dragFromIndex={dragFromIndex}
           dragHoverIndex={dragHoverIndex}
           theme={theme}
+          onPathHover={handlePathHover}
+          onPathLeave={handlePathLeave}
+          hoverPathIndex={hoverPathIndex}
         />
         {/* ========== RANK3 TUTORIAL: Pass isRank3 to CheckNielsen ========== */}
         <CheckNielsen
@@ -3437,12 +3723,12 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
    while (i < b.length) {
      const c = b[i];
      if (i + 1 < b.length && b[i + 1] === "-") {
-       if (c === "a") newbase.push("down");
-       else if (c === "b") newbase.push("left");
+       if (c === "a") newbase.push("left");
+       else if (c === "b") newbase.push("down");
        i += 2;
      } else {
-       if (c === "a") newbase.push("up");
-       else if (c === "b") newbase.push("right");
+       if (c === "a") newbase.push("right");
+       else if (c === "b") newbase.push("up");
        i += 1;
      }
      //automatically cancel;
@@ -3765,7 +4051,11 @@ const Interface = ({ defaultShape = "circle" }: InterfaceProps = {}) => {
           steps={isRank3 ? rank3TutorialSteps : undefined}
         />
         {/* ========== END RANK3 TUTORIAL: Tutorial component ========== */}
-        <Steps optimalSteps={targetSteps} usedSteps={usedConcatSteps} theme={theme} />
+        <Steps
+          optimalSteps={targetSteps}
+          usedSteps={usedConcatSteps}
+          theme={theme}
+        />
         <button
           className={`${styles.homeButton} ${theme === "light" ? styles.light : ""}`}
           onClick={() => router.push("/")}

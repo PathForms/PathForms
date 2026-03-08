@@ -11,7 +11,7 @@ function buildNodesEdgesFromMoves3(moves: Direction3[], startNode: string = "0,0
     const dir = moves[i];
     const [x, y] = newNodes[newNodes.length - 1].split(",").map(Number);
     let next: [number, number] = [x, y];
-    const step = 100.0 / 2 ** (newNodes.length - 1);
+    const step = 100.0 / 3 ** (newNodes.length - 1);
     
     switch (dir) {
       case "up":

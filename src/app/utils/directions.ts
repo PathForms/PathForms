@@ -1,4 +1,5 @@
 // src/utils/directions.ts
+import { getRank2Color, getRank3Color } from "./colorConfig";
 
 /**
  * DirectionDef holds a label, its opposite, and a shared color.
@@ -10,22 +11,28 @@ export interface DirectionDef {
   color: string; // same color for a & a^-
 }
 
+/**
+ * Build rank 2 directions - colors from centralized config
+ */
 export function buildDirections2(): DirectionDef[] {
   return [
-    { label: "a", opposite: "a^-", color: "#1f77b4" },
-    { label: "b", opposite: "b^-", color: "#ff7f0e" },
-    { label: "a^-", opposite: "a", color: "#1f77b4" },
-    { label: "b^-", opposite: "b", color: "#ff7f0e" },
+    { label: "a", opposite: "a^-", color: getRank2Color("a") },
+    { label: "b", opposite: "b^-", color: getRank2Color("b") },
+    { label: "a^-", opposite: "a", color: getRank2Color("a^-") },
+    { label: "b^-", opposite: "b", color: getRank2Color("b^-") },
   ];
 }
 
+/**
+ * Build rank 3 directions - colors from centralized config
+ */
 export function buildDirections3(): DirectionDef[] {
   return [
-    { label: "a", opposite: "a^-", color: "#ff0000" }, // red
-    { label: "b", opposite: "b^-", color: "#00ff00" }, // green
-    { label: "c", opposite: "c^-", color: "#800080" }, // purple
-    { label: "a^-", opposite: "a", color: "#ff0000" }, // red
-    { label: "b^-", opposite: "b", color: "#00ff00" }, // green
-    { label: "c^-", opposite: "c", color: "#800080" }, // purple
+    { label: "a", opposite: "a^-", color: getRank3Color("a") },
+    { label: "b", opposite: "b^-", color: getRank3Color("b") },
+    { label: "c", opposite: "c^-", color: getRank3Color("c") },
+    { label: "a^-", opposite: "a", color: getRank3Color("a^-") },
+    { label: "b^-", opposite: "b", color: getRank3Color("b^-") },
+    { label: "c^-", opposite: "c", color: getRank3Color("c^-") },
   ];
 }

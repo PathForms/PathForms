@@ -1,5 +1,11 @@
-import { reduceMoves, concatenate, invert } from "./NielsenTrans";
-export type Direction = "up" | "down" | "left" | "right";
+import {
+  Direction,
+  Direction3,
+  concatenate,
+  invert,
+} from "./NielsenTrans";
+
+export type { Direction, Direction3 };
 
 /**
  * Computes the greedy Nielsen reduction step count for a set of already reduced paths.
@@ -11,15 +17,17 @@ export type Direction = "up" | "down" | "left" | "right";
  * @param initialPaths Array of free-reduced paths (words) to reduce
  * @returns Number of concatenation steps taken by the greedy algorithm
  */
-export function greedyNielsenSteps(initialPaths: Direction[][]): number {
+export function greedyNielsenSteps<T extends Direction | Direction3>(
+  initialPaths: T[][]
+): number {
   // Copy inputs to avoid mutating original arrays
-  let paths = initialPaths.map(path => [...path]);
+  let paths = initialPaths.map((path) => [...path]);
   let steps = 0;
 
   while (true) {
     let bestDelta = 0;
     let bestIndex = -1;
-    let bestConcatPath: Direction[] = [];
+    let bestConcatPath: T[] = [];
 
     // Try all ordered pairs (i, j) with i != j
     for (let i = 0; i < paths.length; i++) {
@@ -31,15 +39,17 @@ export function greedyNielsenSteps(initialPaths: Direction[][]): number {
         // 2) invert(path_i) + path_j
         // 3) path_i + invert(path_j)
         // 4) invert(path_i) + invert(path_j)
-        const variants: Direction[][] = [
+        const variants: T[][] = [
           concatenate(paths[i], paths[j]),
           concatenate(invert(paths[i]), paths[j]),
           concatenate(paths[i], invert(paths[j])),
-          concatenate(invert(paths[i]), invert(paths[j]))
+          concatenate(invert(paths[i]), invert(paths[j])),
         ];
 
         // Choose the shortest result among variants
-        let candidate = variants.reduce((a, b) => a.length <= b.length ? a : b);
+        let candidate = variants.reduce((a, b) =>
+          a.length <= b.length ? a : b
+        );
         const delta = paths[i].length - candidate.length;
 
         if (delta > bestDelta) {
@@ -60,3 +70,6 @@ export function greedyNielsenSteps(initialPaths: Direction[][]): number {
 
   return steps;
 }
+
+// Convenience aliases for backwards compatibility
+export const greedyNielsenSteps3 = greedyNielsenSteps;

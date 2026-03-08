@@ -12,6 +12,7 @@ const directions = {
   left: { dx: -1, dy: 0, opposite: "right" },
 };
 type DirKey = keyof typeof directions;
+const PATH_LABEL_SELECTOR = "[data-path-label-index]";
 
 interface TreeNode {
   name: string;
@@ -53,6 +54,7 @@ interface LayoutNode {
   id: string;
   x: number;
   y: number;
+  depth?: number;
 }
 
 interface LayoutLink {
@@ -87,7 +89,12 @@ interface CayleyTreeProps {
   isDragging?: boolean;
   dragFromIndex?: number;
   dragHoverIndex?: number;
-  theme: "dark" | "light";
+  hoverPathIndex?: number;
+  onPathDragStart?: (fromIndex: number) => void;
+  onPathDragHover?: (toIndex: number) => void;
+  onPathDragLeave?: () => void;
+  onPathDragEnd?: () => void;
+  onPathDropConcatenate?: (targetIndex: number, draggedIndex: number) => void;
 }
 
 const CayleyTree: React.FC<CayleyTreeProps> = ({
@@ -100,13 +107,28 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
   isDragging = false,
   dragFromIndex = -1,
   dragHoverIndex = -1,
-  theme
+  hoverPathIndex = -1,
+  onPathDragStart,
+  onPathDragHover,
+  onPathDragLeave,
+  onPathDragEnd,
+  onPathDropConcatenate,
 }) => {
   const [nodes, setNodes] = useState<LayoutNode[]>([]);
   const [links, setLinks] = useState<LayoutLink[]>([]);
+  const [dragGhostPos, setDragGhostPos] = useState<{ x: number; y: number } | null>(
+    null
+  );
 
   const svgRef = useRef<SVGSVGElement | null>(null);
   const gRef = useRef<SVGGElement | null>(null);
+  const graphDragFromRef = useRef<number | null>(null);
+  const graphDragPointerIdRef = useRef<number | null>(null);
+  const isDraggingRef = useRef(false);
+
+  useEffect(() => {
+    isDraggingRef.current = isDragging;
+  }, [isDragging]);
 
   useEffect(() => {
     // Use smaller depth for hexagon (rank 3) to avoid performance issues
@@ -134,6 +156,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
           id: d.data.name,
           x: rX * Math.cos(angle),
           y: rY * Math.sin(angle),
+          depth: d.depth,
         };
       });
 
@@ -179,6 +202,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
             id: d.data.name,
             x: 2.5 * x_,
             y: 2.5 * y_,
+            depth: d.depth,
           });
         }
       });
@@ -228,6 +252,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
             id: d.data.name,
             x: 2.5 * x_,
             y: 2.5 * y_,
+            depth: d.depth,
           });
         }
       });
@@ -269,6 +294,16 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
     const zoomBehavior = d3
       .zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.1, 10])
+      .filter((event) => {
+        // Disable pan/zoom while dragging paths so the graph does not move.
+        if (isDraggingRef.current || graphDragFromRef.current !== null) {
+          return false;
+        }
+        const e = event as PointerEvent | WheelEvent | MouseEvent;
+        if ("ctrlKey" in e && e.ctrlKey && e.type !== "wheel") return false;
+        if ("button" in e && e.button) return false;
+        return true;
+      })
       .on("zoom", (event) => {
         d3.select(gRef.current).attr("transform", event.transform.toString());
       });
@@ -280,6 +315,135 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
       `translate(${screenW / 2}, ${screenH / 2})`
     );
   }, [shape]);
+
+  const toGraphCoords = (
+    clientX: number,
+    clientY: number
+  ): { x: number; y: number } | null => {
+    const g = gRef.current;
+    const svg = svgRef.current;
+    if (!g || !svg) return null;
+    const ctm = g.getScreenCTM();
+    if (!ctm) return null;
+    const point = svg.createSVGPoint();
+    point.x = clientX;
+    point.y = clientY;
+    const transformed = point.matrixTransform(ctm.inverse());
+    return { x: transformed.x, y: transformed.y };
+  };
+
+  const getPathLabelIndexAtPoint = (clientX: number, clientY: number): number => {
+    const el = document.elementFromPoint(clientX, clientY) as HTMLElement | null;
+    const hit = el?.closest(PATH_LABEL_SELECTOR) as HTMLElement | null;
+    if (!hit) return -1;
+    const index = Number(hit.dataset.pathLabelIndex);
+    return Number.isFinite(index) ? index : -1;
+  };
+
+  const startGraphDrag = (idx: number, e: React.PointerEvent<SVGElement>) => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    e.stopPropagation();
+    graphDragFromRef.current = idx;
+    graphDragPointerIdRef.current = e.pointerId;
+    const graphPoint = toGraphCoords(e.clientX, e.clientY);
+    setDragGhostPos(graphPoint);
+    onPathDragStart?.(idx);
+  };
+
+  const findNodeById = (nodeId: string): LayoutNode | undefined => {
+    const exact = nodes.find((n) => n.id === nodeId);
+    if (exact) return exact;
+    const [targetX, targetY] = nodeId.split(",").map(Number);
+    if (!Number.isFinite(targetX) || !Number.isFinite(targetY)) return undefined;
+    return nodes.find((n) => {
+      const [x, y] = n.id.split(",").map(Number);
+      return Math.abs(x - targetX) < 0.001 && Math.abs(y - targetY) < 0.001;
+    });
+  };
+
+  const getPathLastVisibleNode = (pathIdx: number): LayoutNode | null => {
+    const pathNodes = nodePaths[pathIdx];
+    if (!pathNodes || pathNodes.length === 0) return null;
+    for (let i = pathNodes.length - 1; i >= 0; i--) {
+      const nd = findNodeById(pathNodes[i]);
+      if (nd) return nd;
+    }
+    return null;
+  };
+
+  useEffect(() => {
+    const handleWindowPointerMove = (e: PointerEvent) => {
+      if (!isDragging || dragFromIndex < 0) return;
+      const graphPoint = toGraphCoords(e.clientX, e.clientY);
+      if (graphPoint) {
+        setDragGhostPos(graphPoint);
+      }
+      const hoverIndex = getPathLabelIndexAtPoint(e.clientX, e.clientY);
+      if (hoverIndex >= 0) {
+        onPathDragHover?.(hoverIndex);
+      } else {
+        onPathDragLeave?.();
+      }
+    };
+
+    const handleWindowPointerUp = (e: PointerEvent) => {
+      if (
+        graphDragFromRef.current === null ||
+        graphDragPointerIdRef.current !== e.pointerId
+      ) {
+        return;
+      }
+      const from = graphDragFromRef.current;
+      const target = getPathLabelIndexAtPoint(e.clientX, e.clientY);
+      if (target >= 0 && from !== target) {
+        onPathDropConcatenate?.(target, from);
+      }
+      graphDragFromRef.current = null;
+      graphDragPointerIdRef.current = null;
+      onPathDragLeave?.();
+      onPathDragEnd?.();
+      setDragGhostPos(null);
+    };
+    window.addEventListener("pointermove", handleWindowPointerMove, {
+      passive: false,
+    });
+    window.addEventListener("pointerup", handleWindowPointerUp);
+    window.addEventListener("pointercancel", handleWindowPointerUp);
+    return () => {
+      window.removeEventListener("pointermove", handleWindowPointerMove);
+      window.removeEventListener("pointerup", handleWindowPointerUp);
+      window.removeEventListener("pointercancel", handleWindowPointerUp);
+    };
+  }, [
+    dragFromIndex,
+    isDragging,
+    onPathDragEnd,
+    onPathDragHover,
+    onPathDragLeave,
+    onPathDropConcatenate,
+  ]);
+
+  const draggedPathPoints = (() => {
+    if (!isDragging || dragFromIndex < 0) return [];
+    return (nodePaths[dragFromIndex] || [])
+      .map((nodeId) => findNodeById(nodeId))
+      .filter((n): n is LayoutNode => Boolean(n))
+      .map((n) => ({ x: n.x, y: n.y }));
+  })();
+
+  const draggedPathGhostPoints = (() => {
+    if (!dragGhostPos || draggedPathPoints.length < 2) return [];
+    const center = draggedPathPoints.reduce(
+      (acc, p) => ({ x: acc.x + p.x, y: acc.y + p.y }),
+      { x: 0, y: 0 }
+    );
+    center.x /= draggedPathPoints.length;
+    center.y /= draggedPathPoints.length;
+    const dx = dragGhostPos.x - center.x;
+    const dy = dragGhostPos.y - center.y;
+    return draggedPathPoints.map((p) => ({ x: p.x + dx, y: p.y + dy }));
+  })();
 
   return (
     <div
@@ -295,17 +459,36 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
         ref={svgRef}
         width="100%"
         height="100%"
-        style={{ border: "none", display: "block" }}
+        style={{
+          border: "none",
+          display: "block",
+          touchAction: isDragging ? "none" : "auto",
+          userSelect: "none",
+        }}
       >
         <g ref={gRef}>
-          <rect 
-            x={-500} 
-            y={-500} 
-            width={1000} 
-            height={1000} 
-            fill={"transparent"}
-            rx={20}
-          />
+          {pathIndex
+            .map((idx) => {
+              const pts = (nodePaths[idx] || [])
+                .map((nodeId) => findNodeById(nodeId))
+                .filter((n): n is LayoutNode => Boolean(n))
+                .map((n) => `${n.x},${n.y}`);
+              return { idx, pts };
+            })
+            .filter((entry) => entry.pts.length >= 2)
+            .map(({ idx, pts }) => (
+              <polyline
+                key={`drag-hit-${idx}`}
+                data-path-index={idx}
+                points={pts.join(" ")}
+                fill="none"
+                stroke="transparent"
+                strokeWidth={26}
+                style={{ pointerEvents: "stroke", cursor: "grab" }}
+                onPointerDown={(e) => startGraphDrag(idx, e)}
+              />
+            ))}
+
           {/* Use a path element so that we can place a marker at the midpoint */}
           {links.map((lk) => {
             // Determine if this edge should be highlighted
@@ -320,9 +503,21 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
               isHoveredTarget = isFromPath;
             } else {
               // Normal display: highlight all paths in pathIndex
-              isActive =
+              const isInPathIndex =
                 pathIndex.length > 0 &&
                 pathIndex.some((index) => edgePaths[index]?.includes(lk.id));
+
+              // When hovering (not dragging), also highlight the hovered path
+              const isInHoverPath =
+                hoverPathIndex >= 0 &&
+                edgePaths[hoverPathIndex]?.includes(lk.id);
+
+              isActive = isInPathIndex || isInHoverPath;
+
+              // Mark hover path with special highlighting (always, to make it stand out)
+              if (isInHoverPath) {
+                isHoveredTarget = true;
+              }
             }
 
             const isFinalResult = Boolean(
@@ -365,9 +560,21 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
               isHoveredTarget = isFromPath;
             } else {
               // Normal display: highlight all paths in pathIndex
-              isActive =
+              const isInPathIndex =
                 pathIndex.length > 0 &&
                 pathIndex.some((index) => nodePaths[index]?.includes(nd.id));
+
+              // When hovering (not dragging), also highlight the hovered path
+              const isInHoverPath =
+                hoverPathIndex >= 0 &&
+                nodePaths[hoverPathIndex]?.includes(nd.id);
+
+              isActive = isInPathIndex || isInHoverPath;
+
+              // Mark hover path with special highlighting (always, to make it stand out)
+              if (isInHoverPath) {
+                isHoveredTarget = true;
+              }
             }
 
             const isFinalResult = Boolean(
@@ -387,9 +594,87 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
                 isFinalResult={isFinalResult}
                 isCancelledPart={isCancelledPart}
                 isHoveredTarget={isHoveredTarget}
+                depth={nd.depth}
+                isHexagon={shape === "hexagon"}
               />
             );
           })}
+
+          {draggedPathGhostPoints.length >= 2 && (
+            <>
+              <polyline
+                points={draggedPathGhostPoints
+                  .map((p) => `${p.x},${p.y}`)
+                  .join(" ")}
+                fill="none"
+                stroke="rgba(255, 255, 0, 0.95)"
+                strokeWidth={4}
+                strokeDasharray="8,4"
+                style={{ pointerEvents: "none" }}
+              />
+              {draggedPathGhostPoints.map((p, i) => (
+                <circle
+                  key={`drag-ghost-node-${i}`}
+                  cx={p.x}
+                  cy={p.y}
+                  r={3}
+                  fill="rgba(255, 255, 0, 0.95)"
+                  style={{ pointerEvents: "none" }}
+                />
+              ))}
+            </>
+          )}
+
+          {Array.from(new Set(pathIndex))
+            .filter((idx) => idx >= 0 && idx < nodePaths.length)
+            .map((idx) => {
+              const lastNode = getPathLastVisibleNode(idx);
+              if (!lastNode) return null;
+              const isDragFrom = isDragging && dragFromIndex === idx;
+              const isDropHover = isDragging && dragHoverIndex === idx;
+              const label = `P${idx + 1}`;
+              return (
+                <g key={`path-label-${idx}`}>
+                  <rect
+                    data-path-label-index={idx}
+                    x={lastNode.x - 22}
+                    y={lastNode.y - 30}
+                    width={44}
+                    height={22}
+                    rx={8}
+                    ry={8}
+                    fill="transparent"
+                    style={{
+                      pointerEvents: "all",
+                      cursor: isDragging ? "grabbing" : "grab",
+                    }}
+                    onPointerDown={(e) => startGraphDrag(idx, e)}
+                  />
+                  <text
+                    data-path-label-index={idx}
+                    x={lastNode.x}
+                    y={lastNode.y - 15}
+                    textAnchor="middle"
+                    fill={
+                      isDragFrom ? "#ffe066" : isDropHover ? "#ffffff" : "#d9f99d"
+                    }
+                    fontSize="16"
+                    fontWeight="bold"
+                    stroke="#000000"
+                    strokeWidth="0.6"
+                    style={{
+                      pointerEvents: "auto",
+                      cursor: isDragging ? "grabbing" : "grab",
+                      textShadow: "0 0 4px rgba(0,0,0,0.85)",
+                      userSelect: "none",
+                    }}
+                    onPointerDown={(e) => startGraphDrag(idx, e)}
+                  >
+                    {label}
+                  </text>
+                </g>
+              );
+            })}
         </g>
       </svg>
     </div>

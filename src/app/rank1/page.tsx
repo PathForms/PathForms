@@ -24,7 +24,7 @@ import buildNodesEdgesFromMoves from "../utils/buildNodesEdgesFromMoves";
 import next from "next";
 import Steps from "../_components/Steps";
 import { greedyNielsenSteps } from "../utils/greedyNielsen";
-import { playSuccessSound, playPoofSound, playReductionSound, playButtonSound, playGenerateSound } from "../utils/soundManager";
+import { playSuccessSound, playPoofSound, playReductionSound, playButtonSound, playGenerateSound, playBackgroundAudioLoop, stopBackgroundAudioLoop } from "../utils/soundManager";
 
 type Direction = "up" | "down" | "left" | "right";
 
@@ -47,7 +47,6 @@ const Rank1 = () => {
     const [showConfetti, setShowConfetti] = useState<boolean>(false);
     const confettiCanvas = useRef<HTMLCanvasElement>(null);
     const confettiAnimationRef = useRef<number | null>(null);
-    const [soundEnabled, setSoundEnabled] = useState(true);
 
     // Explosion effect state
     const [explosionPosition, setExplosionPosition] = useState<{ x: number; y: number; color: string } | null>(null);
@@ -81,7 +80,22 @@ const Rank1 = () => {
 
     // Settings state: edge thickness, vertex size, theme and settings panel visibility
     const [edgeThickness, setEdgeThickness] = useState<number>(0.7);
-    const [theme, setTheme] = useState<"dark" | "light">("dark");
+    const [theme, setTheme] = useState<"dark" | "light">(() => {
+    if (typeof window !== "undefined") {
+        const saved = localStorage.getItem("theme");
+        return (saved === "light" || saved === "dark") ? saved : "dark";
+    }
+    return "dark";
+    });
+
+    const [soundEnabled, setSoundEnabled] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+        const saved = localStorage.getItem("soundEnabled");
+        return saved !== null ? saved === "true" : true;
+    }
+    return true;
+    });
+
     const [showSettings, setShowSettings] = useState<boolean>(false);
 
     //Welcome screen state
@@ -133,6 +147,23 @@ const Rank1 = () => {
         // This function signature matches Headbar's expectation
         // Shape changes are handled via the select element directly
     };
+
+    useEffect(() => {
+        if (soundEnabled) {
+            playBackgroundAudioLoop();
+        }
+
+        return () => {
+            stopBackgroundAudioLoop();
+        };
+    }, [soundEnabled]);
+
+    useEffect(() => {
+    if (typeof window !== "undefined") {
+        localStorage.setItem("theme", theme);
+        localStorage.setItem("soundEnabled", String(soundEnabled));
+    }
+    }, [theme, soundEnabled]);
     
     // EDIT RANK1 TUTORIAL
     // Generate random paths for Rank 1
