@@ -1669,6 +1669,14 @@ const Interface = ({
     setBases([]);
   };
 
+  // Compute the inverse transformation: if a → X1X2...Xn, then a^-1 → Xn^-1...X2^-1X1^-1
+  const computeInverseReplacement = (replacement: Token2[]): Token2[] => {
+    return replacement
+      .slice()
+      .reverse()
+      .map((token) => invertToken2(token));
+  };
+
   const applyDualATransform = (replacement: Token2[]) => {
     if (isRank3) return;
 
@@ -1678,11 +1686,21 @@ const Interface = ({
       return;
     }
 
+    const inverseReplacement = computeInverseReplacement(replacement);
+
     setMoveRecords((prev) => {
       const next = prev.map((path) => {
         const tokens = (path as Direction2[]).map(moveToToken2);
         const transformed = reduceTokens2(
-          tokens.flatMap((token) => (token === "a" ? replacement : [token]))
+          tokens.flatMap((token) => {
+            if (token === "a") {
+              return replacement;
+            } else if (token === "a^-") {
+              return inverseReplacement;
+            } else {
+              return [token];
+            }
+          })
         );
         return transformed.map(tokenToMove2);
       });
@@ -1709,7 +1727,7 @@ const Interface = ({
       path.map(moveToToken2)
     );
 
-    // Count total "a" tokens across all paths
+    // Count total "a" tokens across all paths (we'll replace all "a" and "a^-" tokens)
     let totalAs = 0;
     allPathTokens.forEach((tokens) => {
       tokens.forEach((t) => { if (t === "a") totalAs++; });
@@ -1727,6 +1745,8 @@ const Interface = ({
       edges: edgePaths.map((e) => [...e]),
     });
 
+    const inverseReplacement = computeInverseReplacement(replacement);
+
     for (let step = 1; step <= totalAs; step++) {
       let aCount = 0;
       const newPathTokens = allPathTokens.map((tokens) =>
@@ -1734,13 +1754,16 @@ const Interface = ({
           if (token === "a") {
             aCount++;
             if (aCount <= step) return replacement;
+            return [token];
+          } else if (token === "a^-") {
+            return inverseReplacement;
           }
           return [token];
         })
       );
 
       const reducedMoves = newPathTokens.map((tokens) =>
-        reduceTokens2(tokens).map(tokenToMove2)
+        reduceTokens2(tokens as Token2[]).map(tokenToMove2)
       );
 
       const newNodePaths: string[][] = [];
