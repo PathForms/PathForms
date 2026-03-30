@@ -77,27 +77,27 @@ export function buildCayleyTreeData(
     }
 
     // define how each label moves in (x,y):
-    // a => up => dy = -1
-    // a^- => down => dy=+1
-    // b => right => dx=+1
-    // b^- => left => dx=-1
+    // a => right => dx = +1
+    // a^- => left => dx = -1
+    // b => up => dy = -1
+    // b^- => down => dy = +1
     let dx = 0,
       dy = 0;
     if (dir.label === "a") {
-      dx = 0;
-      dy = -1;
-    }
-    if (dir.label === "a^-") {
-      dx = 0;
-      dy = +1;
-    }
-    if (dir.label === "b") {
       dx = +1;
       dy = 0;
     }
-    if (dir.label === "b^-") {
+    if (dir.label === "a^-") {
       dx = -1;
       dy = 0;
+    }
+    if (dir.label === "b") {
+      dx = 0;
+      dy = -1;
+    }
+    if (dir.label === "b^-") {
+      dx = 0;
+      dy = +1;
     }
 
     const nx = x + dx * step;

@@ -20,10 +20,10 @@ type Direction = "up" | "down" | "left" | "right";
 type Direction3 = "up" | "down" | "left-up" | "right-down" | "left-down" | "right-up";
 
 const translation2: Record<Direction, string> = {
- up: "a",
- down: "a\u207B\u00B9", // a^-1
- right: "b",
- left: "b\u207B\u00B9",
+ up: "b",
+ down: "b\u207B\u00B9", // b^-1
+ right: "a",
+ left: "a\u207B\u00B9",
 };
 
 const translation3: Record<Direction3, string> = {
@@ -74,6 +74,13 @@ interface ButtonBarProps {
  // Rank 3 flag
  isRank3?: boolean;
  dualTransforms?: { id: string; label: string; onClick: () => void }[];
+ steppedMode?: boolean;
+ onSteppedModeChange?: (value: boolean) => void;
+ steppedTransformActive?: boolean;
+ steppedTransformStepIndex?: number;
+ steppedTransformTotalSteps?: number;
+ onSteppedNext?: () => void;
+ onSteppedSkip?: () => void;
 }
 
 
@@ -96,9 +103,18 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
   // Rank 3 flag
   isRank3 = false,
   dualTransforms,
+  steppedMode = false,
+  onSteppedModeChange,
+  steppedTransformActive = false,
+  steppedTransformStepIndex = 0,
+  steppedTransformTotalSteps = 0,
+  onSteppedNext,
+  onSteppedSkip,
 }) => {
   // Use appropriate translation based on rank
-  const translation = isRank3 ? translation3 : translation2;
+  const translation = isRank3
+    ? translation3
+    : translation2;
   const helpTextRand = isRank3
     ? "Generates words in the full free group using the default basis (a,b,c) and random moves in all directions. Always reducible to the standard basis."
     : "Generates words in the full free group using the default basis (a,b) and random moves in all directions. Always reducible to the standard basis.";
@@ -464,6 +480,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
              gap: 8,
              flexWrap: "wrap",
              justifyContent: "left",
+             alignItems: "center",
            }}
          >
            {dualTransforms.map((action) => (
@@ -471,10 +488,61 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
                key={action.id}
                style={generateButtonStyle}
                onClick={() => handleDualTransformClick(action.onClick)}
+               disabled={steppedTransformActive}
              >
                {action.label}
              </button>
            ))}
+         </div>
+       )}
+
+       {/* Stepped mode checkbox */}
+       {dualTransforms && dualTransforms.length > 0 && (
+         <div
+           style={{
+             display: "flex",
+             gap: 8,
+             alignItems: "center",
+           }}
+         >
+           <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontSize: 13 }}>
+             <input
+               type="checkbox"
+               checked={steppedMode}
+               onChange={(e) => onSteppedModeChange?.(e.target.checked)}
+               disabled={steppedTransformActive}
+               style={{ cursor: "pointer" }}
+             />
+             Step-through mode
+           </label>
+         </div>
+       )}
+
+       {/* Stepped transform controls */}
+       {steppedTransformActive && (
+         <div
+           style={{
+             display: "flex",
+             gap: 8,
+             alignItems: "center",
+           }}
+         >
+           <span style={{ fontSize: 12, color: "rgb(200, 200, 200)" }}>
+             Step {steppedTransformStepIndex} / {steppedTransformTotalSteps - 1}
+           </span>
+           <button
+             style={buttonStyle}
+             onClick={onSteppedNext}
+             disabled={steppedTransformStepIndex >= steppedTransformTotalSteps - 1}
+           >
+             Next
+           </button>
+           <button
+             style={buttonStyle}
+             onClick={onSteppedSkip}
+           >
+             Skip
+           </button>
          </div>
        )}
      </div>

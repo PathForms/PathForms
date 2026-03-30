@@ -93,8 +93,12 @@ const Edge: React.FC<EdgeProps> = ({
 
   // For hexagon layout (rank 3), use the edgeColor from the tree
   // For other layouts, use direction-based colors
-  // b (horizontal/left-right) => rgb(251, 0, 71) red
-  let strokeColor = "rgba(251, 0, 71, 0.2)";
+  // Determine if this edge is vertical (same x) or horizontal
+  const isVertical = (x === x2 && y <= y2) || (x === x2 && y >= y2);
+  // Standard: vertical=b(blue), horizontal=a(red)
+  const verticalColor = "0, 140, 255";   // blue (b)
+  const horizontalColor = "251, 0, 71";  // red (a)
+  let strokeColor = isVertical ? `rgba(${verticalColor}, 0.2)` : `rgba(${horizontalColor}, 0.2)`;
   if (shape === "hexagon" && edgeColor) {
     // Use the edge color from the tree, with reduced opacity for inactive edges
     // Convert hex to rgba format
@@ -106,9 +110,8 @@ const Edge: React.FC<EdgeProps> = ({
         ? `rgba(${r}, ${g}, ${b}, 0.8)`
         : `rgba(${r}, ${g}, ${b}, 0.3)`;
     }
-  } else if ((x === x2 && y <= y2) || (x === x2 && y >= y2)) {
-    // a (vertical/up-down) => rgb(0, 140, 255) blue
-    strokeColor = "rgba(0, 140, 255, 0.23)";
+  } else if (isVertical) {
+    strokeColor = `rgba(${verticalColor}, 0.23)`;
   }
 
   let thickness = edgeThickness ?? 1;
@@ -128,12 +131,10 @@ const Edge: React.FC<EdgeProps> = ({
         const b = parseInt(edgeColor.slice(5, 7), 16);
         strokeColor = `rgba(${r}, ${g}, ${b}, 0.9)`;
       }
-    } else if ((x === x2 && y <= y2) || (x === x2 && y >= y2)) {
-      // a (vertical) => blue
-      strokeColor = "rgba(0, 140, 255, 0.8)"; // Bright blue for final result
+    } else if (isVertical) {
+      strokeColor = `rgba(${verticalColor}, 0.8)`;
     } else {
-      // b (horizontal) => red
-      strokeColor = "rgba(251, 0, 71, 0.8)"; // Bright red for final result
+      strokeColor = `rgba(${horizontalColor}, 0.8)`;
     }
   } else if (isCancelledPart) {
     // Cancelled parts - dimmed and dashed
@@ -148,12 +149,10 @@ const Edge: React.FC<EdgeProps> = ({
         const b = parseInt(edgeColor.slice(5, 7), 16);
         strokeColor = `rgba(${r}, ${g}, ${b}, 0.2)`;
       }
-    } else if ((x === x2 && y <= y2) || (x === x2 && y >= y2)) {
-      // a (vertical) => blue
-      strokeColor = "rgba(0, 140, 255, 0.3)"; // Dimmed blue for cancelled
+    } else if (isVertical) {
+      strokeColor = `rgba(${verticalColor}, 0.3)`;
     } else {
-      // b (horizontal) => red
-      strokeColor = "rgba(251, 0, 71, 0.3)"; // Dimmed red for cancelled
+      strokeColor = `rgba(${horizontalColor}, 0.3)`;
     }
   } else if (isHoveredTarget) {
     // Highlight the hovered target path with a brighter, thicker line
@@ -172,12 +171,12 @@ const Edge: React.FC<EdgeProps> = ({
         const lightB = Math.min(255, b + 60);
         strokeColor = `rgb(${lightR}, ${lightG}, ${lightB})`;
       }
-    } else if ((x == x2 && y <= y2) || (x == x2 && y >= y2)) {
-      // a (vertical) => lighter blue
-      strokeColor = "rgb(100, 180, 255)"; // Light blue for hovered target
+    } else if (isVertical) {
+      // Lighten the vertical color
+      strokeColor = "rgb(100, 180, 255)";
     } else {
-      // b (horizontal) => lighter red
-      strokeColor = "rgb(255, 100, 140)"; // Light red/pink for hovered target
+      // Lighten the horizontal color
+      strokeColor = "rgb(255, 100, 140)";
     }
   } else if (isActive) {
     thickness += 2;
@@ -193,16 +192,19 @@ const Edge: React.FC<EdgeProps> = ({
         strokeColor = `rgba(${r}, ${g}, ${b}, 0.9)`;
       }
     } else {
-      strokeColor = "rgb(251, 0, 71)";
-      if ((x == x2 && y <= y2) || (x == x2 && y >= y2)) {
-        strokeColor = "rgb(0, 140, 255)";
-      }
+      strokeColor = isVertical
+        ? `rgb(${verticalColor})`
+        : `rgb(${horizontalColor})`;
     }
   }
 
   // Calculate midpoint for arrow placement
   const midX = (sourceX + targetX) / 2;
   const midY = (sourceY + targetY) / 2;
+  const edgePixelLength = Math.hypot(targetX - sourceX, targetY - sourceY);
+  // Keep arrow size proportional to edge length while preventing extremes.
+  const arrowHalfLength = Math.max(3, Math.min(10, edgePixelLength * 0.14));
+  const arrowHalfWidth = arrowHalfLength * 0.66;
 
   return (
     <>
@@ -230,14 +232,14 @@ const Edge: React.FC<EdgeProps> = ({
               {Math.abs(x2 - x) > Math.abs(y2 - y) ? (
                 // Horizontal movement - left arrow (triangle) - pointing towards source
                 <polygon
-                  points={`${midX - 9} ${midY - 6}, ${midX + 9} ${midY}, ${midX - 9} ${midY + 6}`}
+                  points={`${midX - arrowHalfLength} ${midY - arrowHalfWidth}, ${midX + arrowHalfLength} ${midY}, ${midX - arrowHalfLength} ${midY + arrowHalfWidth}`}
                   fill="rgb(0, 255, 0)"
                   style={{ pointerEvents: "none" }}
                 />
               ) : (
                 // Vertical movement - up arrow (triangle) - pointing towards source
                 <polygon
-                  points={`${midX - 6} ${midY + 9}, ${midX + 6} ${midY + 9}, ${midX} ${midY - 9}`}
+                  points={`${midX - arrowHalfWidth} ${midY + arrowHalfLength}, ${midX + arrowHalfWidth} ${midY + arrowHalfLength}, ${midX} ${midY - arrowHalfLength}`}
                   fill="rgb(0, 255, 0)"
                   style={{ pointerEvents: "none" }}
                 />

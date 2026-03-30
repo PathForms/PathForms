@@ -20,10 +20,10 @@ const isRank3Direction = (dir: string): dir is Direction3 => {
 };
 
 const translation2: Record<Direction2, string> = {
-  up: "a",
-  down: "a\u207B\u00B9", // a^-1
-  right: "b",
-  left: "b\u207B\u00B9",
+  up: "b",
+  down: "b\u207B\u00B9", // b^-1
+  right: "a",
+  left: "a\u207B\u00B9",
 };
 
 const translation3: Record<Direction3, string> = {
@@ -43,12 +43,12 @@ const getDirectionColor2 = (
   switch (direction) {
     case "up":
     case "down":
-      return getRank2Color("a");
+      return getRank2Color("b");
     case "left":
     case "right":
-      return getRank2Color("b");
+      return getRank2Color("a");
     default:
-      return "rgb(64, 73, 65)"; // Default color
+      return "rgb(64, 73, 65)";
   }
 };
 

@@ -5,14 +5,14 @@
 
 // ============= RANK 2 COLORS =============
 export const RANK2_COLORS = {
-  a: "#008cff", // Blue - rgb(0, 140, 255) - vertical (up/down)
-  b: "#fb0047", // Red - rgb(251, 0, 71) - horizontal (left/right)
+  a: "#fb0047", // Red - rgb(251, 0, 71)
+  b: "#008cff", // Blue - rgb(0, 140, 255)
 } as const;
 
 // ============= RANK 3 COLORS =============
 export const RANK3_COLORS = {
-  a: "#008cff", // Blue - same as rank2 for consistency
-  b: "#fb0047", // Red - same as rank2 for consistency
+  a: "#fb0047", // Red - same as rank2 for consistency
+  b: "#008cff", // Blue - same as rank2 for consistency
   c: "#00ff00", // Green
 } as const;
 
