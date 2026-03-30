@@ -1667,6 +1667,21 @@ const Interface = ({
     setBases([]);
   };
 
+  // If a -> X, then a^- -> (X)^-1 where inverse reverses order and inverts tokens.
+  const computeInverseReplacement = (replacement: Token2[]): Token2[] => {
+    return replacement.slice().reverse().map((token) => invertToken2(token));
+  };
+
+  const getTransformedTokenSequence = (
+    token: Token2,
+    replacement: Token2[],
+    inverseReplacement: Token2[]
+  ): Token2[] => {
+    if (token === "a") return replacement;
+    if (token === "a^-") return inverseReplacement;
+    return [token];
+  };
+
   const applyDualATransform = (replacement: Token2[]) => {
     if (isRank3) return;
 
@@ -1676,11 +1691,15 @@ const Interface = ({
       return;
     }
 
+    const inverseReplacement = computeInverseReplacement(replacement);
+
     setMoveRecords((prev) => {
       const next = prev.map((path) => {
         const tokens = (path as Direction2[]).map(moveToToken2);
         const transformed = reduceTokens2(
-          tokens.flatMap((token) => (token === "a" ? replacement : [token]))
+          tokens.flatMap((token) =>
+            getTransformedTokenSequence(token, replacement, inverseReplacement)
+          )
         );
         return transformed.map(tokenToMove2);
       });
@@ -1707,15 +1726,19 @@ const Interface = ({
       path.map(moveToToken2)
     );
 
-    // Count total "a" tokens across all paths
-    let totalAs = 0;
+    const inverseReplacement = computeInverseReplacement(replacement);
+
+    // Count all transformable tokens (a and a^-)
+    let totalTransformable = 0;
     allPathTokens.forEach((tokens) => {
-      tokens.forEach((t) => { if (t === "a") totalAs++; });
+      tokens.forEach((t) => {
+        if (t === "a" || t === "a^-") totalTransformable++;
+      });
     });
 
-    if (totalAs === 0) return;
+    if (totalTransformable === 0) return;
 
-    // Build intermediate snapshots: step 0 = original, step i = first i "a"s replaced
+    // Build intermediate snapshots: step 0 = original, step i = first i transformable tokens replaced
     const steps: TransformSnapshot[] = [];
 
     // Step 0: current state
@@ -1725,20 +1748,26 @@ const Interface = ({
       edges: edgePaths.map((e) => [...e]),
     });
 
-    for (let step = 1; step <= totalAs; step++) {
-      let aCount = 0;
+    for (let step = 1; step <= totalTransformable; step++) {
+      let replacedCount = 0;
       const newPathTokens = allPathTokens.map((tokens) =>
         tokens.flatMap((token) => {
-          if (token === "a") {
-            aCount++;
-            if (aCount <= step) return replacement;
+          if (token === "a" || token === "a^-") {
+            replacedCount++;
+            if (replacedCount <= step) {
+              return getTransformedTokenSequence(
+                token,
+                replacement,
+                inverseReplacement
+              );
+            }
           }
           return [token];
         })
       );
 
       const reducedMoves = newPathTokens.map((tokens) =>
-        reduceTokens2(tokens).map(tokenToMove2)
+        reduceTokens2(tokens as Token2[]).map(tokenToMove2)
       );
 
       const newNodePaths: string[][] = [];
