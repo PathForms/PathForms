@@ -3,7 +3,7 @@
 import React from "react";
 import { useEffect } from "react";
 import styles from "./components.module.css"; // Ensure that this is the correct path for your CSS module
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 interface HeadbarProps {
   theme: "dark" | "light";
   toggleSettings: () => void;
@@ -42,6 +42,7 @@ const Headbar: React.FC<HeadbarProps> = ({
   hideShape
 }) => {
   const router = useRouter();
+  const pathname = usePathname();
   const colors = [
     "rgb(255, 50, 91)",
     "rgb(0, 255, 106)",
@@ -65,9 +66,22 @@ const Headbar: React.FC<HeadbarProps> = ({
     }
   }, [theme]);
 
-  const heading = (
+  const heading = pathname === "/" ? (
+    <a
+      href="https://mineyev.web.illinois.edu/PathForms/"
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{ textDecoration: "none", cursor: "pointer", fontSize: "clamp(28px, 5vw, 42px)", fontWeight: "bold" }}
+    >
+      {text.split("").map((char, index) => (
+        <span key={index} style={{ color: colors[index % colors.length] }}>
+          {char}
+        </span>
+      ))}
+    </a>
+  ) : (
     <h1
-      style={{ cursor: "pointer" }}
+      style={{ cursor: "pointer", fontSize: "clamp(28px, 5vw, 42px)", fontWeight: "bold" }}
       onClick={() => router.push("/")}
     >
       {text.split("").map((char, index) => (

@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import Headbar from "./_components/Headbar";
 
 type LandingCard = {
   id: string;
@@ -20,6 +21,18 @@ type LandingCard = {
 const Home = () => {
   const router = useRouter();
   const [hoveredButton, setHoveredButton] = useState<string | null>(null);
+
+  // Headbar state
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [showSettings, setShowSettings] = useState(false);
+  const [edgeThickness, setEdgeThickness] = useState(1);
+  const [shape, setShape] = useState("circle");
+  const [soundEnabled, setSoundEnabled] = useState(true);
+
+  const toggleSettings = () => setShowSettings(!showSettings);
+  const handleEdgeThicknessChange = (e: React.ChangeEvent<HTMLInputElement>) => setEdgeThickness(Number(e.target.value));
+  const handleThemeChange = (e: React.ChangeEvent<HTMLSelectElement>) => setTheme(e.target.value as "dark" | "light");
+  const handleshape = () => setShape(shape === "circle" ? "square" : "circle");
 
   // Get basePath from next.config
   const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
@@ -111,34 +124,30 @@ const Home = () => {
         overflowY: "auto",
         overflowX: "hidden",
         backgroundColor: "#0a0a0a", // Dark theme background from globals.css
-        padding: "clamp(16px, 3vh, 40px) 20px",
+        paddingTop: "calc(80px + clamp(16px, 3vh, 40px))",
+        paddingBottom: "clamp(16px, 3vh, 40px)",
+        paddingLeft: "20px",
+        paddingRight: "20px",
         boxSizing: "border-box",
       }}
     >
+      <Headbar
+        theme={theme}
+        toggleSettings={toggleSettings}
+        showSettings={showSettings}
+        edgeThickness={edgeThickness}
+        handleEdgeThicknessChange={handleEdgeThicknessChange}
+        handleThemeChange={handleThemeChange}
+        shape={shape}
+        handleshape={handleshape}
+        soundEnabled={soundEnabled}
+        setSoundEnabled={setSoundEnabled}
+        hideEdgeThickness={true}
+        hideShape={true}
+      />
       <div
         style={{ marginBottom: "clamp(16px, 2.5vh, 40px)", textAlign: "center" }}
       >
-        <h1
-          style={{
-            fontSize: "clamp(28px, 5vw, 42px)",
-            fontWeight: "bold",
-            marginBottom: "8px",
-          }}
-        >
-          <a
-            href="https://mineyev.web.illinois.edu/PathForms/"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ textDecoration: "none", display: "inline-block" }}
-          >
-            {text.split("").map((char, index) => (
-              <span key={index} style={{ color: colors[index % colors.length] }}>
-                {char}
-              </span>
-            ))}
-          </a>
-        </h1>
-
         <p style={{ fontSize: "clamp(14px, 2vw, 18px)", color: "#ededed" }}>
           Pathforms is an interactive game based on combinatorial group theory that visualizes Nielsen's
           algorithm for free groups of rank 1, rank 2 and of rank 3 on their Cayley graphs. Your goal
