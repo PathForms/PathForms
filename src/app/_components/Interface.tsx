@@ -21,7 +21,6 @@ import {
   greedyNielsenSteps,
   greedyNielsenSteps3,
 } from "../utils/greedyNielsen";
-import { useRouter } from "next/navigation";
 import { setSoundEnabled as setSoundEnabledGlobal, playBackgroundAudioLoop, stopBackgroundAudioLoop } from "../utils/soundManager";
 
 // Support both rank 2 and rank 3
@@ -135,7 +134,6 @@ const Interface = ({
   const [nodePaths, setNodePaths] = useState<string[][]>([]);
   const [edgePaths, setEdgePaths] = useState<string[][]>([]);
   const [moveRecords, setMoveRecords] = useState<Direction[][]>([]);
-  const router = useRouter();
 
   // states for bases;
   const [bases, setBases] = useState<Direction[][]>([]);
@@ -4056,12 +4054,6 @@ const Interface = ({
           usedSteps={usedConcatSteps}
           theme={theme}
         />
-        <button
-          className={`${styles.homeButton} ${theme === "light" ? styles.light : ""}`}
-          onClick={() => router.push("/")}
-        >
-          Go back to Home
-        </button>
       </div>
     </>
   );

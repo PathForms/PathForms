@@ -201,6 +201,10 @@ const Edge: React.FC<EdgeProps> = ({
   // Calculate midpoint for arrow placement
   const midX = (sourceX + targetX) / 2;
   const midY = (sourceY + targetY) / 2;
+  const edgePixelLength = Math.hypot(targetX - sourceX, targetY - sourceY);
+  // Keep arrow size proportional to edge length while preventing extremes.
+  const arrowHalfLength = Math.max(3, Math.min(10, edgePixelLength * 0.14));
+  const arrowHalfWidth = arrowHalfLength * 0.66;
 
   return (
     <>
@@ -228,14 +232,14 @@ const Edge: React.FC<EdgeProps> = ({
               {Math.abs(x2 - x) > Math.abs(y2 - y) ? (
                 // Horizontal movement - left arrow (triangle) - pointing towards source
                 <polygon
-                  points={`${midX - 9} ${midY - 6}, ${midX + 9} ${midY}, ${midX - 9} ${midY + 6}`}
+                  points={`${midX - arrowHalfLength} ${midY - arrowHalfWidth}, ${midX + arrowHalfLength} ${midY}, ${midX - arrowHalfLength} ${midY + arrowHalfWidth}`}
                   fill="rgb(0, 255, 0)"
                   style={{ pointerEvents: "none" }}
                 />
               ) : (
                 // Vertical movement - up arrow (triangle) - pointing towards source
                 <polygon
-                  points={`${midX - 6} ${midY + 9}, ${midX + 6} ${midY + 9}, ${midX} ${midY - 9}`}
+                  points={`${midX - arrowHalfWidth} ${midY + arrowHalfLength}, ${midX + arrowHalfWidth} ${midY + arrowHalfLength}, ${midX} ${midY - arrowHalfLength}`}
                   fill="rgb(0, 255, 0)"
                   style={{ pointerEvents: "none" }}
                 />

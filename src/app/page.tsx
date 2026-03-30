@@ -125,11 +125,18 @@ const Home = () => {
             marginBottom: "8px",
           }}
         >
-          {text.split("").map((char, index) => (
-            <span key={index} style={{ color: colors[index % colors.length] }}>
-              {char}
-            </span>
-          ))}
+          <a
+            href="https://mineyev.web.illinois.edu/PathForms/"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ textDecoration: "none", display: "inline-block" }}
+          >
+            {text.split("").map((char, index) => (
+              <span key={index} style={{ color: colors[index % colors.length] }}>
+                {char}
+              </span>
+            ))}
+          </a>
         </h1>
 
         <p style={{ fontSize: "clamp(14px, 2vw, 18px)", color: "#ededed" }}>

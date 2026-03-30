@@ -41,6 +41,7 @@ const Headbar: React.FC<HeadbarProps> = ({
   hideEdgeThickness,
   hideShape
 }) => {
+  const router = useRouter();
   const colors = [
     "rgb(255, 50, 91)",
     "rgb(0, 255, 106)",
@@ -65,19 +66,15 @@ const Headbar: React.FC<HeadbarProps> = ({
   }, [theme]);
 
   const heading = (
-    <h1 style={{ cursor: "pointer" }}>
-      <a
-        href="https://mineyev.web.illinois.edu/PathForms/"
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{ textDecoration: "none", display: "inline-block" }}
-      >
-        {text.split("").map((char, index) => (
-          <span key={index} style={{ color: colors[index % colors.length] }}>
-            {char}
-          </span>
-        ))}
-      </a>
+    <h1
+      style={{ cursor: "pointer" }}
+      onClick={() => router.push("/")}
+    >
+      {text.split("").map((char, index) => (
+        <span key={index} style={{ color: colors[index % colors.length] }}>
+          {char}
+        </span>
+      ))}
     </h1>
   );
 

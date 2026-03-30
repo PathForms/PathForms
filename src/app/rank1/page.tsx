@@ -9,7 +9,6 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
 import ButtonBar from "../_components/ButtonBar";
 import NumberLine, { Rank1Path } from "../_components/NumberLine";
 import Pathbar from "../_components/Pathbar";
@@ -37,7 +36,6 @@ const oppositeMoves: Record<Direction, Direction> = {
 };
 
 const Rank1 = () => {
-    const router = useRouter();
     // State for storing historical paths & cayley graph rendering
     const [pathIndex, setPathIndex] = useState<number[]>([]); // index of paths to show on the Cayley graph;
     const [nodePaths, setNodePaths] = useState<string[][]>([]);
@@ -886,13 +884,6 @@ const Rank1 = () => {
                 soundEnabled={soundEnabled}
             />
 
-            <button
-            className={`${styles.homeButton} ${theme === "light" ? styles.light : ""}`}
-            onClick={() => router.push("/")}
-            >
-            Go back to Home
-            </button>
-        
             {/* <Steps optimalSteps={targetSteps} usedSteps={usedConcatSteps} /> */}
         </div>
         </>
