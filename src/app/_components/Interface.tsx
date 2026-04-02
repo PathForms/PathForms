@@ -238,7 +238,7 @@ const Interface = ({
     nodes: string[][];
     edges: string[][];
   };
-  const [steppedMode, setSteppedMode] = useState<boolean>(false);
+  const [steppedTransformDone, setSteppedTransformDone] = useState<boolean>(false);
   const [steppedTransformActive, setSteppedTransformActive] = useState<boolean>(false);
   const [transformSteps, setTransformSteps] = useState<TransformSnapshot[]>([]);
   const [transformStepIndex, setTransformStepIndex] = useState<number>(0);
@@ -1264,10 +1264,7 @@ const Interface = ({
 
     setNodePaths(newNodePaths);
     setEdgePaths(newEdgePaths);
-    setPathIndex((prevIndexes) => [
-      ...prevIndexes,
-      ...Array.from({ length: n }, (_, i) => i), // Creates an array from 0 to n-1
-    ]);
+    setPathIndex(Array.from({ length: n }, (_, i) => i));
     // Show the first path initially
     // setNodes(newNodePaths[0]);
     // setEdges(newEdgePaths[0]);
@@ -1459,10 +1456,7 @@ const Interface = ({
 
     setNodePaths(newNodePaths);
     setEdgePaths(newEdgePaths);
-    setPathIndex((prevIndexes) => [
-      ...prevIndexes,
-      ...Array.from({ length: n }, (_, i) => i), // Creates an array from 0 to n-1
-    ]);
+    setPathIndex(Array.from({ length: n }, (_, i) => i));
     // Show the first path initially
     // setNodes(newNodePaths[0]);
     // setEdges(newEdgePaths[0]);
@@ -1618,10 +1612,7 @@ const Interface = ({
 
     setNodePaths(newNodePaths);
     setEdgePaths(newEdgePaths);
-    setPathIndex((prevIndexes) => [
-      ...prevIndexes,
-      ...Array.from({ length: n }, (_, i) => i), // Creates an array from 0 to n-1
-    ]);
+    setPathIndex(Array.from({ length: n }, (_, i) => i));
     // Show the first path initially
     // setNodes(newNodePaths[0]);
     // setEdges(newEdgePaths[0]);
@@ -1684,43 +1675,16 @@ const Interface = ({
 
   const applyDualATransform = (replacement: Token2[]) => {
     if (isRank3) return;
-
-    // If stepped mode is on, precompute all intermediate states
-    if (steppedMode) {
-      startSteppedTransform(replacement);
-      return;
-    }
-
-    const inverseReplacement = computeInverseReplacement(replacement);
-
-    setMoveRecords((prev) => {
-      const next = prev.map((path) => {
-        const tokens = (path as Direction2[]).map(moveToToken2);
-        const transformed = reduceTokens2(
-          tokens.flatMap((token) =>
-            getTransformedTokenSequence(token, replacement, inverseReplacement)
-          )
-        );
-        return transformed.map(tokenToMove2);
-      });
-
-      const newNodePaths: string[][] = [];
-      const newEdgePaths: string[][] = [];
-      next.forEach((moves) => {
-        const { newNodes, newEdges } = buildNodesEdges(moves as any);
-        newNodePaths.push(newNodes);
-        newEdgePaths.push(newEdges);
-      });
-
-      setNodePaths(newNodePaths);
-      setEdgePaths(newEdgePaths);
-      setTargetSteps(greedyNielsenStepsFunc(next as any));
-      return next as any;
-    });
+    setSteppedTransformDone(false);
+    startSteppedTransform(replacement);
   };
 
   // --- Stepped dual transform helpers ---
   const startSteppedTransform = (replacement: Token2[]) => {
+    setSteppedTransformActive(false);
+    setTransformSteps([]);
+    setTransformStepIndex(0);
+
     const currentPaths = moveRecords as Direction2[][];
     const allPathTokens = currentPaths.map((path) =>
       path.map(moveToToken2)
@@ -1728,7 +1692,6 @@ const Interface = ({
 
     const inverseReplacement = computeInverseReplacement(replacement);
 
-    // Count all transformable tokens (a and a^-)
     let totalTransformable = 0;
     allPathTokens.forEach((tokens) => {
       tokens.forEach((t) => {
@@ -1738,10 +1701,8 @@ const Interface = ({
 
     if (totalTransformable === 0) return;
 
-    // Build intermediate snapshots: step 0 = original, step i = first i transformable tokens replaced
     const steps: TransformSnapshot[] = [];
 
-    // Step 0: current state
     steps.push({
       moves: currentPaths.map((p) => [...p]),
       nodes: nodePaths.map((n) => [...n]),
@@ -1791,7 +1752,9 @@ const Interface = ({
     const nextIdx = Math.min(transformStepIndex + 1, transformSteps.length - 1);
     applySteppedState(nextIdx);
     if (nextIdx === transformSteps.length - 1) {
-      finishSteppedTransform(nextIdx);
+      setSteppedTransformDone(true);
+      const snapshot = transformSteps[nextIdx];
+      setTargetSteps(greedyNielsenStepsFunc(snapshot.moves as any));
     }
   };
 
@@ -1799,7 +1762,22 @@ const Interface = ({
     if (!steppedTransformActive || transformSteps.length === 0) return;
     const lastIdx = transformSteps.length - 1;
     applySteppedState(lastIdx);
-    finishSteppedTransform(lastIdx);
+    setSteppedTransformDone(true);
+    const snapshot = transformSteps[lastIdx];
+    setTargetSteps(greedyNielsenStepsFunc(snapshot.moves as any));
+  };
+
+  const steppedTransformPrev = () => {
+    if (!steppedTransformActive || transformStepIndex <= 0) return;
+    applySteppedState(transformStepIndex - 1);
+    setSteppedTransformDone(false);
+  };
+
+  const confirmSteppedTransform = () => {
+    setSteppedTransformActive(false);
+    setSteppedTransformDone(false);
+    setTransformSteps([]);
+    setTransformStepIndex(0);
   };
 
   const applySteppedState = (idx: number) => {
@@ -1808,14 +1786,6 @@ const Interface = ({
     setNodePaths(snapshot.nodes);
     setEdgePaths(snapshot.edges);
     setTransformStepIndex(idx);
-  };
-
-  const finishSteppedTransform = (idx: number) => {
-    const snapshot = transformSteps[idx];
-    setTargetSteps(greedyNielsenStepsFunc(snapshot.moves as any));
-    setSteppedTransformActive(false);
-    setTransformSteps([]);
-    setTransformStepIndex(0);
   };
   // --- End stepped dual transform helpers ---
   //
@@ -2006,29 +1976,13 @@ const Interface = ({
     setHoverPathIndex(-1);
   };
 
-  const dualTransforms =
+  const dualTransformOptions =
     showDualTransforms && !isRank3
       ? [
-          {
-            id: "a-to-ab",
-            label: "a to ab",
-            onClick: () => applyDualATransform(["a", "b"]),
-          },
-          {
-            id: "a-to-ab-inv",
-            label: "a to ab^-1",
-            onClick: () => applyDualATransform(["a", "b^-"]),
-          },
-          {
-            id: "a-to-ba",
-            label: "a to ba",
-            onClick: () => applyDualATransform(["b", "a"]),
-          },
-          {
-            id: "a-to-b-inv-a",
-            label: "a to b^-1a",
-            onClick: () => applyDualATransform(["b^-", "a"]),
-          },
+          { id: "a-to-ab", label: "ab", replacement: ["a", "b"] },
+          { id: "a-to-ab-inv", label: "ab\u207B\u00B9", replacement: ["a", "b^-"] },
+          { id: "a-to-ba", label: "ba", replacement: ["b", "a"] },
+          { id: "a-to-b-inv-a", label: "b\u207B\u00B9a", replacement: ["b^-", "a"] },
         ]
       : undefined;
 
@@ -2081,14 +2035,16 @@ const Interface = ({
               : "No specified bases, default generators a,b."
           }
           isRank3={isRank3}
-          dualTransforms={dualTransforms}
-          steppedMode={steppedMode}
-          onSteppedModeChange={setSteppedMode}
+          dualTransformOptions={dualTransformOptions}
+          onDualTransformApply={(r) => applyDualATransform(r as Token2[])}
           steppedTransformActive={steppedTransformActive}
           steppedTransformStepIndex={transformStepIndex}
           steppedTransformTotalSteps={transformSteps.length}
+          onSteppedPrev={steppedTransformPrev}
           onSteppedNext={steppedTransformNext}
           onSteppedSkip={steppedTransformSkip}
+          steppedTransformDone={steppedTransformDone}
+          onSteppedConfirm={confirmSteppedTransform}
         />
         <Pathterminal
           pathIndex={pathIndex}
@@ -2154,6 +2110,7 @@ const Interface = ({
           tutorialStep={tutorialStep}
           isRank3={isRank3}
           theme={theme}
+          suppressAutoCheck={steppedTransformActive}
           onTutorialCheck={(nextStep) => {
             if (nextStep === 0) {
               setTutorialCompleted(true);
@@ -3299,10 +3256,7 @@ const Interface = ({
 
    setNodePaths(newNodePaths);
    setEdgePaths(newEdgePaths);
-   setPathIndex((prevIndexes) => [
-     ...prevIndexes,
-     ...Array.from({ length: n }, (_, i) => i), // Creates an array from 0 to n-1
-   ]);
+   setPathIndex(Array.from({ length: n }, (_, i) => i));
    // Show the first path initially
    // setNodes(newNodePaths[0]);
    // setEdges(newEdgePaths[0]);
@@ -3497,10 +3451,7 @@ const Interface = ({
 
    setNodePaths(newNodePaths);
    setEdgePaths(newEdgePaths);
-   setPathIndex((prevIndexes) => [
-     ...prevIndexes,
-     ...Array.from({ length: n }, (_, i) => i), // Creates an array from 0 to n-1
-   ]);
+   setPathIndex(Array.from({ length: n }, (_, i) => i));
    // Show the first path initially
    // setNodes(newNodePaths[0]);
    // setEdges(newEdgePaths[0]);
@@ -3729,10 +3680,7 @@ const Interface = ({
 
    setNodePaths(newNodePaths);
    setEdgePaths(newEdgePaths);
-   setPathIndex((prevIndexes) => [
-     ...prevIndexes,
-     ...Array.from({ length: n }, (_, i) => i), // Creates an array from 0 to n-1
-   ]);
+   setPathIndex(Array.from({ length: n }, (_, i) => i));
    // Show the first path initially
    // setNodes(newNodePaths[0]);
    // setEdges(newEdgePaths[0]);
@@ -4039,6 +3987,7 @@ const Interface = ({
           tutorialStep={tutorialStep}
           isRank3={isRank3}
           theme={theme}
+          suppressAutoCheck={steppedTransformActive}
           onTutorialCheck={(nextStep) => {
             if (nextStep === 0) {
               setTutorialCompleted(true);

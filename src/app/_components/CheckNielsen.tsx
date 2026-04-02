@@ -29,6 +29,7 @@ interface CheckNielsenProps {
   soundEnabled?: boolean;
   isRank3?: boolean; // ========== RANK3 TUTORIAL: Add isRank3 prop ==========
   theme?: "dark" | "light"; // Add theme prop
+  suppressAutoCheck?: boolean;
 }
 
 const CheckNielsen: React.FC<CheckNielsenProps> = ({
@@ -39,6 +40,7 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
   soundEnabled = true,
   isRank3 = false, // ========== RANK3 TUTORIAL: Add isRank3 prop ==========
   theme = "dark", // Default to dark theme
+  suppressAutoCheck = false,
 }) => {
   // Define success color based on theme
   const successColor = theme === "light" ? "#0891b2" : "limegreen";
@@ -58,7 +60,7 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
     const status = checkNielsenReduced(movePaths);
     setNStatus(status);
 
-    if (movePaths.length > 0 && status.every((x) => x) && !showConfetti) {
+    if (movePaths.length > 0 && status.every((x) => x) && !showConfetti && !suppressAutoCheck) {
       if (soundEnabled) {
         playSuccessSound();
       }

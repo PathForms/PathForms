@@ -73,14 +73,16 @@ interface ButtonBarProps {
  defaultGeneratorsText?: string;
  // Rank 3 flag
  isRank3?: boolean;
- dualTransforms?: { id: string; label: string; onClick: () => void }[];
- steppedMode?: boolean;
- onSteppedModeChange?: (value: boolean) => void;
- steppedTransformActive?: boolean;
- steppedTransformStepIndex?: number;
- steppedTransformTotalSteps?: number;
- onSteppedNext?: () => void;
- onSteppedSkip?: () => void;
+  dualTransformOptions?: { id: string; label: string; replacement: string[] }[];
+  onDualTransformApply?: (replacement: string[]) => void;
+  steppedTransformActive?: boolean;
+  steppedTransformStepIndex?: number;
+  steppedTransformTotalSteps?: number;
+  onSteppedPrev?: () => void;
+  onSteppedNext?: () => void;
+  onSteppedSkip?: () => void;
+  steppedTransformDone?: boolean;
+  onSteppedConfirm?: () => void;
 }
 
 
@@ -102,14 +104,16 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
  defaultGeneratorsText = "No specified bases, default generators a,b.",
   // Rank 3 flag
   isRank3 = false,
-  dualTransforms,
-  steppedMode = false,
-  onSteppedModeChange,
+  dualTransformOptions,
+  onDualTransformApply,
   steppedTransformActive = false,
   steppedTransformStepIndex = 0,
   steppedTransformTotalSteps = 0,
+  onSteppedPrev,
   onSteppedNext,
   onSteppedSkip,
+  steppedTransformDone = false,
+  onSteppedConfirm,
 }) => {
   // Use appropriate translation based on rank
   const translation = isRank3
@@ -298,10 +302,17 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
    addbase(currBase);
  };
 
- const handleDualTransformClick = async (handler: () => void) => {
+ const [selectedTransformId, setSelectedTransformId] = useState<string>(
+   dualTransformOptions?.[0]?.id ?? ""
+ );
+
+ const handleApplyTransform = async () => {
+   if (!dualTransformOptions || !onDualTransformApply) return;
+   const selected = dualTransformOptions.find((o) => o.id === selectedTransformId);
+   if (!selected) return;
    if (soundEnabled) await playButtonSound();
    await initializeAudio();
-   handler();
+   onDualTransformApply(selected.replacement);
  };
 
 
@@ -379,6 +390,12 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
          alignItems: "left",
        }}
      >
+       {dualTransformOptions && dualTransformOptions.length > 0 && (
+         <div style={{ fontSize: 11, fontWeight: "bold", color: "rgb(180, 180, 180)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 2 }}>
+           Generate
+         </div>
+       )}
+
        {/* Row 1: Size Input */}
        <div style={{ display: "flex", gap: 8 }}>
          <label>Number of Paths:</label>
@@ -473,31 +490,17 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
          )}
        </div>
 
-       {dualTransforms && dualTransforms.length > 0 && (
-         <div
-           style={{
-             display: "flex",
-             gap: 8,
-             flexWrap: "wrap",
-             justifyContent: "left",
-             alignItems: "center",
-           }}
-         >
-           {dualTransforms.map((action) => (
-             <button
-               key={action.id}
-               style={generateButtonStyle}
-               onClick={() => handleDualTransformClick(action.onClick)}
-               disabled={steppedTransformActive}
-             >
-               {action.label}
-             </button>
-           ))}
+       {dualTransformOptions && dualTransformOptions.length > 0 && (
+         <div style={{ borderTop: "1px solid rgba(255, 255, 255, 0.15)", margin: "4px 0" }} />
+       )}
+
+       {dualTransformOptions && dualTransformOptions.length > 0 && (
+         <div style={{ fontSize: 11, fontWeight: "bold", color: "rgb(180, 180, 180)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 2 }}>
+           Dual Transform
          </div>
        )}
 
-       {/* Stepped mode checkbox */}
-       {dualTransforms && dualTransforms.length > 0 && (
+       {dualTransformOptions && dualTransformOptions.length > 0 && (
          <div
            style={{
              display: "flex",
@@ -505,43 +508,92 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
              alignItems: "center",
            }}
          >
-           <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", fontSize: 13 }}>
-             <input
-               type="checkbox"
-               checked={steppedMode}
-               onChange={(e) => onSteppedModeChange?.(e.target.checked)}
-               disabled={steppedTransformActive}
-               style={{ cursor: "pointer" }}
-             />
-             Step-through mode
-           </label>
+           <span style={{ fontSize: 13, whiteSpace: "nowrap" }}>a →</span>
+           <select
+             value={selectedTransformId}
+             onChange={(e) => setSelectedTransformId(e.target.value)}
+             disabled={steppedTransformActive}
+             style={{
+               flex: 1,
+               fontSize: 13,
+               padding: "4px 8px",
+               borderRadius: 4,
+               border: "2px solid rgb(13, 255, 0)",
+               backgroundColor: "transparent",
+               color: "rgb(13, 255, 0)",
+               cursor: steppedTransformActive ? "not-allowed" : "pointer",
+             }}
+           >
+             {dualTransformOptions.map((opt) => (
+               <option key={opt.id} value={opt.id} style={{ backgroundColor: "#2f2f2f" }}>
+                 {opt.label}
+               </option>
+             ))}
+           </select>
+           <button
+             style={{ ...buttonStyle, width: 80 }}
+             onClick={handleApplyTransform}
+             disabled={steppedTransformActive}
+           >
+             Apply
+           </button>
          </div>
        )}
 
-       {/* Stepped transform controls */}
        {steppedTransformActive && (
          <div
            style={{
              display: "flex",
-             gap: 8,
+             gap: 6,
              alignItems: "center",
+             justifyContent: "space-between",
            }}
          >
-           <span style={{ fontSize: 12, color: "rgb(200, 200, 200)" }}>
+           <button
+             style={{ ...buttonStyle, width: 32 }}
+             onClick={onSteppedPrev}
+             disabled={steppedTransformStepIndex <= 0}
+           >
+             &lt;
+           </button>
+           <span style={{ fontSize: 12, color: "rgb(200, 200, 200)", whiteSpace: "nowrap", flex: 1, textAlign: "center" }}>
              Step {steppedTransformStepIndex} / {steppedTransformTotalSteps - 1}
            </span>
            <button
-             style={buttonStyle}
+             style={{ ...buttonStyle, width: 32 }}
              onClick={onSteppedNext}
              disabled={steppedTransformStepIndex >= steppedTransformTotalSteps - 1}
            >
-             Next
+             &gt;
            </button>
            <button
-             style={buttonStyle}
+             style={{ ...buttonStyle, width: 60 }}
              onClick={onSteppedSkip}
+             disabled={steppedTransformDone}
            >
              Skip
+           </button>
+         </div>
+       )}
+
+       {steppedTransformActive && (
+         <div style={{
+           display: "flex",
+           gap: 8,
+           alignItems: "center",
+           justifyContent: "center",
+           opacity: steppedTransformDone ? 1 : 0.3,
+           pointerEvents: steppedTransformDone ? "auto" : "none",
+           transition: "opacity 0.3s",
+         }}>
+           <span style={{ fontSize: 13, color: "rgb(13, 255, 0)", fontWeight: "bold" }}>
+             Transformation Complete!
+           </span>
+           <button
+             style={{ ...buttonStyle, width: 80 }}
+             onClick={onSteppedConfirm}
+           >
+             Confirm
            </button>
          </div>
        )}
