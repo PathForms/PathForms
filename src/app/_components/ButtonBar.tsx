@@ -73,8 +73,13 @@ interface ButtonBarProps {
  defaultGeneratorsText?: string;
  // Rank 3 flag
  isRank3?: boolean;
-  dualTransformOptions?: { id: string; label: string; replacement: string[] }[];
-  onDualTransformApply?: (replacement: string[]) => void;
+  dualTransformOptions?: {
+    id: string;
+    source: "a" | "b";
+    label: string;
+    replacement: string[];
+  }[];
+  onDualTransformApply?: (source: "a" | "b", replacement: string[]) => void;
   steppedTransformActive?: boolean;
   steppedTransformStepIndex?: number;
   steppedTransformTotalSteps?: number;
@@ -302,9 +307,25 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
    addbase(currBase);
  };
 
+   const [selectedTransformSource, setSelectedTransformSource] = useState<"a" | "b">(
+     dualTransformOptions?.[0]?.source ?? "a"
+   );
  const [selectedTransformId, setSelectedTransformId] = useState<string>(
    dualTransformOptions?.[0]?.id ?? ""
  );
+
+   const selectedTransformOptions = dualTransformOptions?.filter(
+     (opt) => opt.source === selectedTransformSource
+   ) ?? [];
+
+   const handleTransformSourceChange = (
+     event: React.ChangeEvent<HTMLSelectElement>
+   ) => {
+     const nextSource = event.target.value as "a" | "b";
+     setSelectedTransformSource(nextSource);
+     const firstOption = dualTransformOptions?.find((opt) => opt.source === nextSource);
+     setSelectedTransformId(firstOption?.id ?? "");
+   };
 
  const handleApplyTransform = async () => {
    if (!dualTransformOptions || !onDualTransformApply) return;
@@ -312,7 +333,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
    if (!selected) return;
    if (soundEnabled) await playButtonSound();
    await initializeAudio();
-   onDualTransformApply(selected.replacement);
+     onDualTransformApply(selected.source, selected.replacement);
  };
 
 
@@ -508,11 +529,33 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
              alignItems: "center",
            }}
          >
-           <span style={{ fontSize: 13, whiteSpace: "nowrap" }}>a →</span>
+           <select
+             value={selectedTransformSource}
+             onChange={handleTransformSourceChange}
+             disabled={steppedTransformActive}
+             style={{
+               width: 52,
+               fontSize: 13,
+               padding: "4px 6px",
+               borderRadius: 4,
+               border: "2px solid rgb(13, 255, 0)",
+               backgroundColor: "transparent",
+               color: "rgb(13, 255, 0)",
+               cursor: steppedTransformActive ? "not-allowed" : "pointer",
+             }}
+           >
+             <option value="a" style={{ backgroundColor: "#2f2f2f" }}>
+               a
+             </option>
+             <option value="b" style={{ backgroundColor: "#2f2f2f" }}>
+               b
+             </option>
+           </select>
+           <span style={{ fontSize: 13, whiteSpace: "nowrap" }}>→</span>
            <select
              value={selectedTransformId}
              onChange={(e) => setSelectedTransformId(e.target.value)}
-             disabled={steppedTransformActive}
+             disabled={steppedTransformActive || selectedTransformOptions.length === 0}
              style={{
                flex: 1,
                fontSize: 13,
@@ -521,10 +564,10 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
                border: "2px solid rgb(13, 255, 0)",
                backgroundColor: "transparent",
                color: "rgb(13, 255, 0)",
-               cursor: steppedTransformActive ? "not-allowed" : "pointer",
+               cursor: steppedTransformActive || selectedTransformOptions.length === 0 ? "not-allowed" : "pointer",
              }}
            >
-             {dualTransformOptions.map((opt) => (
+             {selectedTransformOptions.map((opt) => (
                <option key={opt.id} value={opt.id} style={{ backgroundColor: "#2f2f2f" }}>
                  {opt.label}
                </option>
