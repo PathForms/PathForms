@@ -76,6 +76,51 @@ const Interface = ({
     : greedyNielsenSteps;
 
   type Token2 = "a" | "a^-" | "b" | "b^-";
+  type TransformSource = "a" | "b";
+
+  const token2Alphabet: Token2[] = ["a", "a^-", "b", "b^-"];
+
+  const formatToken2 = (token: Token2): string => {
+    switch (token) {
+      case "a":
+        return "a";
+      case "a^-":
+        return "a\u207B\u00B9";
+      case "b":
+        return "b";
+      case "b^-":
+        return "b\u207B\u00B9";
+    }
+  };
+
+  const formatToken2Sequence = (tokens: Token2[]): string =>
+    tokens.map(formatToken2).join("");
+
+  const buildDualTransformOptions = () => {
+    const options: {
+      id: string;
+      source: TransformSource;
+      label: string;
+      replacement: Token2[];
+    }[] = [];
+
+    (["a", "b"] as TransformSource[]).forEach((source) => {
+      token2Alphabet.forEach((first) => {
+        token2Alphabet.forEach((second) => {
+          if (first[0] === second[0]) return;
+          const replacement = [first, second];
+          options.push({
+            id: `${source}-to-${first}-${second}`,
+            source,
+            label: formatToken2Sequence(replacement),
+            replacement,
+          });
+        });
+      });
+    });
+
+    return options;
+  };
 
   const moveToToken2 = (move: Direction2): Token2 => {
     switch (move) {
@@ -1658,29 +1703,36 @@ const Interface = ({
     setBases([]);
   };
 
-  // If a -> X, then a^- -> (X)^-1 where inverse reverses order and inverts tokens.
+  // If source -> X, then source^- -> (X)^-1 where inverse reverses order and inverts tokens.
   const computeInverseReplacement = (replacement: Token2[]): Token2[] => {
     return replacement.slice().reverse().map((token) => invertToken2(token));
   };
 
   const getTransformedTokenSequence = (
     token: Token2,
+    source: TransformSource,
     replacement: Token2[],
     inverseReplacement: Token2[]
   ): Token2[] => {
-    if (token === "a") return replacement;
-    if (token === "a^-") return inverseReplacement;
+    if (token === source) return replacement;
+    if (token === `${source}^-`) return inverseReplacement;
     return [token];
   };
 
-  const applyDualATransform = (replacement: Token2[]) => {
+  const applyDualATransform = (
+    source: TransformSource,
+    replacement: Token2[]
+  ) => {
     if (isRank3) return;
     setSteppedTransformDone(false);
-    startSteppedTransform(replacement);
+    startSteppedTransform(source, replacement);
   };
 
   // --- Stepped dual transform helpers ---
-  const startSteppedTransform = (replacement: Token2[]) => {
+  const startSteppedTransform = (
+    source: TransformSource,
+    replacement: Token2[]
+  ) => {
     setSteppedTransformActive(false);
     setTransformSteps([]);
     setTransformStepIndex(0);
@@ -1695,7 +1747,7 @@ const Interface = ({
     let totalTransformable = 0;
     allPathTokens.forEach((tokens) => {
       tokens.forEach((t) => {
-        if (t === "a" || t === "a^-") totalTransformable++;
+        if (t === source || t === `${source}^-`) totalTransformable++;
       });
     });
 
@@ -1713,11 +1765,12 @@ const Interface = ({
       let replacedCount = 0;
       const newPathTokens = allPathTokens.map((tokens) =>
         tokens.flatMap((token) => {
-          if (token === "a" || token === "a^-") {
+          if (token === source || token === `${source}^-`) {
             replacedCount++;
             if (replacedCount <= step) {
               return getTransformedTokenSequence(
                 token,
+                source,
                 replacement,
                 inverseReplacement
               );
@@ -1978,12 +2031,7 @@ const Interface = ({
 
   const dualTransformOptions =
     showDualTransforms && !isRank3
-      ? [
-          { id: "a-to-ab", label: "ab", replacement: ["a", "b"] },
-          { id: "a-to-ab-inv", label: "ab\u207B\u00B9", replacement: ["a", "b^-"] },
-          { id: "a-to-ba", label: "ba", replacement: ["b", "a"] },
-          { id: "a-to-b-inv-a", label: "b\u207B\u00B9a", replacement: ["b^-", "a"] },
-        ]
+      ? buildDualTransformOptions()
       : undefined;
 
   return (
@@ -2036,7 +2084,9 @@ const Interface = ({
           }
           isRank3={isRank3}
           dualTransformOptions={dualTransformOptions}
-          onDualTransformApply={(r) => applyDualATransform(r as Token2[])}
+          onDualTransformApply={(source, r) =>
+            applyDualATransform(source as TransformSource, r as Token2[])
+          }
           steppedTransformActive={steppedTransformActive}
           steppedTransformStepIndex={transformStepIndex}
           steppedTransformTotalSteps={transformSteps.length}
