@@ -105,9 +105,11 @@ const Interface = ({
     }[] = [];
 
     (["a", "b"] as TransformSource[]).forEach((source) => {
+      const forbiddenInverse: Token2 = source === "a" ? "a^-" : "b^-";
       token2Alphabet.forEach((first) => {
         token2Alphabet.forEach((second) => {
           if (first[0] === second[0]) return;
+          if (first === forbiddenInverse || second === forbiddenInverse) return;
           const replacement = [first, second];
           options.push({
             id: `${source}-to-${first}-${second}`,
