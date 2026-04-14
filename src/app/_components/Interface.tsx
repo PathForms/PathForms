@@ -1730,6 +1730,43 @@ const Interface = ({
     startSteppedTransform(source, replacement);
   };
 
+  const invertSourceToken = (token: Token2, source: TransformSource): Token2 => {
+    if (source === "a") {
+      if (token === "a") return "a^-";
+      if (token === "a^-") return "a";
+      return token;
+    }
+    if (token === "b") return "b^-";
+    if (token === "b^-") return "b";
+    return token;
+  };
+
+  const applyDualInverse = (source: TransformSource) => {
+    if (isRank3 || steppedTransformActive) return;
+
+    const currentPaths = moveRecords as Direction2[][];
+    const invertedMoves = currentPaths.map((path) =>
+      path
+        .map(moveToToken2)
+        .map((token) => invertSourceToken(token, source))
+        .map(tokenToMove2)
+    );
+
+    const newNodePaths: string[][] = [];
+    const newEdgePaths: string[][] = [];
+    invertedMoves.forEach((moves) => {
+      const { newNodes, newEdges } = buildNodesEdges(moves as any);
+      newNodePaths.push(newNodes);
+      newEdgePaths.push(newEdges);
+    });
+
+    setMoveRecords(invertedMoves as any);
+    setNodePaths(newNodePaths);
+    setEdgePaths(newEdgePaths);
+    setTargetSteps(greedyNielsenStepsFunc(invertedMoves as any));
+    setSteppedTransformDone(false);
+  };
+
   // --- Stepped dual transform helpers ---
   const startSteppedTransform = (
     source: TransformSource,
@@ -2089,6 +2126,8 @@ const Interface = ({
           onDualTransformApply={(source, r) =>
             applyDualATransform(source as TransformSource, r as Token2[])
           }
+          onDualInverseA={() => applyDualInverse("a")}
+          onDualInverseB={() => applyDualInverse("b")}
           steppedTransformActive={steppedTransformActive}
           steppedTransformStepIndex={transformStepIndex}
           steppedTransformTotalSteps={transformSteps.length}
