@@ -100,7 +100,7 @@ const Home = () => {
       label: "Dual",
       description: "Apply the four dual transformations and keep exploring!",
       route: "/dual",
-      image: `${basePath}/rank3.gif`,
+      image: `${basePath}/dual.gif`,
       alt: "Dual Preview",
       borderColor: "#14b8a6",
       shadowColor: "20, 184, 166",
