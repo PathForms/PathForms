@@ -45,6 +45,10 @@
   z-index: 1000;
 }
 
+.headerStatic {
+  position: relative;
+}
+
 .header.light {
   background-color: #ffffff00;
   color: #0891b2;

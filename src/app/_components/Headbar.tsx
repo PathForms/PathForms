@@ -21,6 +21,7 @@ interface HeadbarProps {
   // make some buttons optional for Rank 1
   hideEdgeThickness?: boolean;
   hideShape?: boolean;
+  fixed?: boolean;
 }
 
 //function for return
@@ -39,7 +40,8 @@ const Headbar: React.FC<HeadbarProps> = ({
   soundEnabled,
   setSoundEnabled,
   hideEdgeThickness,
-  hideShape
+  hideShape,
+  fixed = true,
 }) => {
   const router = useRouter();
   const pathname = usePathname();
@@ -93,7 +95,7 @@ const Headbar: React.FC<HeadbarProps> = ({
   );
 
   return (
-    <div className={`${styles.header} ${styles[theme]}`}>
+    <div className={`${styles.header} ${!fixed ? styles.headerStatic : ""} ${styles[theme]}`}>
       {" "}
       {/* Use CSS module styling for dynamic class */}
       <div>{heading}</div>
