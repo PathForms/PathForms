@@ -255,6 +255,17 @@ const Interface = ({
 
   // ========== END RANK3 TUTORIAL STEPS ==========
 
+  // ========== DUAL TUTORIAL: Define tutorial steps for the Dual Transform page ==========
+  const dualTutorialSteps = [
+    "Welcome to the Dual Transform page! Click 'Generate Paths' to create two paths to work with.",
+    "The 'Dual Transform' section replaces every occurrence of a generator with a new word. The left dropdown (highlighted) selects which generator to replace. Switch it from 'a' to 'b' to continue.",
+    "Now choose what 'b' will be replaced with using the right dropdown, then click 'Apply' to start the step-by-step substitution.",
+    "The substitution is applied one occurrence at a time. Use '<' and '>' to step backward or forward, or press 'Skip' to apply all at once. Once done, click 'Confirm' to finalize.",
+    "The 'Dual Inverse' section (highlighted) flips a generator's sign across all paths at once — 'Invert a' swaps every 'a' with 'a⁻¹' without touching 'b'. Try pressing one of the Invert buttons!",
+    "You now know all the Dual Transform tools. Use them together with invert and concatenate to reduce your paths to a Nielsen-reduced basis. Good luck!",
+  ];
+  // ========== END DUAL TUTORIAL STEPS ==========
+
   // Steps state
   const [targetSteps, setTargetSteps] = useState(0);
   const [usedConcatSteps, setUsedConcatSteps] = useState<number>(0);
@@ -1727,7 +1738,10 @@ const Interface = ({
   ) => {
     if (isRank3) return;
     setSteppedTransformDone(false);
-    startSteppedTransform(source, replacement);
+    const onStarted = (showDualTransforms && tutorialStep === 3)
+      ? () => setTutorialStep((s) => s + 1)
+      : undefined;
+    startSteppedTransform(source, replacement, onStarted);
   };
 
   const invertSourceToken = (token: Token2, source: TransformSource): Token2 => {
@@ -1770,7 +1784,8 @@ const Interface = ({
   // --- Stepped dual transform helpers ---
   const startSteppedTransform = (
     source: TransformSource,
-    replacement: Token2[]
+    replacement: Token2[],
+    onStarted?: () => void
   ) => {
     setSteppedTransformActive(false);
     setTransformSteps([]);
@@ -1837,6 +1852,7 @@ const Interface = ({
     setTransformSteps(steps);
     setTransformStepIndex(0);
     setSteppedTransformActive(true);
+    if (onStarted) onStarted();
   };
 
   const steppedTransformNext = () => {
@@ -2135,7 +2151,13 @@ const Interface = ({
           onSteppedNext={steppedTransformNext}
           onSteppedSkip={steppedTransformSkip}
           steppedTransformDone={steppedTransformDone}
-          onSteppedConfirm={confirmSteppedTransform}
+          onSteppedConfirm={() => {
+            confirmSteppedTransform();
+            if (showDualTransforms && tutorialStep === 4) {
+              setTutorialStep((s) => s + 1);
+            }
+          }}
+          onDualTutorialAdvance={showDualTransforms ? () => setTutorialStep((s) => s + 1) : undefined}
         />
         <Pathterminal
           pathIndex={pathIndex}
@@ -2193,6 +2215,7 @@ const Interface = ({
           onPathHover={handlePathHover}
           onPathLeave={handlePathLeave}
           hoverPathIndex={hoverPathIndex}
+          isDualTutorial={showDualTransforms}
         />
         {/* ========== RANK3 TUTORIAL: Pass isRank3 to CheckNielsen ========== */}
         <CheckNielsen
@@ -4115,7 +4138,7 @@ const Interface = ({
             setTutorialCompleted(false);
           }}
           soundEnabled={soundEnabled}
-          steps={isRank3 ? rank3TutorialSteps : undefined}
+          steps={isRank3 ? rank3TutorialSteps : showDualTransforms ? dualTutorialSteps : undefined}
         />
         {/* ========== END RANK3 TUTORIAL: Tutorial component ========== */}
         <Steps
