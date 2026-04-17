@@ -80,6 +80,8 @@ interface ButtonBarProps {
     replacement: string[];
   }[];
   onDualTransformApply?: (source: "a" | "b", replacement: string[]) => void;
+  onDualInverseA?: () => void;
+  onDualInverseB?: () => void;
   steppedTransformActive?: boolean;
   steppedTransformStepIndex?: number;
   steppedTransformTotalSteps?: number;
@@ -88,6 +90,7 @@ interface ButtonBarProps {
   onSteppedSkip?: () => void;
   steppedTransformDone?: boolean;
   onSteppedConfirm?: () => void;
+  onDualTutorialAdvance?: () => void;
 }
 
 
@@ -111,6 +114,8 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
   isRank3 = false,
   dualTransformOptions,
   onDualTransformApply,
+  onDualInverseA,
+  onDualInverseB,
   steppedTransformActive = false,
   steppedTransformStepIndex = 0,
   steppedTransformTotalSteps = 0,
@@ -119,6 +124,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
   onSteppedSkip,
   steppedTransformDone = false,
   onSteppedConfirm,
+  onDualTutorialAdvance,
 }) => {
   // Use appropriate translation based on rank
   const translation = isRank3
@@ -325,6 +331,10 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
      setSelectedTransformSource(nextSource);
      const firstOption = dualTransformOptions?.find((opt) => opt.source === nextSource);
      setSelectedTransformId(firstOption?.id ?? "");
+     // Dual tutorial step 2: advance when user switches to "b"
+     if (tutorialStep === 2 && nextSource === "b" && onDualTutorialAdvance) {
+       onDualTutorialAdvance();
+     }
    };
 
  const handleApplyTransform = async () => {
@@ -333,7 +343,19 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
    if (!selected) return;
    if (soundEnabled) await playButtonSound();
    await initializeAudio();
-     onDualTransformApply(selected.source, selected.replacement);
+   onDualTransformApply(selected.source, selected.replacement);
+ };
+
+ const handleDualInverse = async (source: "a" | "b") => {
+   const callback = source === "a" ? onDualInverseA : onDualInverseB;
+   if (!callback) return;
+   if (soundEnabled) await playButtonSound();
+   await initializeAudio();
+   callback();
+   // Dual tutorial step 5: advance to step 6 (free play) when Invert is clicked
+   if (tutorialStep === 5 && onDualTutorialAdvance) {
+     onDualTutorialAdvance();
+   }
  };
 
 
@@ -533,6 +555,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
              value={selectedTransformSource}
              onChange={handleTransformSourceChange}
              disabled={steppedTransformActive}
+             className={tutorialStep === 2 ? styles.highlight : ""}
              style={{
                width: 52,
                fontSize: 13,
@@ -556,6 +579,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
              value={selectedTransformId}
              onChange={(e) => setSelectedTransformId(e.target.value)}
              disabled={steppedTransformActive || selectedTransformOptions.length === 0}
+             className={tutorialStep === 3 ? styles.highlight : ""}
              style={{
                flex: 1,
                fontSize: 13,
@@ -575,10 +599,42 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
            </select>
            <button
              style={{ ...buttonStyle, width: 80 }}
+             className={tutorialStep === 3 ? styles.highlight : ""}
              onClick={handleApplyTransform}
              disabled={steppedTransformActive}
            >
              Apply
+           </button>
+         </div>
+       )}
+
+       {dualTransformOptions && dualTransformOptions.length > 0 && (
+         <div style={{ borderTop: "1px solid rgba(255, 255, 255, 0.15)", margin: "4px 0" }} />
+       )}
+
+       {dualTransformOptions && dualTransformOptions.length > 0 && (
+         <div style={{ fontSize: 11, fontWeight: "bold", color: "rgb(180, 180, 180)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 2 }}>
+           Dual Inverse
+         </div>
+       )}
+
+       {dualTransformOptions && dualTransformOptions.length > 0 && (
+         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+           <button
+             style={{ ...buttonStyle, width: 110 }}
+             className={tutorialStep === 5 ? styles.highlight : ""}
+             onClick={() => handleDualInverse("a")}
+             disabled={steppedTransformActive}
+           >
+             Invert a
+           </button>
+           <button
+             style={{ ...buttonStyle, width: 110 }}
+             className={tutorialStep === 5 ? styles.highlight : ""}
+             onClick={() => handleDualInverse("b")}
+             disabled={steppedTransformActive}
+           >
+             Invert b
            </button>
          </div>
        )}
@@ -594,6 +650,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
          >
            <button
              style={{ ...buttonStyle, width: 32 }}
+             className={tutorialStep === 4 ? styles.highlight : ""}
              onClick={onSteppedPrev}
              disabled={steppedTransformStepIndex <= 0}
            >
@@ -604,6 +661,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
            </span>
            <button
              style={{ ...buttonStyle, width: 32 }}
+             className={tutorialStep === 4 ? styles.highlight : ""}
              onClick={onSteppedNext}
              disabled={steppedTransformStepIndex >= steppedTransformTotalSteps - 1}
            >
@@ -611,6 +669,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
            </button>
            <button
              style={{ ...buttonStyle, width: 60 }}
+             className={tutorialStep === 4 ? styles.highlight : ""}
              onClick={onSteppedSkip}
              disabled={steppedTransformDone}
            >
@@ -634,6 +693,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
            </span>
            <button
              style={{ ...buttonStyle, width: 80 }}
+             className={tutorialStep === 4 ? styles.highlight : ""}
              onClick={onSteppedConfirm}
            >
              Confirm
