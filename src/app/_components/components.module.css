@@ -134,13 +134,7 @@
   width: 60%; /* Full width */
   height: 290px; /* Fixed height */
   display: flex;
-  /* background: rgba(
-    203,
-    203,
-    203,
-    0.8
-  ); Optional: add a background to see it */
-  color: white; /* Ensure text is visible */
+  color: var(--foreground);
   scrollbar-width: 0;
   border-radius: 4
 }
@@ -185,10 +179,16 @@
   transform: translateX(-50%);
   background-color: rgba(255, 255, 255, 0.95);
   padding: 16px 24px;
-  color: black;
+  color: #171717;
   border-radius: 10px;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
   pointer-events: auto;
+}
+
+:global(html[data-theme="dark"]) .tutorialBox {
+  background-color: rgba(30, 30, 30, 0.95);
+  color: #ededed;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
 }
 
 .highlight {
@@ -229,10 +229,16 @@
   max-width: 600px;
   text-align: center;
   box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
-  color: black;
+  color: #171717;
   pointer-events: auto;
   position: relative;
   z-index: 10001;
+}
+
+:global(html[data-theme="dark"]) .welcomeBox {
+  background-color: #1f1f1f;
+  color: #ededed;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
 }
 
 .buttonRow {
@@ -248,6 +254,7 @@
   border: 2px solid #333;
   border-radius: 6px;
   background-color: #f5f5f5;
+  color: #171717;
   cursor: pointer;
   transition: 0.3s;
   pointer-events: auto;
@@ -257,6 +264,16 @@
 
 .buttonRow button:hover {
   background-color: #ddd;
+}
+
+:global(html[data-theme="dark"]) .buttonRow button {
+  background-color: #2a2a2a;
+  color: #ededed;
+  border: 2px solid #666;
+}
+
+:global(html[data-theme="dark"]) .buttonRow button:hover {
+  background-color: #3a3a3a;
 }
 
 @keyframes pulse {
@@ -347,6 +364,13 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
 }
 
+:global(html[data-theme="light"]) .helpBubble {
+  background: rgba(245, 245, 245, 0.98);
+  color: #0a3d0a;
+  border: 1px solid rgba(8, 145, 178, 0.5);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
 .helpBubble::after {
   content: "";
   position: absolute;
@@ -355,6 +379,10 @@
   border-width: 6px;
   border-style: solid;
   border-color: rgba(20, 20, 20, 0.95) transparent transparent transparent;
+}
+
+:global(html[data-theme="light"]) .helpBubble::after {
+  border-color: rgba(245, 245, 245, 0.98) transparent transparent transparent;
 }
 
 .helpWrapper:hover .helpBubble {
