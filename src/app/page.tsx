@@ -124,7 +124,7 @@ const Home = () => {
         overflowY: "auto",
         overflowX: "hidden",
         backgroundColor: "#0a0a0a", // Dark theme background from globals.css
-        paddingTop: "calc(80px + clamp(16px, 3vh, 40px))",
+        paddingTop: "clamp(16px, 3vh, 40px)",
         paddingBottom: "clamp(16px, 3vh, 40px)",
         paddingLeft: "20px",
         paddingRight: "20px",
@@ -144,6 +144,7 @@ const Home = () => {
         setSoundEnabled={setSoundEnabled}
         hideEdgeThickness={true}
         hideShape={true}
+        fixed={false}
       />
       <div
         style={{ marginBottom: "clamp(16px, 2.5vh, 40px)", textAlign: "center" }}
