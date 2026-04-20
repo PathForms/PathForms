@@ -2189,6 +2189,7 @@ const Interface = ({
           onPathHover={handlePathHover}
           onPathLeave={handlePathLeave}
           hoverPathIndex={hoverPathIndex}
+          isRank3={isRank3}
         />
         {/* ========== RANK3 TUTORIAL: Pass isRank3 to CheckNielsen ========== */}
         <CheckNielsen
