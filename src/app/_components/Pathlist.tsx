@@ -93,6 +93,7 @@ interface PathlistProps {
   onPathHover?: (pathIndex: number) => void;
   onPathLeave?: () => void;
   hoverPathIndex?: number;
+  isDualTutorial?: boolean;
 }
 
 const CLICK_INTERVAL = 250;
@@ -121,6 +122,7 @@ const Pathlist: React.FC<PathlistProps> = ({
   onPathHover,
   onPathLeave,
   hoverPathIndex = -1,
+  isDualTutorial = false,
 }) => {
   const singleClickTimer = useRef<NodeJS.Timeout | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -316,17 +318,17 @@ const Pathlist: React.FC<PathlistProps> = ({
               <p
                 key={rowIndex}
                 className={`${styles.textbox} ${
-                  (tutorialStep === 2 || tutorialStep === 3) && rowIndex === 0
+                  (tutorialStep === 2 || tutorialStep === 3) && rowIndex === 0 && !isDualTutorial
                     ? styles.highlight
-                    : tutorialStep === 4 && rowIndex === 2
+                    : tutorialStep === 4 && rowIndex === 2 && !isDualTutorial
                       ? styles.highlight
-                      : tutorialStep === 5 && (rowIndex === 1 || rowIndex === 2)
+                      : tutorialStep === 5 && (rowIndex === 1 || rowIndex === 2) && !isDualTutorial
                         ? styles.highlight
                         : tutorialStep === 6 &&
-                            (rowIndex === 0 || rowIndex === 1)
+                            (rowIndex === 0 || rowIndex === 1) && !isDualTutorial
                           ? styles.highlight
                           : tutorialStep === 7 &&
-                              (rowIndex === 0 || rowIndex === 1)
+                              (rowIndex === 0 || rowIndex === 1) && !isDualTutorial
                             ? styles.highlight
                             : ""
                 }`}
