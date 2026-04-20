@@ -92,7 +92,7 @@ const Tutorial: React.FC<TutorialProps> = ({
   return (
     <div className={styles.tutorialOverlay}>
       <div className={styles.tutorialBox} style={isFinalStep ? { maxWidth: "800px", maxHeight: "80vh", overflowY: "auto" } : {}}>
-        <p style={{ color: "black", margin: 0, lineHeight: "1.6" }}>{tutorialSteps[step - 1]}</p>
+        <p style={{ margin: 0, lineHeight: "1.6" }}>{tutorialSteps[step - 1]}</p>
         <div
           style={{
             display: "flex",
