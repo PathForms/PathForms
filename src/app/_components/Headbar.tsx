@@ -40,7 +40,7 @@ const Headbar: React.FC<HeadbarProps> = ({
   setSoundEnabled,
   hideEdgeThickness,
   hideShape,
-  fixed = true,
+  fixed = false,
 }) => {
   const router = useRouter();
   const pathname = usePathname();

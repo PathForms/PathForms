@@ -131,11 +131,12 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
     ? translation3
     : translation2;
   const helpTextRand = isRank3
+    ? "Generates words from the subgroup spanned by the provided generators. If none are provided, uses the default basis (a,b,c) and expands via inversion/concatenation. May not reduce to the standard basis."
+    : "Generates words from the subgroup spanned by the provided generators. If none are provided, uses the default basis (a,b) and expands via inversion/concatenation. May not reduce to the standard basis.";
+
+  const helpTextPaths = isRank3
     ? "Generates words in the full free group using the default basis (a,b,c) and random moves in all directions. Always reducible to the standard basis."
     : "Generates words in the full free group using the default basis (a,b) and random moves in all directions. Always reducible to the standard basis.";
-  const helpTextPaths = isRank3
-    ? "Generates words from the subgroup spanned by the provided generators. If none are provided, uses the default basis (a,b,c) and expands via inversion/concatenation. May not reduce tot he standard basis."
-    : "Generates words from the subgroup spanned by the provided generators. If none are provided, uses the default basis (a,b) and expands via inversion/concatenation. May not reduce tot he standard basis.";
  //input config
  const [inputSize, setInputSize] = useState<string>("");
  const [currBase, setCurrBase] = useState<string>("");
