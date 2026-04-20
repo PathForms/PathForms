@@ -313,7 +313,12 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
    addbase(currBase);
  };
 
-   const [selectedTransformSource, setSelectedTransformSource] = useState<"a" | "b">(
+   // The dual page is the only caller that passes a non-empty dualTransformOptions.
+  // Use this to gate dual-page-only UI (e.g. hide Generate Rand and the Number of
+  // Paths input so the dual page always produces exactly 2 paths).
+  const isDualPage = !!(dualTransformOptions && dualTransformOptions.length > 0);
+
+  const [selectedTransformSource, setSelectedTransformSource] = useState<"a" | "b">(
      dualTransformOptions?.[0]?.source ?? "a"
    );
  const [selectedTransformId, setSelectedTransformId] = useState<string>(
@@ -439,19 +444,21 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
          </div>
        )}
 
-       {/* Row 1: Size Input */}
-       <div style={{ display: "flex", gap: 8 }}>
-         <label>Number of Paths:</label>
-         <input
-           type="number"
-           min="0"
-           max="10"
-           size={10}
-           value={inputSize}
-           onChange={handleSizeChange}
-           placeholder={isRank3 ? "3" : "2"}
-         />
-       </div>
+       {/* Row 1: Size Input (hidden on the dual page; it always produces 2 paths) */}
+       {!isDualPage && (
+         <div style={{ display: "flex", gap: 8 }}>
+           <label>Number of Paths:</label>
+           <input
+             type="number"
+             min="0"
+             max="10"
+             size={10}
+             value={inputSize}
+             onChange={handleSizeChange}
+             placeholder={isRank3 ? "3" : "2"}
+           />
+         </div>
+       )}
 
 
        {/* Row 2: Base Input and Add Base Button */}
@@ -503,19 +510,21 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
            justifyContent: "left",
          }}
        >
-         <div className={styles.helpWrapper}>
-           <span className={styles.helpBubble} role="tooltip">
-             {helpTextRand}
-           </span>
-           <button
-            //  className={`${tutorialStep === 1 ? styles.highlight : ""}`}
-             style={generateButtonStyle}
-             onClick={handleClickRand}
-             aria-label="Generate Rand"
-           >
-             Generate Rand
-           </button>
-         </div>
+         {!isDualPage && (
+           <div className={styles.helpWrapper}>
+             <span className={styles.helpBubble} role="tooltip">
+               {helpTextRand}
+             </span>
+             <button
+              //  className={`${tutorialStep === 1 ? styles.highlight : ""}`}
+               style={generateButtonStyle}
+               onClick={handleClickRand}
+               aria-label="Generate Rand"
+             >
+               Generate Rand
+             </button>
+           </div>
+         )}
          {!generate_custom && (
            <div className={styles.helpWrapper}>
              <span className={styles.helpBubble} role="tooltip">
@@ -726,7 +735,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
      >
        {generate_custom ? (
          <>
-           <div style={{ fontWeight: "bold", color: "white", marginBottom: 4 }}>
+           <div style={{ fontWeight: "bold", color: "var(--foreground)", marginBottom: 4 }}>
              Custom Paths (Rank 1) <div></div>
              Press on a path to remove it.
            </div>
@@ -762,7 +771,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
          </>
        ) : (
          <>
-           <div style={{ fontWeight: "bold", color: "white", marginBottom: 4 }}>
+           <div style={{ fontWeight: "bold", color: "var(--foreground)", marginBottom: 4 }}>
              Generators
            </div>
            {bases.length === 0 ? (

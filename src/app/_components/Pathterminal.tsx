@@ -27,7 +27,13 @@ interface PathterminalProps {
   demonstratePath: (index: number) => void;
   concatenate: (index1: number, index2: number) => void;
   invert: (index: number) => void;
+  theme?: "dark" | "light";
 }
+
+const getTerminalTheme = (theme: "dark" | "light") =>
+  theme === "light"
+    ? { background: "rgba(240, 240, 240, 0.85)", foreground: "#171717" }
+    : { background: "rgba(29, 29, 29, 0.85)", foreground: "rgba(255, 255, 255, 0.85)" };
 
 interface BackupState {
   pathIndex: number[];
@@ -52,6 +58,7 @@ const Pathterminal: React.FC<PathterminalProps> = ({
   demonstratePath,
   concatenate,
   invert,
+  theme = "dark",
 }) => {
   // Terminal state references
   const terminalRef = useRef<HTMLDivElement>(null);
@@ -73,10 +80,7 @@ const Pathterminal: React.FC<PathterminalProps> = ({
         cursorBlink: true,
         rows: 17,
         cols: 90,
-        theme: {
-          background: "rgba(29, 29, 29, 0.49)",
-          foreground: "#rgba(255, 255, 255, 0.81)",
-        },
+        theme: getTerminalTheme(theme),
         fontFamily: '"Ubuntu", monospace',
       });
 
@@ -110,6 +114,12 @@ const Pathterminal: React.FC<PathterminalProps> = ({
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (terminalInstanceRef.current) {
+      terminalInstanceRef.current.options.theme = getTerminalTheme(theme);
+    }
+  }, [theme]);
 
   // start writing with > at the current line;
   // when finished, switch to new line without printing a > at front;

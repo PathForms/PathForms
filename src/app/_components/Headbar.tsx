@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { useEffect } from "react";
 import styles from "./components.module.css"; // Ensure that this is the correct path for your CSS module
 import { useRouter, usePathname } from "next/navigation";
 interface HeadbarProps {
@@ -57,16 +56,6 @@ const Headbar: React.FC<HeadbarProps> = ({
     "rgb(255, 137, 239)",
   ];
   const text = "PathForms";
-  useEffect(() => {
-    const root = document.documentElement;
-    if (theme === "light") {
-      root.style.setProperty("--background", "#e6e6e6"); // change background color
-      root.style.setProperty("--foreground", "#171717");
-    } else {
-      root.style.setProperty("--background", "#0a0a0a");
-      root.style.setProperty("--foreground", "#ededed");
-    }
-  }, [theme]);
 
   const heading = pathname === "/" ? (
     <a

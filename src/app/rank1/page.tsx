@@ -24,6 +24,7 @@ import next from "next";
 import Steps from "../_components/Steps";
 import { greedyNielsenSteps } from "../utils/greedyNielsen";
 import { playSuccessSound, playPoofSound, playReductionSound, playButtonSound, playGenerateSound, playBackgroundAudioLoop, stopBackgroundAudioLoop } from "../utils/soundManager";
+import useTheme from "../_components/useTheme";
 
 type Direction = "up" | "down" | "left" | "right";
 
@@ -78,13 +79,7 @@ const Rank1 = () => {
 
     // Settings state: edge thickness, vertex size, theme and settings panel visibility
     const [edgeThickness, setEdgeThickness] = useState<number>(0.7);
-    const [theme, setTheme] = useState<"dark" | "light">(() => {
-    if (typeof window !== "undefined") {
-        const saved = localStorage.getItem("theme");
-        return (saved === "light" || saved === "dark") ? saved : "dark";
-    }
-    return "dark";
-    });
+    const { theme, setTheme } = useTheme();
 
     const [soundEnabled, setSoundEnabled] = useState<boolean>(() => {
     if (typeof window !== "undefined") {
@@ -158,10 +153,9 @@ const Rank1 = () => {
 
     useEffect(() => {
     if (typeof window !== "undefined") {
-        localStorage.setItem("theme", theme);
         localStorage.setItem("soundEnabled", String(soundEnabled));
     }
-    }, [theme, soundEnabled]);
+    }, [soundEnabled]);
     
     // EDIT RANK1 TUTORIAL
     // Generate random paths for Rank 1

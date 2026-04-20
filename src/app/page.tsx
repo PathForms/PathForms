@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Headbar from "./_components/Headbar";
+import useTheme from "./_components/useTheme";
 
 type LandingCard = {
   id: string;
@@ -23,7 +24,7 @@ const Home = () => {
   const [hoveredButton, setHoveredButton] = useState<string | null>(null);
 
   // Headbar state
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const { theme, setTheme } = useTheme();
   const [showSettings, setShowSettings] = useState(false);
   const [edgeThickness, setEdgeThickness] = useState(1);
   const [shape, setShape] = useState("circle");
@@ -123,8 +124,9 @@ const Home = () => {
         width: "100%",
         overflowY: "auto",
         overflowX: "hidden",
-        backgroundColor: "#0a0a0a", // Dark theme background from globals.css
-        paddingTop: "clamp(16px, 3vh, 40px)",
+        backgroundColor: theme === "light" ? "#e6e6e6" : "#0a0a0a",
+        color: theme === "light" ? "#171717" : "#ededed",
+        paddingTop: "calc(80px + clamp(16px, 3vh, 40px))",
         paddingBottom: "clamp(16px, 3vh, 40px)",
         paddingLeft: "20px",
         paddingRight: "20px",
@@ -149,7 +151,7 @@ const Home = () => {
       <div
         style={{ marginBottom: "clamp(16px, 2.5vh, 40px)", textAlign: "center" }}
       >
-        <p style={{ fontSize: "clamp(14px, 2vw, 18px)", color: "#ededed" }}>
+        <p style={{ fontSize: "clamp(14px, 2vw, 18px)", color: theme === "light" ? "#1a1a1a" : "#ededed" }}>
           Pathforms is an interactive game based on combinatorial group theory that visualizes Nielsen's
           algorithm for free groups of rank 1, rank 2 and of rank 3 on their Cayley graphs. Your goal
           is to apply Nielsen transformations to reduce the given paths to the Nielsen reduced form!
@@ -185,13 +187,15 @@ const Home = () => {
                   width: "100%",
                   height: cardSize,
                   borderRadius: "16px",
-                  backgroundColor: "#1a1a1a",
+                  backgroundColor: theme === "light" ? "#f5f5f5" : "#1a1a1a",
                   border: isHovered
                     ? `4px solid ${card.borderColor}`
-                    : "4px solid #2a2a2a",
+                    : `4px solid ${theme === "light" ? "#d0d0d0" : "#2a2a2a"}`,
                   boxShadow: isHovered
                     ? `0 20px 25px -5px rgba(${card.shadowColor}, 0.3), 0 10px 10px -5px rgba(${card.shadowColor}, 0.2)`
-                    : "0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2)",
+                    : theme === "light"
+                      ? "0 10px 15px -3px rgba(0, 0, 0, 0.15), 0 4px 6px -2px rgba(0, 0, 0, 0.1)"
+                      : "0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2)",
                   cursor: "pointer",
                   transition: "all 0.3s ease",
                   transform: isHovered ? "scale(1.05)" : "scale(1)",
@@ -214,7 +218,7 @@ const Home = () => {
                     style={{
                       flex: 1,
                       position: "relative",
-                      backgroundColor: "#0a0a0a",
+                      backgroundColor: theme === "light" ? "#e6e6e6" : "#0a0a0a",
                       overflow: "hidden",
                       display: "flex",
                       alignItems: "center",
@@ -258,7 +262,7 @@ const Home = () => {
                   margin: 0,
                   fontSize: "clamp(12px, 1.5vw, 14px)",
                   lineHeight: 1.4,
-                  color: "#cfcfcf",
+                  color: theme === "light" ? "#3a3a3a" : "#cfcfcf",
                   textAlign: "center",
                   maxWidth: "30ch",
                 }}
@@ -271,7 +275,7 @@ const Home = () => {
         
       </div>
       <div style={{ marginTop: "clamp(16px, 2.5vh, 32px)", textAlign: "center" }}>
-        <p style={{ color: "#e0e0e0", fontSize: "clamp(13px, 1.6vw, 16px)" }}>
+        <p style={{ color: theme === "light" ? "#2a2a2a" : "#e0e0e0", fontSize: "clamp(13px, 1.6vw, 16px)" }}>
           Click on a rank to start exploring!
         </p>
       </div>
