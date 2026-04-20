@@ -93,7 +93,7 @@ const Headbar: React.FC<HeadbarProps> = ({
   );
 
   return (
-    <div className={`${styles.header} ${styles[theme]}`}>
+    <div className={`${styles.header} ${styles[theme]}`} style={{ position: pathname === "/" ? "absolute" : "relative" }}>
       {" "}
       {/* Use CSS module styling for dynamic class */}
       <div>{heading}</div>
