@@ -218,7 +218,7 @@ const Home = () => {
                     style={{
                       flex: 1,
                       position: "relative",
-                      backgroundColor: "#000000",
+                      backgroundColor: "inherit",
                       overflow: "hidden",
                       display: "flex",
                       alignItems: "center",
