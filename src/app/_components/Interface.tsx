@@ -2192,7 +2192,7 @@ const Interface = ({
           isRank3={isRank3}
         />
         {/* ========== RANK3 TUTORIAL: Pass isRank3 to CheckNielsen ========== */}
-        <CheckNielsen
+        {!showDualTransforms && <CheckNielsen
           movePaths={moveRecords as any}
           tutorialActive={tutorialActive}
           tutorialStep={tutorialStep}
@@ -2207,7 +2207,7 @@ const Interface = ({
               setTutorialStep(nextStep);
             }
           }}
-        />
+        />}
         {/* ========== END RANK3 TUTORIAL: CheckNielsen ========== */}
         {/*        
  const [pathIndex, setPathIndex] = useState<number[]>([]); // index of paths to show on the Cayley graph;
@@ -4069,7 +4069,7 @@ const Interface = ({
          theme={theme}
        />
        {/* ========== RANK3 TUTORIAL: Pass isRank3 to CheckNielsen (duplicate component) ========== */}
-        <CheckNielsen
+        {!showDualTransforms && <CheckNielsen
           movePaths={moveRecords}
           tutorialActive={tutorialActive}
           tutorialStep={tutorialStep}
@@ -4085,7 +4085,7 @@ const Interface = ({
             }
           }}
           soundEnabled={soundEnabled}
-        />
+        />}
         {/* ========== END RANK3 TUTORIAL: CheckNielsen (duplicate) ========== */}
         {/*        
        <Pathbar
@@ -4115,11 +4115,11 @@ const Interface = ({
           steps={isRank3 ? rank3TutorialSteps : undefined}
         />
         {/* ========== END RANK3 TUTORIAL: Tutorial component ========== */}
-        <Steps
+        {!showDualTransforms && <Steps
           optimalSteps={targetSteps}
           usedSteps={usedConcatSteps}
           theme={theme}
-        />
+        />}
       </div>
     </>
   );
