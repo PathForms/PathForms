@@ -687,7 +687,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
               if (!lastNode) return null;
               const isDragFrom = isDragging && dragFromIndex === idx;
               const isDropHover = isDragging && dragHoverIndex === idx;
-              const label = `P${idx + 1}`;
+              const label = `p${idx + 1}`;
               return (
                 <g key={`path-label-${idx}`}>
                   <rect
