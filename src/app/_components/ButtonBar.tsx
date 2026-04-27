@@ -549,6 +549,33 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
 
        {dualTransformOptions && dualTransformOptions.length > 0 && (
          <div style={{ fontSize: 11, fontWeight: "bold", color: "rgb(180, 180, 180)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 2 }}>
+           Dual Inverse
+         </div>
+       )}
+
+       {dualTransformOptions && dualTransformOptions.length > 0 && (
+         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+           <button
+             style={{ ...buttonStyle, width: 110 }}
+             className={tutorialStep === 5 ? styles.highlight : ""}
+             onClick={() => handleDualInverse("a")}
+             disabled={steppedTransformActive}
+           >
+             Invert a
+           </button>
+           <button
+             style={{ ...buttonStyle, width: 110 }}
+             className={tutorialStep === 5 ? styles.highlight : ""}
+             onClick={() => handleDualInverse("b")}
+             disabled={steppedTransformActive}
+           >
+             Invert b
+           </button>
+         </div>
+       )}
+
+       {dualTransformOptions && dualTransformOptions.length > 0 && (
+         <div style={{ fontSize: 11, fontWeight: "bold", color: "rgb(180, 180, 180)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 2 }}>
            Dual Transform
          </div>
        )}
@@ -622,32 +649,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
          <div style={{ borderTop: "1px solid rgba(255, 255, 255, 0.15)", margin: "4px 0" }} />
        )}
 
-       {dualTransformOptions && dualTransformOptions.length > 0 && (
-         <div style={{ fontSize: 11, fontWeight: "bold", color: "rgb(180, 180, 180)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 2 }}>
-           Dual Inverse
-         </div>
-       )}
 
-       {dualTransformOptions && dualTransformOptions.length > 0 && (
-         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-           <button
-             style={{ ...buttonStyle, width: 110 }}
-             className={tutorialStep === 5 ? styles.highlight : ""}
-             onClick={() => handleDualInverse("a")}
-             disabled={steppedTransformActive}
-           >
-             Invert a
-           </button>
-           <button
-             style={{ ...buttonStyle, width: 110 }}
-             className={tutorialStep === 5 ? styles.highlight : ""}
-             onClick={() => handleDualInverse("b")}
-             disabled={steppedTransformActive}
-           >
-             Invert b
-           </button>
-         </div>
-       )}
 
        {steppedTransformActive && (
          <div
