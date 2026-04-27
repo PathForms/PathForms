@@ -130,6 +130,9 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
   const translation = isRank3
     ? translation3
     : translation2;
+  
+  const helpTextSkipDual = "Skips all intermediate transformation steps and jumps to the final transformed paths.";
+
   const helpTextRand = isRank3
     ? "Generates words from the subgroup spanned by the provided generators. If none are provided, uses the default basis (a,b,c) and expands via inversion/concatenation. May not reduce to the standard basis."
     : "Generates words from the subgroup spanned by the provided generators. If none are provided, uses the default basis (a,b) and expands via inversion/concatenation. May not reduce to the standard basis.";
@@ -679,14 +682,19 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
            >
              &gt;
            </button>
-           <button
-             style={{ ...buttonStyle, width: 60 }}
-             className={tutorialStep === 4 ? styles.highlight : ""}
-             onClick={onSteppedSkip}
-             disabled={steppedTransformDone}
-           >
-             Skip
-           </button>
+           <div className={styles.helpWrapper}>
+             <span className={styles.helpBubble} role="tooltip">
+               {helpTextSkipDual}
+             </span>
+             <button
+               style={{ ...buttonStyle, width: 60 }}
+               className={tutorialStep === 4 ? styles.highlight : ""}
+               onClick={onSteppedSkip}
+               disabled={steppedTransformDone}
+             >
+               Skip
+             </button>
+           </div>
          </div>
        )}
 
@@ -700,9 +708,6 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
            pointerEvents: steppedTransformDone ? "auto" : "none",
            transition: "opacity 0.3s",
          }}>
-           <span style={{ fontSize: 13, color: "rgb(13, 255, 0)", fontWeight: "bold" }}>
-             Transformation Complete!
-           </span>
            <button
              style={{ ...buttonStyle, width: 80 }}
              className={tutorialStep === 4 ? styles.highlight : ""}
