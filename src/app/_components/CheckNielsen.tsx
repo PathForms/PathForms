@@ -444,7 +444,7 @@ const CheckNielsen: React.FC<CheckNielsenProps> = ({
             color: nStatus[0] ? successColor : "red",
           }}
         >
-          Nielsen-reduced Conditions
+          Nielsen-reduced conditions
           (N0)&nbsp;number&nbsp;of&nbsp;empty&nbsp;paths:&nbsp;{emptyCnt}
         </div>
 

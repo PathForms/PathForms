@@ -98,8 +98,8 @@ const Home = () => {
     },
     {
       id: "dual",
-      label: "Dual",
-      description: "Apply the four dual transformations and keep exploring!",
+      label: "Dual (Rank 2)",
+      description: "Apply the dual transformations on generators S = {a,b}",
       route: "/dual",
       image: `${basePath}/dual.gif`,
       alt: "Dual Preview",
@@ -108,6 +108,20 @@ const Home = () => {
       gradient: {
         idle: "linear-gradient(to right, #14b8a6, #0f766e)",
         hover: "linear-gradient(to right, #0f766e, #115e59)",
+      },
+    },
+    {
+      id: "dual-rank3",
+      label: "Dual (Rank 3)",
+      description: "Apply the dual transformations on generators S = {a,b,c}",
+      route: "/dual-rank3",
+      image: `${basePath}/rank3.gif`,
+      alt: "Dual Rank 3 Preview",
+      borderColor: "#22c55e",
+      shadowColor: "34, 197, 94",
+      gradient: {
+        idle: "linear-gradient(to right, #22c55e, #15803d)",
+        hover: "linear-gradient(to right, #15803d, #166534)",
       },
     },
   ];
@@ -278,6 +292,22 @@ const Home = () => {
       <div style={{ marginTop: "clamp(16px, 2.5vh, 32px)", textAlign: "center" }}>
         <p style={{ color: theme === "light" ? "#2a2a2a" : "#e0e0e0", fontSize: "clamp(13px, 1.6vw, 16px)" }}>
           Click on a rank to start exploring!
+        </p>
+        <p style={{ color: theme === "light" ? "#2a2a2a" : "#e0e0e0", fontSize: "clamp(13px, 1.6vw, 16px)" }}>
+          Go to{" "}
+          <a
+            href="https://mineyev.web.illinois.edu/art/back-and-forth-Nielsen-th.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              color: theme === "light" ? "#b45309" : "#fbbf24",
+              fontWeight: 700,
+              textDecoration: "underline",
+            }}
+          >
+            Back and Forth the Nielsen Theorem
+          </a>{" "}
+          for more information.
         </p>
       </div>
     </div>

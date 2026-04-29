@@ -77,11 +77,16 @@ const Interface = ({
     : greedyNielsenSteps;
 
   type Token2 = "a" | "a^-" | "b" | "b^-";
-  type TransformSource = "a" | "b";
+  type Token3 = Token2 | "c" | "c^-";
+  type Token = Token2 | Token3;
+  type TransformSource = "a" | "b" | "c";
 
   const token2Alphabet: Token2[] = ["a", "a^-", "b", "b^-"];
+  const token3Alphabet: Token3[] = ["a", "a^-", "b", "b^-", "c", "c^-"];
+  const tokenAlphabet: Token[] = isRank3 ? token3Alphabet : token2Alphabet;
+  const transformSources: TransformSource[] = isRank3 ? ["a", "b", "c"] : ["a", "b"];
 
-  const formatToken2 = (token: Token2): string => {
+  const formatToken = (token: Token): string => {
     switch (token) {
       case "a":
         return "a";
@@ -91,31 +96,35 @@ const Interface = ({
         return "b";
       case "b^-":
         return "b\u207B\u00B9";
+      case "c":
+        return "c";
+      case "c^-":
+        return "c\u207B\u00B9";
     }
   };
 
-  const formatToken2Sequence = (tokens: Token2[]): string =>
-    tokens.map(formatToken2).join("");
+  const formatTokenSequence = (tokens: Token[]): string =>
+    tokens.map(formatToken).join("");
 
   const buildDualTransformOptions = () => {
     const options: {
       id: string;
       source: TransformSource;
       label: string;
-      replacement: Token2[];
+      replacement: Token[];
     }[] = [];
 
-    (["a", "b"] as TransformSource[]).forEach((source) => {
-      const forbiddenInverse: Token2 = source === "a" ? "a^-" : "b^-";
-      token2Alphabet.forEach((first) => {
-        token2Alphabet.forEach((second) => {
-          if (first[0] === second[0]) return;
-          if (first === forbiddenInverse || second === forbiddenInverse) return;
-          const replacement = [first, second];
+    transformSources.forEach((source) => {
+      const modifiers = tokenAlphabet.filter((token) => token[0] !== source);
+      modifiers.forEach((modifier) => {
+        ([true, false] as const).forEach((sourceFirst) => {
+          const replacement = sourceFirst
+            ? [source, modifier]
+            : [modifier, source];
           options.push({
-            id: `${source}-to-${first}-${second}`,
+            id: `${source}-to-${replacement.join("-")}`,
             source,
-            label: formatToken2Sequence(replacement),
+            label: formatTokenSequence(replacement),
             replacement,
           });
         });
@@ -151,7 +160,47 @@ const Interface = ({
     }
   };
 
-  const invertToken2 = (token: Token2): Token2 => {
+  const moveToToken3 = (move: Direction3): Token3 => {
+    switch (move) {
+      case "up":
+        return "a";
+      case "down":
+        return "a^-";
+      case "right-up":
+        return "b";
+      case "left-down":
+        return "b^-";
+      case "right-down":
+        return "c";
+      case "left-up":
+        return "c^-";
+    }
+  };
+
+  const tokenToMove3 = (token: Token3): Direction3 => {
+    switch (token) {
+      case "a":
+        return "up";
+      case "a^-":
+        return "down";
+      case "b":
+        return "right-up";
+      case "b^-":
+        return "left-down";
+      case "c":
+        return "right-down";
+      case "c^-":
+        return "left-up";
+    }
+  };
+
+  const moveToToken = (move: Direction): Token =>
+    isRank3 ? moveToToken3(move as Direction3) : moveToToken2(move as Direction2);
+
+  const tokenToMove = (token: Token): Direction =>
+    isRank3 ? tokenToMove3(token as Token3) : tokenToMove2(token as Token2);
+
+  const invertToken = (token: Token): Token => {
     switch (token) {
       case "a":
         return "a^-";
@@ -161,14 +210,18 @@ const Interface = ({
         return "b^-";
       case "b^-":
         return "b";
+      case "c":
+        return "c^-";
+      case "c^-":
+        return "c";
     }
   };
 
-  const reduceTokens2 = (tokens: Token2[]): Token2[] => {
-    const stack: Token2[] = [];
+  const reduceTokens = (tokens: Token[]): Token[] => {
+    const stack: Token[] = [];
     tokens.forEach((token) => {
       const last = stack[stack.length - 1];
-      if (last && invertToken2(last) === token) {
+      if (last && invertToken(last) === token) {
         stack.pop();
       } else {
         stack.push(token);
@@ -248,6 +301,15 @@ const Interface = ({
     "Now try to reduce all paths to their simplest form using invert and concatenate operations!",
   ];
 
+  const dualTutorialSteps = [
+    `Click the 'Generate Paths' button to create ${isRank3 ? "3" : "2"} paths.`,
+    "Use the source selector in Dual Transform to choose which generator to transform.",
+    "Choose a replacement word and click Apply.",
+    "Use the step controls to review the transformation, then Confirm it.",
+    "Click one of the Dual Inverse buttons.",
+    "Now try more dual transformations and inversions freely.",
+  ];
+
   // ========== END RANK3 TUTORIAL STEPS ==========
 
   // Steps state
@@ -276,7 +338,7 @@ const Interface = ({
 
   // Stepped dual transform state
   type TransformSnapshot = {
-    moves: Direction2[][];
+    moves: Direction[][];
     nodes: string[][];
     edges: string[][];
   };
@@ -1702,16 +1764,16 @@ const Interface = ({
   };
 
   // If source -> X, then source^- -> (X)^-1 where inverse reverses order and inverts tokens.
-  const computeInverseReplacement = (replacement: Token2[]): Token2[] => {
-    return replacement.slice().reverse().map((token) => invertToken2(token));
+  const computeInverseReplacement = (replacement: Token[]): Token[] => {
+    return replacement.slice().reverse().map((token) => invertToken(token));
   };
 
   const getTransformedTokenSequence = (
-    token: Token2,
+    token: Token,
     source: TransformSource,
-    replacement: Token2[],
-    inverseReplacement: Token2[]
-  ): Token2[] => {
+    replacement: Token[],
+    inverseReplacement: Token[]
+  ): Token[] => {
     if (token === source) return replacement;
     if (token === `${source}^-`) return inverseReplacement;
     return [token];
@@ -1719,33 +1781,28 @@ const Interface = ({
 
   const applyDualATransform = (
     source: TransformSource,
-    replacement: Token2[]
+    replacement: Token[]
   ) => {
-    if (isRank3) return;
     setSteppedTransformDone(false);
     startSteppedTransform(source, replacement);
   };
 
-  const invertSourceToken = (token: Token2, source: TransformSource): Token2 => {
-    if (source === "a") {
-      if (token === "a") return "a^-";
-      if (token === "a^-") return "a";
-      return token;
+  const invertSourceToken = (token: Token, source: TransformSource): Token => {
+    if (token === source || token === `${source}^-`) {
+      return invertToken(token);
     }
-    if (token === "b") return "b^-";
-    if (token === "b^-") return "b";
     return token;
   };
 
   const applyDualInverse = (source: TransformSource) => {
-    if (isRank3 || steppedTransformActive) return;
+    if (steppedTransformActive) return;
 
-    const currentPaths = moveRecords as Direction2[][];
+    const currentPaths = moveRecords;
     const invertedMoves = currentPaths.map((path) =>
       path
-        .map(moveToToken2)
+        .map(moveToToken)
         .map((token) => invertSourceToken(token, source))
-        .map(tokenToMove2)
+        .map(tokenToMove)
     );
 
     const newNodePaths: string[][] = [];
@@ -1766,16 +1823,14 @@ const Interface = ({
   // --- Stepped dual transform helpers ---
   const startSteppedTransform = (
     source: TransformSource,
-    replacement: Token2[]
+    replacement: Token[]
   ) => {
     setSteppedTransformActive(false);
     setTransformSteps([]);
     setTransformStepIndex(0);
 
-    const currentPaths = moveRecords as Direction2[][];
-    const allPathTokens = currentPaths.map((path) =>
-      path.map(moveToToken2)
-    );
+    const currentPaths = moveRecords;
+    const allPathTokens = currentPaths.map((path) => path.map(moveToToken));
 
     const inverseReplacement = computeInverseReplacement(replacement);
 
@@ -1816,7 +1871,7 @@ const Interface = ({
       );
 
       const reducedMoves = newPathTokens.map((tokens) =>
-        reduceTokens2(tokens as Token2[]).map(tokenToMove2)
+        reduceTokens(tokens as Token[]).map(tokenToMove)
       );
 
       const newNodePaths: string[][] = [];
@@ -1866,6 +1921,9 @@ const Interface = ({
     setSteppedTransformDone(false);
     setTransformSteps([]);
     setTransformStepIndex(0);
+    if (showDualTransforms && tutorialActive && tutorialStep === 4) {
+      setTutorialStep(5);
+    }
   };
 
   const applySteppedState = (idx: number) => {
@@ -2064,10 +2122,9 @@ const Interface = ({
     setHoverPathIndex(-1);
   };
 
-  const dualTransformOptions =
-    showDualTransforms && !isRank3
-      ? buildDualTransformOptions()
-      : undefined;
+  const dualTransformOptions = showDualTransforms
+    ? buildDualTransformOptions()
+    : undefined;
 
   return (
     <>
@@ -2120,10 +2177,11 @@ const Interface = ({
           isRank3={isRank3}
           dualTransformOptions={dualTransformOptions}
           onDualTransformApply={(source, r) =>
-            applyDualATransform(source as TransformSource, r as Token2[])
+            applyDualATransform(source as TransformSource, r as Token[])
           }
           onDualInverseA={() => applyDualInverse("a")}
           onDualInverseB={() => applyDualInverse("b")}
+          onDualInverseC={() => applyDualInverse("c")}
           steppedTransformActive={steppedTransformActive}
           steppedTransformStepIndex={transformStepIndex}
           steppedTransformTotalSteps={transformSteps.length}
@@ -2132,6 +2190,7 @@ const Interface = ({
           onSteppedSkip={steppedTransformSkip}
           steppedTransformDone={steppedTransformDone}
           onSteppedConfirm={confirmSteppedTransform}
+          onDualTutorialAdvance={() => setTutorialStep((step) => step + 1)}
         />
         <Pathterminal
           pathIndex={pathIndex}
@@ -4112,7 +4171,7 @@ const Interface = ({
             setTutorialCompleted(false);
           }}
           soundEnabled={soundEnabled}
-          steps={isRank3 ? rank3TutorialSteps : undefined}
+          steps={showDualTransforms ? dualTutorialSteps : isRank3 ? rank3TutorialSteps : undefined}
         />
         {/* ========== END RANK3 TUTORIAL: Tutorial component ========== */}
         {!showDualTransforms && <Steps

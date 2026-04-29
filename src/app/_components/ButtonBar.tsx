@@ -18,6 +18,7 @@ import { formatExponent } from "../utils/formatExponent";
 
 type Direction = "up" | "down" | "left" | "right";
 type Direction3 = "up" | "down" | "left-up" | "right-down" | "left-down" | "right-up";
+type TransformSource = "a" | "b" | "c";
 
 const translation2: Record<Direction, string> = {
  up: "b",
@@ -75,13 +76,14 @@ interface ButtonBarProps {
  isRank3?: boolean;
   dualTransformOptions?: {
     id: string;
-    source: "a" | "b";
+    source: TransformSource;
     label: string;
     replacement: string[];
   }[];
-  onDualTransformApply?: (source: "a" | "b", replacement: string[]) => void;
+  onDualTransformApply?: (source: TransformSource, replacement: string[]) => void;
   onDualInverseA?: () => void;
   onDualInverseB?: () => void;
+  onDualInverseC?: () => void;
   steppedTransformActive?: boolean;
   steppedTransformStepIndex?: number;
   steppedTransformTotalSteps?: number;
@@ -116,6 +118,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
   onDualTransformApply,
   onDualInverseA,
   onDualInverseB,
+  onDualInverseC,
   steppedTransformActive = false,
   steppedTransformStepIndex = 0,
   steppedTransformTotalSteps = 0,
@@ -319,10 +322,10 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
 
    // The dual page is the only caller that passes a non-empty dualTransformOptions.
   // Use this to gate dual-page-only UI (e.g. hide Generate Rand and the Number of
-  // Paths input so the dual page always produces exactly 2 paths).
+  // Paths input so the dual page uses the rank's default number of paths).
   const isDualPage = !!(dualTransformOptions && dualTransformOptions.length > 0);
 
-  const [selectedTransformSource, setSelectedTransformSource] = useState<"a" | "b">(
+  const [selectedTransformSource, setSelectedTransformSource] = useState<TransformSource>(
      dualTransformOptions?.[0]?.source ?? "a"
    );
  const [selectedTransformId, setSelectedTransformId] = useState<string>(
@@ -332,11 +335,14 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
    const selectedTransformOptions = dualTransformOptions?.filter(
      (opt) => opt.source === selectedTransformSource
    ) ?? [];
+   const transformSources = Array.from(
+     new Set(dualTransformOptions?.map((opt) => opt.source) ?? [])
+   );
 
    const handleTransformSourceChange = (
      event: React.ChangeEvent<HTMLSelectElement>
    ) => {
-     const nextSource = event.target.value as "a" | "b";
+     const nextSource = event.target.value as TransformSource;
      setSelectedTransformSource(nextSource);
      const firstOption = dualTransformOptions?.find((opt) => opt.source === nextSource);
      setSelectedTransformId(firstOption?.id ?? "");
@@ -353,10 +359,14 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
    if (soundEnabled) await playButtonSound();
    await initializeAudio();
    onDualTransformApply(selected.source, selected.replacement);
+   if (tutorialStep === 3 && onDualTutorialAdvance) {
+     onDualTutorialAdvance();
+   }
  };
 
- const handleDualInverse = async (source: "a" | "b") => {
-   const callback = source === "a" ? onDualInverseA : onDualInverseB;
+ const handleDualInverse = async (source: TransformSource) => {
+   const callback =
+     source === "a" ? onDualInverseA : source === "b" ? onDualInverseB : onDualInverseC;
    if (!callback) return;
    if (soundEnabled) await playButtonSound();
    await initializeAudio();
@@ -448,7 +458,7 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
          </div>
        )}
 
-       {/* Row 1: Size Input (hidden on the dual page; it always produces 2 paths) */}
+       {/* Row 1: Size Input (hidden on the dual page; it uses the rank's default path count) */}
        {!isDualPage && (
          <div style={{ display: "flex", gap: 8 }}>
            <label>Number of Paths:</label>
@@ -558,22 +568,17 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
 
        {dualTransformOptions && dualTransformOptions.length > 0 && (
          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-           <button
-             style={{ ...buttonStyle, width: 110 }}
-             className={tutorialStep === 5 ? styles.highlight : ""}
-             onClick={() => handleDualInverse("a")}
-             disabled={steppedTransformActive}
-           >
-             Invert a
-           </button>
-           <button
-             style={{ ...buttonStyle, width: 110 }}
-             className={tutorialStep === 5 ? styles.highlight : ""}
-             onClick={() => handleDualInverse("b")}
-             disabled={steppedTransformActive}
-           >
-             Invert b
-           </button>
+           {transformSources.map((source) => (
+             <button
+               key={source}
+               style={{ ...buttonStyle, width: 110 }}
+               className={tutorialStep === 5 ? styles.highlight : ""}
+               onClick={() => handleDualInverse(source)}
+               disabled={steppedTransformActive}
+             >
+               Invert {source}
+             </button>
+           ))}
          </div>
        )}
 
@@ -607,12 +612,11 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
                cursor: steppedTransformActive ? "not-allowed" : "pointer",
              }}
            >
-             <option value="a" style={{ backgroundColor: "#2f2f2f" }}>
-               a
-             </option>
-             <option value="b" style={{ backgroundColor: "#2f2f2f" }}>
-               b
-             </option>
+             {transformSources.map((source) => (
+               <option key={source} value={source} style={{ backgroundColor: "#2f2f2f" }}>
+                 {source}
+               </option>
+             ))}
            </select>
            <span style={{ fontSize: 13, whiteSpace: "nowrap" }}>→</span>
            <select

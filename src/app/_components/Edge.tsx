@@ -205,6 +205,22 @@ const Edge: React.FC<EdgeProps> = ({
   // Keep arrow size proportional to edge length while preventing extremes.
   const arrowHalfLength = Math.max(3, Math.min(10, edgePixelLength * 0.14));
   const arrowHalfWidth = arrowHalfLength * 0.66;
+  const dx = targetX - sourceX;
+  const dy = targetY - sourceY;
+  const length = Math.hypot(dx, dy) || 1;
+  const unitX = dx / length;
+  const unitY = dy / length;
+  const perpX = -unitY;
+  const perpY = unitX;
+  const arrowTipX = midX + unitX * arrowHalfLength;
+  const arrowTipY = midY + unitY * arrowHalfLength;
+  const arrowBaseX = midX - unitX * arrowHalfLength;
+  const arrowBaseY = midY - unitY * arrowHalfLength;
+  const directionalArrowPoints = `${arrowBaseX + perpX * arrowHalfWidth} ${
+    arrowBaseY + perpY * arrowHalfWidth
+  }, ${arrowTipX} ${arrowTipY}, ${arrowBaseX - perpX * arrowHalfWidth} ${
+    arrowBaseY - perpY * arrowHalfWidth
+  }`;
 
   return (
     <>
@@ -233,18 +249,24 @@ const Edge: React.FC<EdgeProps> = ({
                 // Horizontal movement - left arrow (triangle) - pointing towards source
                 <polygon
                   points={`${midX - arrowHalfLength} ${midY - arrowHalfWidth}, ${midX + arrowHalfLength} ${midY}, ${midX - arrowHalfLength} ${midY + arrowHalfWidth}`}
-                  fill="rgb(0, 255, 0)"
+                  fill={strokeColor}
                   style={{ pointerEvents: "none" }}
                 />
               ) : (
                 // Vertical movement - up arrow (triangle) - pointing towards source
                 <polygon
                   points={`${midX - arrowHalfWidth} ${midY + arrowHalfLength}, ${midX + arrowHalfWidth} ${midY + arrowHalfLength}, ${midX} ${midY - arrowHalfLength}`}
-                  fill="rgb(0, 255, 0)"
+                  fill={strokeColor}
                   style={{ pointerEvents: "none" }}
                 />
               )}
             </>
+          ) : shape === "hexagon" ? (
+            <polygon
+              points={directionalArrowPoints}
+              fill={strokeColor}
+              style={{ pointerEvents: "none" }}
+            />
           ) : null}
           {/* Circle shape - no arrows */}
         </>
