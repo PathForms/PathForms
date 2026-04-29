@@ -13,6 +13,56 @@ const directions = {
 };
 type DirKey = keyof typeof directions;
 const PATH_LABEL_SELECTOR = "[data-path-label-index]";
+const COORD_TOLERANCE = 1e-3;
+
+const parseNodeId = (nodeId: string): [number, number] | null => {
+  const [x, y] = nodeId.split(",").map(Number);
+  if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+  return [x, y];
+};
+
+const nodeIdMatches = (a: string, b: string): boolean => {
+  if (a === b) return true;
+  const pa = parseNodeId(a);
+  const pb = parseNodeId(b);
+  if (!pa || !pb) return false;
+  return (
+    Math.abs(pa[0] - pb[0]) < COORD_TOLERANCE &&
+    Math.abs(pa[1] - pb[1]) < COORD_TOLERANCE
+  );
+};
+
+const parseEdgeId = (edgeId: string): [string, string] | null => {
+  const parts = edgeId.split("->");
+  if (parts.length !== 2) return null;
+  return [parts[0], parts[1]];
+};
+
+const edgeIdMatches = (a: string, b: string): boolean => {
+  if (a === b) return true;
+  const ea = parseEdgeId(a);
+  const eb = parseEdgeId(b);
+  if (!ea || !eb) return false;
+  return nodeIdMatches(ea[0], eb[0]) && nodeIdMatches(ea[1], eb[1]);
+};
+
+const pathContainsNode = (
+  pathNodes: string[] | undefined,
+  nodeId: string
+): boolean => {
+  if (!pathNodes || pathNodes.length === 0) return false;
+  if (pathNodes.includes(nodeId)) return true;
+  return pathNodes.some((id) => nodeIdMatches(id, nodeId));
+};
+
+const pathContainsEdge = (
+  pathEdges: string[] | undefined,
+  edgeId: string
+): boolean => {
+  if (!pathEdges || pathEdges.length === 0) return false;
+  if (pathEdges.includes(edgeId)) return true;
+  return pathEdges.some((id) => edgeIdMatches(id, edgeId));
+};
 
 interface TreeNode {
   name: string;
@@ -131,9 +181,14 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
   }, [isDragging]);
 
   useEffect(() => {
-    // Use smaller depth for hexagon (rank 3) to avoid performance issues
-    // Rank 3 has 6 directions, so the tree grows much faster
-    const maxDepth = shape === "hexagon" ? 5 : 7;
+    const longestPathDepth = Math.max(
+      1,
+      ...nodePaths.map((path) => Math.max(0, path.length - 1))
+    );
+    // Ensure the graph is deep enough to represent all current path words.
+    // Keep a small minimum depth for initial layout quality.
+    const minDepth = shape === "hexagon" ? 5 : 7;
+    const maxDepth = Math.max(minDepth, longestPathDepth);
     const rootData =
       shape === "hexagon"
         ? buildCayleyTreeData3(0, 0, 0, maxDepth, null, 100)
@@ -314,7 +369,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
       "transform",
       `translate(${screenW / 2}, ${screenH / 2})`
     );
-  }, [shape]);
+  }, [shape, nodePaths]);
 
   const toGraphCoords = (
     clientX: number,
@@ -496,8 +551,8 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
             let isHoveredTarget = false;
             if (isDragging && dragFromIndex >= 0 && dragHoverIndex >= 0) {
               // When dragging, show both paths but highlight the dragged path
-              const isFromPath = edgePaths[dragFromIndex]?.includes(lk.id);
-              const isHoverPath = edgePaths[dragHoverIndex]?.includes(lk.id);
+              const isFromPath = pathContainsEdge(edgePaths[dragFromIndex], lk.id);
+              const isHoverPath = pathContainsEdge(edgePaths[dragHoverIndex], lk.id);
               isActive = isFromPath || isHoverPath;
               // Specifically mark the dragged path for special highlighting
               isHoveredTarget = isFromPath;
@@ -505,12 +560,12 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
               // Normal display: highlight all paths in pathIndex
               const isInPathIndex =
                 pathIndex.length > 0 &&
-                pathIndex.some((index) => edgePaths[index]?.includes(lk.id));
+                pathIndex.some((index) => pathContainsEdge(edgePaths[index], lk.id));
 
               // When hovering (not dragging), also highlight the hovered path
               const isInHoverPath =
                 hoverPathIndex >= 0 &&
-                edgePaths[hoverPathIndex]?.includes(lk.id);
+                pathContainsEdge(edgePaths[hoverPathIndex], lk.id);
 
               isActive = isInPathIndex || isInHoverPath;
 
@@ -521,10 +576,10 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
             }
 
             const isFinalResult = Boolean(
-              previewPath && previewPath.finalResult.edges.includes(lk.id)
+              previewPath && pathContainsEdge(previewPath.finalResult.edges, lk.id)
             );
             const isCancelledPart = Boolean(
-              previewPath && previewPath.cancelledParts.edges.includes(lk.id)
+              previewPath && pathContainsEdge(previewPath.cancelledParts.edges, lk.id)
             );
 
             return (
@@ -553,8 +608,8 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
             let isHoveredTarget = false;
             if (isDragging && dragFromIndex >= 0 && dragHoverIndex >= 0) {
               // When dragging, show both paths but highlight the dragged path
-              const isFromPath = nodePaths[dragFromIndex]?.includes(nd.id);
-              const isHoverPath = nodePaths[dragHoverIndex]?.includes(nd.id);
+              const isFromPath = pathContainsNode(nodePaths[dragFromIndex], nd.id);
+              const isHoverPath = pathContainsNode(nodePaths[dragHoverIndex], nd.id);
               isActive = isFromPath || isHoverPath;
               // Specifically mark the dragged path for special highlighting
               isHoveredTarget = isFromPath;
@@ -562,12 +617,12 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
               // Normal display: highlight all paths in pathIndex
               const isInPathIndex =
                 pathIndex.length > 0 &&
-                pathIndex.some((index) => nodePaths[index]?.includes(nd.id));
+                pathIndex.some((index) => pathContainsNode(nodePaths[index], nd.id));
 
               // When hovering (not dragging), also highlight the hovered path
               const isInHoverPath =
                 hoverPathIndex >= 0 &&
-                nodePaths[hoverPathIndex]?.includes(nd.id);
+                pathContainsNode(nodePaths[hoverPathIndex], nd.id);
 
               isActive = isInPathIndex || isInHoverPath;
 
@@ -578,10 +633,10 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
             }
 
             const isFinalResult = Boolean(
-              previewPath && previewPath.finalResult.nodes.includes(nd.id)
+              previewPath && pathContainsNode(previewPath.finalResult.nodes, nd.id)
             );
             const isCancelledPart = Boolean(
-              previewPath && previewPath.cancelledParts.nodes.includes(nd.id)
+              previewPath && pathContainsNode(previewPath.cancelledParts.nodes, nd.id)
             );
 
             return (
@@ -632,7 +687,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
               if (!lastNode) return null;
               const isDragFrom = isDragging && dragFromIndex === idx;
               const isDropHover = isDragging && dragHoverIndex === idx;
-              const label = `P${idx + 1}`;
+              const label = `p${idx + 1}`;
               return (
                 <g key={`path-label-${idx}`}>
                   <rect

@@ -94,6 +94,7 @@ interface PathlistProps {
   onPathLeave?: () => void;
   hoverPathIndex?: number;
   isDualTutorial?: boolean;
+  isRank3?: boolean;
 }
 
 const CLICK_INTERVAL = 250;
@@ -123,6 +124,7 @@ const Pathlist: React.FC<PathlistProps> = ({
   onPathLeave,
   hoverPathIndex = -1,
   isDualTutorial = false,
+  isRank3 = false,
 }) => {
   const singleClickTimer = useRef<NodeJS.Timeout | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -362,14 +364,14 @@ const Pathlist: React.FC<PathlistProps> = ({
                 onMouseEnter={() => onPathHover?.(rowIndex)}
                 onMouseLeave={() => onPathLeave?.()}
               >
-                {`[P${rowIndex + 1}]: `}{" "}
+                {`[p${rowIndex + 1}]: `}{" "}
                 {path.length === 0
                   ? "1"
                   : path.map((node, nodeIndex) => {
                       const direction = node as Direction;
-                      const isRank3 = isRank3Direction(direction);
                       const letter = isRank3
-                        ? translation3[direction as Direction3]
+                        ? translation3[direction as Direction3] ??
+                          translation2[direction as Direction2]
                         : translation2[direction as Direction2];
                       const color = isRank3
                         ? getDirectionColor3(direction as Direction3, theme)

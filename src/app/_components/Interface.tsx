@@ -22,6 +22,7 @@ import {
   greedyNielsenSteps3,
 } from "../utils/greedyNielsen";
 import { setSoundEnabled as setSoundEnabledGlobal, playBackgroundAudioLoop, stopBackgroundAudioLoop } from "../utils/soundManager";
+import useTheme from "./useTheme";
 
 // Support both rank 2 and rank 3
 type Direction2 = "up" | "down" | "left" | "right";
@@ -199,13 +200,7 @@ const Interface = ({
 
   // Settings state: edge thickness, vertex size, theme and settings panel visibility
   const [edgeThickness, setEdgeThickness] = useState<number>(0.7);
-  const [theme, setTheme] = useState<"dark" | "light">(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("theme");
-      return (saved === "light" || saved === "dark") ? saved : "dark";
-    }
-    return "dark";
-  });
+  const { theme, setTheme } = useTheme();
   const [showSettings, setShowSettings] = useState<boolean>(false);
   const [soundEnabled, setSoundEnabled] = useState<boolean>(() => {
       if (typeof window !== "undefined") {
@@ -2194,9 +2189,10 @@ const Interface = ({
           onPathHover={handlePathHover}
           onPathLeave={handlePathLeave}
           hoverPathIndex={hoverPathIndex}
+          isRank3={isRank3}
         />
         {/* ========== RANK3 TUTORIAL: Pass isRank3 to CheckNielsen ========== */}
-        <CheckNielsen
+        {!showDualTransforms && <CheckNielsen
           movePaths={moveRecords as any}
           tutorialActive={tutorialActive}
           tutorialStep={tutorialStep}
@@ -2211,7 +2207,7 @@ const Interface = ({
               setTutorialStep(nextStep);
             }
           }}
-        />
+        />}
         {/* ========== END RANK3 TUTORIAL: CheckNielsen ========== */}
         {/*        
  const [pathIndex, setPathIndex] = useState<number[]>([]); // index of paths to show on the Cayley graph;
@@ -2241,7 +2237,7 @@ const Interface = ({
 
  // Settings state: edge thickness, vertex size, theme and settings panel visibility
  const [edgeThickness, setEdgeThickness] = useState<number>(0.7);
- const [theme, setTheme] = useState<"dark" | "light">("dark");
+ const { theme, setTheme } = useTheme();
  const [showSettings, setShowSettings] = useState<boolean>(false);
  const [soundEnabled, setSoundEnabled] = useState<boolean>(false);
 
@@ -4073,7 +4069,7 @@ const Interface = ({
          theme={theme}
        />
        {/* ========== RANK3 TUTORIAL: Pass isRank3 to CheckNielsen (duplicate component) ========== */}
-        <CheckNielsen
+        {!showDualTransforms && <CheckNielsen
           movePaths={moveRecords}
           tutorialActive={tutorialActive}
           tutorialStep={tutorialStep}
@@ -4089,7 +4085,7 @@ const Interface = ({
             }
           }}
           soundEnabled={soundEnabled}
-        />
+        />}
         {/* ========== END RANK3 TUTORIAL: CheckNielsen (duplicate) ========== */}
         {/*        
        <Pathbar
@@ -4119,11 +4115,11 @@ const Interface = ({
           steps={isRank3 ? rank3TutorialSteps : undefined}
         />
         {/* ========== END RANK3 TUTORIAL: Tutorial component ========== */}
-        <Steps
+        {!showDualTransforms && <Steps
           optimalSteps={targetSteps}
           usedSteps={usedConcatSteps}
           theme={theme}
-        />
+        />}
       </div>
     </>
   );
