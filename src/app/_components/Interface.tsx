@@ -22,6 +22,7 @@ import {
   greedyNielsenSteps3,
 } from "../utils/greedyNielsen";
 import { setSoundEnabled as setSoundEnabledGlobal, playBackgroundAudioLoop, stopBackgroundAudioLoop } from "../utils/soundManager";
+import { checkNielsenReduced } from "../utils/NielsenTrans";
 import useTheme from "./useTheme";
 
 // Support both rank 2 and rank 3
@@ -1466,10 +1467,12 @@ const Interface = ({
     let maxIterations = 1000;
     let iterations = 0;
     while (
-      moveRecordsRef.current.some((path) => path.length < 2) &&
+      (moveRecordsRef.current.some((path) => path.length < 2) ||
+       checkNielsenReduced(moveRecordsRef.current).every((x) => x)) &&
       iterations < maxIterations
     ) {
       iterations++;
+      console.log("iteration " + iterations);
 
       // When paths are too short, we should only concatenate (not invert)
       // because inversion doesn't change path length
