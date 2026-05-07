@@ -145,6 +145,7 @@ interface CayleyTreeProps {
   onPathDragLeave?: () => void;
   onPathDragEnd?: () => void;
   onPathDropConcatenate?: (targetIndex: number, draggedIndex: number) => void;
+  theme?: "dark" | "light";
 }
 
 const CayleyTree: React.FC<CayleyTreeProps> = ({
@@ -163,6 +164,7 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
   onPathDragLeave,
   onPathDragEnd,
   onPathDropConcatenate,
+  theme = "dark",
 }) => {
   const [nodes, setNodes] = useState<LayoutNode[]>([]);
   const [links, setLinks] = useState<LayoutLink[]>([]);
@@ -688,6 +690,18 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
               const isDragFrom = isDragging && dragFromIndex === idx;
               const isDropHover = isDragging && dragHoverIndex === idx;
               const label = `p${idx + 1}`;
+              const labelColor =
+                theme === "light"
+                  ? isDragFrom
+                    ? "#92400e"
+                    : isDropHover
+                      ? "#111827"
+                      : "#1f2937"
+                  : isDragFrom
+                    ? "#ffe066"
+                    : isDropHover
+                      ? "#ffffff"
+                      : "#d9f99d";
               return (
                 <g key={`path-label-${idx}`}>
                   <rect
@@ -710,17 +724,12 @@ const CayleyTree: React.FC<CayleyTreeProps> = ({
                     x={lastNode.x}
                     y={lastNode.y - 15}
                     textAnchor="middle"
-                    fill={
-                      isDragFrom ? "#ffe066" : isDropHover ? "#ffffff" : "#d9f99d"
-                    }
+                    fill={labelColor}
                     fontSize="16"
                     fontWeight="bold"
-                    stroke="#000000"
-                    strokeWidth="0.6"
                     style={{
                       pointerEvents: "auto",
                       cursor: isDragging ? "grabbing" : "grab",
-                      textShadow: "0 0 4px rgba(0,0,0,0.85)",
                       userSelect: "none",
                     }}
                     onPointerDown={(e) => startGraphDrag(idx, e)}

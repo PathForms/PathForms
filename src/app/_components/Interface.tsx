@@ -304,11 +304,20 @@ const Interface = ({
 
   const dualTutorialSteps = [
     `Click the 'Generate Paths' button to create ${isRank3 ? "3" : "2"} paths.`,
-    "Use the source selector in Dual Transform to choose which generator to transform.",
+    "Use the source selector in Dual Transform to choose generator b.",
     "Choose a replacement word and click Apply.",
     "Use the step controls to review the transformation, then Confirm it.",
     "Click one of the Dual Inverse buttons.",
-    "Now try more dual transformations and inversions freely.",
+    "Now try more dual transformations and inversions.",
+  ];
+
+  const dualRank3TutorialSteps = [
+    "Click the 'Generate Paths' button to create 3 paths.",
+    "Use the source selector in Dual Transform to choose generator b or c.",
+    "Choose a replacement word using the rank 3 generators and click Apply.",
+    "Use the step controls to review the transformation, then Confirm it.",
+    "Click one of the Dual Inverse buttons for a, b, or c.",
+    "Now try more dual transformations and inversions.",
   ];
 
   // ========== END RANK3 TUTORIAL STEPS ==========
@@ -2217,6 +2226,7 @@ const Interface = ({
           edgePaths={edgePaths}
           edgeThickness={edgeThickness}
           shape={shape}
+          theme={theme}
           previewPath={previewPath}
           isDragging={isDragging}
           dragFromIndex={dragFromIndex}
@@ -2251,6 +2261,7 @@ const Interface = ({
           onPathHover={handlePathHover}
           onPathLeave={handlePathLeave}
           hoverPathIndex={hoverPathIndex}
+          isDualTutorial={showDualTransforms}
           isRank3={isRank3}
         />
         {/* ========== RANK3 TUTORIAL: Pass isRank3 to CheckNielsen ========== */}
@@ -4174,7 +4185,7 @@ const Interface = ({
             setTutorialCompleted(false);
           }}
           soundEnabled={soundEnabled}
-          steps={showDualTransforms ? dualTutorialSteps : isRank3 ? rank3TutorialSteps : undefined}
+          steps={showDualTransforms ? (isRank3 ? dualRank3TutorialSteps : dualTutorialSteps) : isRank3 ? rank3TutorialSteps : undefined}
         />
         {/* ========== END RANK3 TUTORIAL: Tutorial component ========== */}
         {!showDualTransforms && <Steps
