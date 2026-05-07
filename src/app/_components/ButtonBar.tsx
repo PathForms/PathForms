@@ -346,8 +346,12 @@ const ButtonBar: React.FC<ButtonBarProps> = ({
      setSelectedTransformSource(nextSource);
      const firstOption = dualTransformOptions?.find((opt) => opt.source === nextSource);
      setSelectedTransformId(firstOption?.id ?? "");
-     // Dual tutorial step 2: advance when user switches to "b"
-     if (tutorialStep === 2 && nextSource === "b" && onDualTutorialAdvance) {
+    // Dual tutorial step 2: advance when user switches to "b" or "c"
+    if (
+      tutorialStep === 2 &&
+      (nextSource === "b" || nextSource === "c") &&
+      onDualTutorialAdvance
+    ) {
        onDualTutorialAdvance();
      }
    };
